@@ -1,2 +1,0 @@
-prompt:  create an svg animation of a wire frame torus with the wire mesh . Colors are grey lines on black background. Try to write this using as little code as possible. Randomize the density of the wire mesh. Randomize the angle of the torus with respect to the horizontal and vertical. Also randomize the Major Radius   and Minor Radius  such that the hole in the middle changes. Choose an angle and then animate a rotation of the torus.   Do not use any libraries only vanila js is allowed. I will look at the result only in chrome v8. 
-    

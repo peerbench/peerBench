@@ -1,6 +1,0 @@
-polars
-base58
-python-jose[cryptography]
-ecdsa
-joserfc
-PyJWT[crypto]

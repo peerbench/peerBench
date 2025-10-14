@@ -1,2 +1,0 @@
-prompt:  Procedurally generate Sierpiński triangle /  Sierpiński gasket / Sierpiński sieve fractal as the camera zooms into it. Zoom into the edge of the fractal. Zoom in kinda fast. Use SVG only.  Do not use any libraries only vanila js is allowed. I will look at the result only in chrome v8. Put everything into one index.html file. 
-    

@@ -1,2 +1,0 @@
-prompt: create an svg tree made from simple fractal formulas with randomness build it. Colors are grey lines on black background. Only generate a new tree on load. Use the full window for drawing. Do not clip the tree on the edge of the screen. Fade out the lines as you get towards the leaves. Try to write this using as little code as possible.  Do not use any libraries only vanila js is allowed. I will look at the result only in chrome v8. 
-    

@@ -1,2 +1,0 @@
-prompt:  Procedurally generate Jerusalem cube fractal in 3d. Use SVG mesh only. Rotate the cub around a random angle.  Do not use any libraries only vanila js is allowed. I will look at the result only in chrome v8. Put everything into one index.html file. 
-    
