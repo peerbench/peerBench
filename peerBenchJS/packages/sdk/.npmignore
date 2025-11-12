@@ -1,0 +1,8 @@
+node_modules
+.github
+src
+.gitignore
+.prettierrc
+tsconfig.json
+tsup.config.ts
+eslint.config.js

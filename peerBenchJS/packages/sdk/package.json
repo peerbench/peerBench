@@ -8,7 +8,10 @@
     "validation",
     "benchmark"
   ],
-  "homepage": "https://www.peerbench.ai/",
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://peerbench.ai",
   "bugs": {
     "url": "https://github.com/peerbench/peerBench/issues"
   },
@@ -23,10 +26,6 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./generators/pubmed/helpers": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
