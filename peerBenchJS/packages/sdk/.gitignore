@@ -1,9 +1,0 @@
-node_modules
-.vscode
-.env*
-!.env.*example
-dist
-data/output
-data/logs
-config.*.json
-!config.example.json

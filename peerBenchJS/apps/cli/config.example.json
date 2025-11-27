@@ -1,8 +1,0 @@
-{
-  "tasks": ["./data/tasks/mmlu-pro/mmlu-pro-biology-3-prompts.peerbench.json"],
-  "models": [
-    "openrouter.ai:meta-llama/llama-4-scout",
-    "openrouter.ai:google/gemma-3-27b-it",
-    "openrouter.ai:mistralai/mistral-nemo"
-  ]
-}

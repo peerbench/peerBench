@@ -1,0 +1,10 @@
+Dockerfile
+.dockerignore
+node_modules
+npm-debug.log
+README.md
+apps/webapp/.next
+packages/sdk/dist
+apps/cli/dist
+.git
+.env*

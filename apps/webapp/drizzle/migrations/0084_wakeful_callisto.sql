@@ -1,0 +1,12 @@
+DROP VIEW "public"."v_prompt_set_stats";--> statement-breakpoint
+DROP VIEW "public"."v_upload_contributors_per_prompt_set";--> statement-breakpoint
+CREATE VIEW "public"."v_upload_contributors_per_prompt_set" AS (select "id" as "prompt_set_id", "uploader_id", "collaboration_type" from (((select "prompt_sets"."id", "prompts"."uploader_id", 'prompt' as "collaboration_type" from "prompt_sets" inner join "prompt_set_prompts" on ("prompt_set_prompts"."prompt_set_id" = "prompt_sets"."id" and "prompt_set_prompts"."status" = 'included') inner join "prompts" on "prompts"."id" = "prompt_set_prompts"."prompt_id") union (select "prompt_sets"."id", "responses"."uploader_id", 'response' as "collaboration_type" from "prompt_sets" inner join "prompt_set_prompts" on ("prompt_set_prompts"."prompt_set_id" = "prompt_sets"."id" and "prompt_set_prompts"."status" = 'included') inner join "responses" on "responses"."id" = "prompt_set_prompts"."prompt_id")) union (select "prompt_sets"."id", "scores"."uploader_id", 'score' as "collaboration_type" from "prompt_sets" inner join "prompt_set_prompts" on ("prompt_set_prompts"."prompt_set_id" = "prompt_sets"."id" and "prompt_set_prompts"."status" = 'included') inner join "scores" on "scores"."id" = "prompt_set_prompts"."prompt_id")) "query" group by "query"."uploader_id", "query"."id", "collaboration_type");
+CREATE VIEW "public"."v_prompt_set_stats" AS (select "prompt_sets"."id", 
+        COUNT(DISTINCT "prompt_set_prompts"."prompt_id")
+        FILTER (WHERE "prompt_set_prompts"."status" = 'included')
+       as "included_prompt_count", 
+        COUNT(DISTINCT "prompt_set_prompts"."prompt_id")
+        FILTER (WHERE "prompt_set_prompts"."status" = 'excluded')
+       as "excluded_prompt_count", "total_score_count", "avg_score", 
+        COALESCE(count(distinct "all_contributors"."uploader_id"), 0)
+       as "total_contributors" from "prompt_sets" left join "prompt_set_prompts" on "prompt_set_prompts"."prompt_set_id" = "prompt_sets"."id" left join (((select "uploader_id", "prompt_set_id" from "v_upload_contributors_per_prompt_set") union (select "user_id", "prompt_set_id" from "v_review_contributors_per_prompt_set")) union (select "user_id", "prompt_set_id" from "user_role_on_prompt_set")) "all_contributors" on "all_contributors"."prompt_set_id" = "prompt_sets"."id" left join "v_overall_score_per_prompt_set" on "v_overall_score_per_prompt_set"."prompt_set_id" = "prompt_sets"."id" group by "prompt_sets"."id", "total_score_count", "avg_score");--> statement-breakpoint

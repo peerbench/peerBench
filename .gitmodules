@@ -1,3 +1,0 @@
-[submodule "dEval-flask"]
-	path = dEval-flask
-	url = git@github.com:jworender/dEval-flask.git
