@@ -1,6 +1,12 @@
-import { db } from "@/database/client";
 import { eq, getViewSelectedFields, sql } from "drizzle-orm";
-import { userProfileTable, userStatsView, usersView, promptsTable, quickFeedbacksTable, hashRegistrationsTable } from "@/database/schema";
+import {
+  userProfileTable,
+  userStatsView,
+  usersView,
+  promptsTable,
+  quickFeedbacksTable,
+  hashRegistrationsTable,
+} from "@/database/schema";
 import { DbOptions } from "@/types/db";
 import { withTxOrDb } from "@/database/helpers";
 import { ApiError } from "@/errors/api-error";
@@ -45,7 +51,10 @@ export class ProfileService {
           hashRegistrationsTable,
           and(
             eq(hashRegistrationsTable.cid, promptsTable.hashCIDRegistration),
-            eq(hashRegistrationsTable.sha256, promptsTable.hashSha256Registration)
+            eq(
+              hashRegistrationsTable.sha256,
+              promptsTable.hashSha256Registration
+            )
           )
         )
         .where(eq(hashRegistrationsTable.uploaderId, options.userId));
@@ -136,29 +145,6 @@ export class ProfileService {
         twitter: data.twitter,
       };
     }, options.tx);
-  }
-
-  /**
-   * @deprecated AI Generated code, don't use if you don't know what you are doing
-   */
-  static async setInvitedBy(
-    userId: string,
-    invitedByUserId: string
-  ): Promise<boolean> {
-    try {
-      await db
-        .update(userProfileTable)
-        .set({
-          invitedBy: invitedByUserId,
-          updatedAt: new Date(),
-        })
-        .where(eq(userProfileTable.userId, userId));
-
-      return true;
-    } catch (error) {
-      console.error("Error setting invited by:", error);
-      return false;
-    }
   }
 }
 
