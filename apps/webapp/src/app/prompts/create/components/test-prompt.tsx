@@ -1,3 +1,5 @@
+"use client";
+
 import { usePageContext } from "../context";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -361,82 +363,83 @@ export default function TestPrompt() {
 
   return (
     <TooltipProvider>
-      <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200 space-y-4">
-        <h2 className="text-xl font-semibold text-gray-700">
+      <section className="rounded-xl border border-border bg-card p-6 space-y-6">
+        <h2 className="text-lg font-semibold text-foreground">
           {ctx.generationMode === "llm-generated"
             ? "6. Prompt Evaluation"
-            : "5. Prompt Evaluation"}
+            : "4. Prompt Evaluation"}
         </h2>
-        <div className="space-y-4">
-          <div className="space-y-6">
-            <div className="space-y-1">
-              <label className="block font-medium text-gray-700">
-                Test Models
-              </label>
-              <span className="text-sm text-gray-500 dark:text-gray-300">
-                Test your new Prompt against different models and see their
-                compare their Responses.
-              </span>
-            </div>
-            <div className="space-y-5">
-              <ModelSelect
-                isMulti={true}
-                options={ctx.modelSelectOptions}
-                value={ctx.selectedTestModels}
-                isLoading={isAnyProviderLoading(ctx.providers)}
-                onModelSelected={handleTestModelSelected}
-                disabled={ctx.isInProgress}
-              />
-            </div>
+
+        <div className="space-y-5">
+          <div className="space-y-3">
+            <label className="text-base font-medium text-foreground">
+              Test Models
+            </label>
+            <p className="text-sm text-muted-foreground">
+              Test your new Prompt against different models and see their
+              compare their Responses.
+            </p>
+            <ModelSelect
+              isMulti={true}
+              options={ctx.modelSelectOptions}
+              value={ctx.selectedTestModels}
+              isLoading={isAnyProviderLoading(ctx.providers)}
+              onModelSelected={handleTestModelSelected}
+              disabled={ctx.isInProgress}
+            />
           </div>
 
-          <Accordion type="multiple">
+          <Accordion type="multiple" className="space-y-3">
             {ctx.selectedPromptType === PromptTypes.OpenEnded && (
-              <AccordionItem value="scorer-model" className="border-none">
-                <AccordionTrigger className="hover:underline mb-1">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center space-x-2">
-                        <span className="font-medium text-gray-700">
+              <AccordionItem
+                value="scorer-model"
+                className="border rounded-xl overflow-hidden"
+              >
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AccordionTrigger className="px-5 py-4 text-base hover:no-underline hover:bg-muted/50">
+                      <div className="flex items-center gap-3">
+                        <span className="font-medium text-foreground">
                           Scorer Model (Required)
                         </span>
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-muted-foreground font-normal">
                           {ctx.selectedScorerModel
                             ? `Using ${ctx.selectedScorerModel.modelId} from ${ctx.selectedScorerModel.provider}`
                             : "No model selected"}
                         </span>
                       </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>
-                        You&apos;ve chosen Open-ended typed Prompt.
-                        <br />
-                        This type of Prompts need to be scored using a model.
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-3 px-1 mt-1">
-                    <div className="space-y-5">
-                      <ModelSelect
-                        isMulti={false}
-                        isLoading={isAnyProviderLoading(ctx.providers)}
-                        options={ctx.modelSelectOptions}
-                        value={ctx.selectedScorerModel}
-                        onModelSelected={handleScorerModelSelected}
-                        disabled={ctx.isInProgress}
-                      />
-                    </div>
-                  </div>
+                    </AccordionTrigger>
+                  </TooltipTrigger>
+
+                  <TooltipContent>
+                    <p>
+                      You&apos;ve chosen an Open-ended Prompt.
+                      <br />
+                      It requires a scorer model.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+
+                <AccordionContent className="px-5 pb-5">
+                  <ModelSelect
+                    isMulti={false}
+                    isLoading={isAnyProviderLoading(ctx.providers)}
+                    options={ctx.modelSelectOptions}
+                    value={ctx.selectedScorerModel}
+                    onModelSelected={handleScorerModelSelected}
+                    disabled={ctx.isInProgress}
+                  />
                 </AccordionContent>
               </AccordionItem>
             )}
 
-            <AccordionItem value="system-prompt" className="border-none">
-              <AccordionTrigger className="hover:underline mb-1">
-                <div className="flex items-center space-x-2">
-                  <span className="font-medium text-gray-700">
+            <AccordionItem
+              value="system-prompt"
+              className="border rounded-xl overflow-hidden"
+            >
+              <AccordionTrigger className="px-4 pb-0 text-base hover:no-underline hover:bg-muted/50">
+                <div className="flex items-center gap-3">
+                  <span className="font-medium text-foreground">
                     System Prompt (Optional)
                   </span>
                   <span className="text-sm text-gray-500">
@@ -446,17 +449,15 @@ export default function TestPrompt() {
                   </span>
                 </div>
               </AccordionTrigger>
-              <AccordionContent>
-                <div className="space-y-3 px-1 mt-1">
-                  <Textarea
-                    value={ctx.testingSystemPrompt}
-                    onChange={(e) => ctx.setTestingSystemPrompt(e.target.value)}
-                    disabled={ctx.isInProgress}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-                    rows={3}
-                    placeholder={getDefaultSystemPrompt(ctx.selectedPromptType)}
-                  />
-                </div>
+              <AccordionContent className="px-4 py-3 ">
+                <Textarea
+                  value={ctx.testingSystemPrompt}
+                  onChange={(e) => ctx.setTestingSystemPrompt(e.target.value)}
+                  disabled={ctx.isInProgress}
+                  className="resize-none text-base"
+                  rows={4}
+                  placeholder={getDefaultSystemPrompt(ctx.selectedPromptType)}
+                />
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -467,9 +468,9 @@ export default function TestPrompt() {
                 <Button
                   onClick={handleTestPrompt}
                   disabled={Boolean(testBlockerMessage)}
-                  className="w-full"
+                  className="w-full h-12 text-base"
                 >
-                  <TestTube className="mr-2 h-4 w-4" />
+                  <TestTube className="mr-2 h-5 w-5" />
                   {ctx.isTesting ? "Testing..." : "Test Prompt"}
                 </Button>
               </div>
@@ -479,74 +480,70 @@ export default function TestPrompt() {
             </TooltipContent>
           </Tooltip>
 
-          {/* Model Responses */}
           {ctx.selectedTestModels.length > 0 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-700">
+              <h3 className="text-base font-medium text-foreground">
                 Model Responses
               </h3>
-              <Accordion type="multiple" className="flex flex-col gap-3">
+              <div className="space-y-3">
                 {ctx.selectedTestModels.map((testModel, index) => (
-                  <AccordionItem
+                  <Accordion
                     key={`${testModel.provider}-${testModel.modelId}`}
-                    value={index.toString()}
-                    className="px-3"
+                    type="single"
+                    collapsible
                   >
-                    <AccordionTrigger className="hover:underline">
-                      <div className="flex items-center space-x-3">
-                        {testModel.icon && (
-                          <div className="w-5 h-5 relative">
-                            <Image
-                              src={testModel.icon}
-                              alt={`${testModel.providerLabel} logo`}
-                              fill
-                              className="object-contain"
-                            />
-                          </div>
-                        )}
-                        <span className="font-medium">{testModel.modelId}</span>
-                        {ctx.isTesting &&
-                        testModel.score === undefined &&
-                        !testModel.error ? (
-                          <LoaderCircleIcon className="w-4 h-4 animate-spin" />
-                        ) : testModel.error ? (
-                          <span className="text-sm text-red-500">
-                            Error: {testModel.error.slice(0, 20)}...
-                          </span>
-                        ) : testModel.response &&
-                          testModel.score !== undefined ? (
-                          <span className="text-sm text-gray-500">
-                            (
-                            {testModel.response?.response.slice(0, 15) ||
-                              "No response"}
-                            ...) - Score {testModel.score.score}
-                          </span>
-                        ) : null}
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="space-y-4">
-                      {testModel.error ? (
-                        <div className="space-y-2">
-                          <h4 className="text-sm font-medium text-red-700">
-                            Error
-                          </h4>
-                          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                            <div className="text-sm text-red-700">
-                              {testModel.error}
+                    <AccordionItem
+                      value={index.toString()}
+                      className="border rounded-xl overflow-hidden"
+                    >
+                      <AccordionTrigger className="px-5 py-4 text-base hover:no-underline hover:bg-muted/50">
+                        <div className="flex items-center gap-3">
+                          {testModel.icon && (
+                            <div className="w-5 h-5 relative shrink-0">
+                              <Image
+                                src={testModel.icon || "/placeholder.svg"}
+                                alt={`${testModel.providerLabel} logo`}
+                                fill
+                                className="object-contain"
+                              />
                             </div>
-                          </div>
+                          )}
+                          <span className="font-medium text-foreground truncate">
+                            {testModel.modelId}
+                          </span>
+                          {ctx.isTesting &&
+                          testModel.score === undefined &&
+                          !testModel.error ? (
+                            <LoaderCircleIcon className="w-4 h-4 animate-spin text-muted-foreground" />
+                          ) : testModel.error ? (
+                            <span className="text-sm text-destructive">
+                              Error: {testModel.error.slice(0, 20)}...
+                            </span>
+                          ) : testModel.score !== undefined ? (
+                            <span className="text-sm text-muted-foreground">
+                              (
+                              {testModel.response?.response.slice(0, 15) ||
+                                "No response"}
+                              ...) - Score {testModel.score.score}
+                            </span>
+                          ) : null}
                         </div>
-                      ) : (
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <h4 className="text-sm font-medium text-gray-700">
-                              Response
-                            </h4>
-                            {testModel.response?.inputCost &&
-                              testModel.response?.outputCost && (
-                                <div className="grid grid-cols-2 gap-3 text-muted-foreground">
-                                  <div>Cost:</div>
-                                  <div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-5 pb-5 space-y-4">
+                        {testModel.error ? (
+                          <div className="p-4 rounded-lg bg-destructive/10 text-base text-destructive">
+                            {testModel.error}
+                          </div>
+                        ) : (
+                          <>
+                            <div className="flex justify-between items-start">
+                              <span className="text-sm font-medium text-muted-foreground">
+                                Response
+                              </span>
+                              {testModel.response?.inputCost &&
+                                testModel.response?.outputCost && (
+                                  <span className="text-sm text-muted-foreground">
+                                    Cost:{" "}
                                     {formatUsd(
                                       new Decimal(
                                         testModel.response.inputCost
@@ -556,99 +553,100 @@ export default function TestPrompt() {
                                         )
                                       )
                                     )}
-                                  </div>
-                                  {testModel.score?.scorerAIInputCost &&
-                                    testModel.score?.scorerAIOutputCost && (
-                                      <>
-                                        <div>AI Scorer Cost:</div>
-                                        <div>
-                                          {formatUsd(
-                                            new Decimal(
-                                              testModel.score.scorerAIInputCost
-                                            ).add(
-                                              new Decimal(
-                                                testModel.score.scorerAIOutputCost
-                                              )
-                                            )
-                                          )}
-                                        </div>
-                                      </>
-                                    )}
-                                </div>
-                              )}
-                          </div>
-                          <div className="bg-gray-100 rounded-lg p-4">
-                            {testModel.response ? (
-                              <MarkdownText className="text-sm">
-                                {testModel.response.response}
-                              </MarkdownText>
-                            ) : (
-                              <div className="text-sm text-gray-500 italic">
-                                {ctx.isTesting
-                                  ? "Testing in progress..."
-                                  : "No Response yet."}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                      {testModel.score !== undefined &&
-                        Object.keys(testModel.score.scoreMetadata || {})
-                          .length > 0 && (
-                          <div className="space-y-2">
-                            <h4 className="text-sm font-medium text-gray-700">
-                              Scoring Metadata
-                            </h4>
-                            <div className="bg-white rounded border p-3">
-                              <JSONView
-                                collapsed
-                                data={testModel.score.scoreMetadata}
-                              />
+                                  </span>
+                                )}
                             </div>
-                          </div>
+                            {testModel.score?.scorerAIInputCost &&
+                              testModel.score?.scorerAIOutputCost && (
+                                <>
+                                  <div>AI Scorer Cost:</div>
+                                  <div>
+                                    {formatUsd(
+                                      new Decimal(
+                                        testModel.score.scorerAIInputCost
+                                      ).add(
+                                        new Decimal(
+                                          testModel.score.scorerAIOutputCost
+                                        )
+                                      )
+                                    )}
+                                  </div>
+                                </>
+                              )}
+                            <div className="p-4 rounded-lg bg-muted">
+                              {testModel.response ? (
+                                <MarkdownText className="text-base">
+                                  {testModel.response.response}
+                                </MarkdownText>
+                              ) : (
+                                <p className="text-base text-muted-foreground italic">
+                                  {ctx.isTesting
+                                    ? "Testing..."
+                                    : "No response yet"}
+                                </p>
+                              )}
+                            </div>
+                          </>
                         )}
-                    </AccordionContent>
-                  </AccordionItem>
+                        {testModel.score !== undefined &&
+                          Object.keys(testModel.score.scoreMetadata || {})
+                            .length > 0 && (
+                            <div className="space-y-2">
+                              <span className="text-sm font-medium text-muted-foreground">
+                                Score Metadata
+                              </span>
+                              <div className="p-4 rounded-lg border bg-background">
+                                <JSONView
+                                  collapsed
+                                  data={testModel.score.scoreMetadata}
+                                />
+                              </div>
+                            </div>
+                          )}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                 ))}
-              </Accordion>
+              </div>
             </div>
           )}
 
           {totalCost.gt(0) && !ctx.isInProgress && (
-            <div className="p-3 w-full bg-green-50 rounded-lg border border-green-200">
-              <div className="flex items-center space-x-2">
-                <span className="font-medium text-green-700">Total Cost</span>
-                <span className="text-sm text-green-500">
-                  {formatUsd(totalCost)}
-                </span>
-              </div>
+            <div className="flex items-center justify-between p-4 rounded-lg bg-green-50 border border-green-200">
+              <span className="text-base font-medium text-green-700">
+                Total Cost
+              </span>
+              <span className="text-base font-semibold text-green-600">
+                {formatUsd(totalCost)}
+              </span>
             </div>
           )}
 
-          {/* Post-upload buttons */}
           {ctx.lastUploadedPromptId && (
-            <div className="mt-4 space-y-3">
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button variant="default" className="flex-1" asChild>
-                  <Link href={`/prompts/${ctx.lastUploadedPromptId}`}>
-                    <Eye className="mr-2 h-4 w-4" />
-                    View Uploaded Prompt
-                  </Link>
-                </Button>
-                <Button
-                  id="create-another-prompt-button"
-                  onClick={handleOnCreateAnotherPromptClick}
-                  variant="outline"
-                  className="flex-1"
-                >
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Create Another Prompt
-                </Button>
-              </div>
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <Button
+                variant="default"
+                className="flex-1 h-12 text-base"
+                asChild
+              >
+                <Link href={`/prompts/${ctx.lastUploadedPromptId}`}>
+                  <Eye className="mr-2 h-5 w-5" />
+                  View Uploaded Prompt
+                </Link>
+              </Button>
+              <Button
+                id="create-another-prompt-button"
+                onClick={handleOnCreateAnotherPromptClick}
+                variant="outline"
+                className="flex-1 h-12 text-base bg-transparent"
+              >
+                <PlusCircle className="mr-2 h-5 w-5" />
+                Create Another
+              </Button>
             </div>
           )}
         </div>
-      </div>
+      </section>
     </TooltipProvider>
   );
 }

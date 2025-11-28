@@ -5,6 +5,7 @@ import { usePageContext } from "../context";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/utils/cn";
 import { useEffect } from "react";
+import { X } from "lucide-react";
 
 export interface OptionInputProps {
   optionKey: string;
@@ -22,6 +23,7 @@ export default function OptionInput({
   handleRemoveOptionClick,
 }: OptionInputProps) {
   const ctx = usePageContext();
+  const isCorrect = ctx.prompt.answerKey === optionKey;
 
   // Focus to the input when mounter
   useEffect(() => {
@@ -30,22 +32,18 @@ export default function OptionInput({
   }, [optionKey]);
 
   return (
-    <div key={optionKey} className="flex items-center space-x-2">
+    <div key={optionKey} className="flex items-center gap-3">
       <Button
         onClick={() => handleAnswerKeyChange(optionKey)}
         disabled={ctx.isInProgress}
         size="icon"
-        variant={ctx.prompt.answerKey === optionKey ? "default" : "outline"}
-        className={`w-8 h-8 ${
-          ctx.prompt.answerKey === optionKey
-            ? "bg-green-500 hover:bg-green-600 text-white border-green-500 ring-2 ring-green-200"
+        variant={isCorrect ? "default" : "outline"}
+        className={cn(
+          "w-11 h-11 shrink-0 text-base font-semibold",
+          isCorrect ? "bg-green-500 hover:bg-green-600 text-white border-green-500 ring-2 ring-green-200"
             : "border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50"
-        }`}
-        title={
-          ctx.prompt.answerKey === optionKey
-            ? "Correct answer"
-            : "Click to select as correct answer"
-        }
+        )}
+        title={isCorrect ? "Correct answer" : "Click to mark as correct"}
       >
         {optionKey}
       </Button>
@@ -55,20 +53,20 @@ export default function OptionInput({
         value={value}
         onChange={(e) => handleUpdateOptionClick(optionKey, e.target.value)}
         disabled={ctx.isInProgress}
-        inputClassName={cn("flex-1 !p-5", {
-          "bg-green-500": ctx.prompt.answerKey === optionKey,
-        })}
-        className="disabled:opacity-50 disabled:cursor-not-allowed"
+        className={cn(
+          "flex-1 h-full text-base",
+          isCorrect && "border-green-500/50 bg-green-50"
+        )}
         placeholder={`Option ${optionKey}`}
       />
       <Button
         onClick={() => handleRemoveOptionClick(optionKey)}
-        size="sm"
-        variant="outline"
+        size="icon"
+        variant="ghost"
         disabled={ctx.isInProgress}
-        className="text-red-600 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-11 h-11 shrink-0 text-muted-foreground hover:text-destructive"
       >
-        ×
+        <X className="h-5 w-5" />
       </Button>
     </div>
   );
