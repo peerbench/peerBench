@@ -173,7 +173,7 @@ export function usePromptAPI() {
   return api;
 }
 
-export type PromptItem = Awaited<
+export type APIPromptItem = Awaited<
   ReturnType<typeof api.getPrompts>
 >["data"][number];
 export type APIComment = Awaited<
