@@ -389,57 +389,53 @@ export default function TestPrompt() {
             />
           </div>
 
-          <Accordion type="multiple" className="space-y-3">
+          <Accordion type="multiple" className="space-y-3 mb-0">
             {ctx.selectedPromptType === PromptTypes.OpenEnded && (
-              <AccordionItem
-                value="scorer-model"
-                className="border rounded-xl overflow-hidden"
-              >
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <AccordionTrigger className="px-5 py-4 text-base hover:no-underline hover:bg-muted/50">
-                      <div className="flex items-center gap-3">
-                        <span className="font-medium text-foreground">
+              <AccordionItem value="scorer-model" className="border-none">
+                <AccordionTrigger className="hover:underline">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center space-x-2">
+                        <span className="font-medium text-gray-700">
                           Scorer Model (Required)
                         </span>
-                        <span className="text-sm text-muted-foreground font-normal">
+                        <span className="text-sm text-gray-500">
                           {ctx.selectedScorerModel
                             ? `Using ${ctx.selectedScorerModel.modelId} from ${ctx.selectedScorerModel.provider}`
                             : "No model selected"}
                         </span>
                       </div>
-                    </AccordionTrigger>
-                  </TooltipTrigger>
-
-                  <TooltipContent>
-                    <p>
-                      You&apos;ve chosen an Open-ended Prompt.
-                      <br />
-                      It requires a scorer model.
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-
-                <AccordionContent className="px-5 pb-5">
-                  <ModelSelect
-                    isMulti={false}
-                    isLoading={isAnyProviderLoading(ctx.providers)}
-                    options={ctx.modelSelectOptions}
-                    value={ctx.selectedScorerModel}
-                    onModelSelected={handleScorerModelSelected}
-                    disabled={ctx.isInProgress}
-                  />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>
+                        You&apos;ve chosen Open-ended typed Prompt.
+                        <br />
+                        This type of Prompts need to be scored using a model.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-3 mt-1">
+                    <div className="space-y-5">
+                      <ModelSelect
+                        isMulti={false}
+                        isLoading={isAnyProviderLoading(ctx.providers)}
+                        options={ctx.modelSelectOptions}
+                        value={ctx.selectedScorerModel}
+                        onModelSelected={handleScorerModelSelected}
+                        disabled={ctx.isInProgress}
+                      />
+                    </div>
+                  </div>
                 </AccordionContent>
               </AccordionItem>
             )}
 
-            <AccordionItem
-              value="system-prompt"
-              className="border rounded-xl overflow-hidden pb-3"
-            >
-              <AccordionTrigger className="px-4 pb-0 text-base hover:no-underline">
-                <div className="flex items-center gap-3">
-                  <span className="font-medium text-foreground">
+            <AccordionItem value="system-prompt" className="border-none">
+              <AccordionTrigger className="hover:underline mb-2">
+                <div className="flex items-center space-x-2">
+                  <span className="font-medium text-gray-700">
                     System Prompt (Optional)
                   </span>
                   <span className="text-sm text-gray-500">
@@ -449,15 +445,17 @@ export default function TestPrompt() {
                   </span>
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="px-4 py-3 ">
-                <Textarea
-                  value={ctx.testingSystemPrompt}
-                  onChange={(e) => ctx.setTestingSystemPrompt(e.target.value)}
-                  disabled={ctx.isInProgress}
-                  className="resize-none text-base"
-                  rows={4}
-                  placeholder={getDefaultSystemPrompt(ctx.selectedPromptType)}
-                />
+              <AccordionContent>
+                <div className="space-y-3 mt-1">
+                  <Textarea
+                    value={ctx.testingSystemPrompt}
+                    onChange={(e) => ctx.setTestingSystemPrompt(e.target.value)}
+                    disabled={ctx.isInProgress}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                    rows={3}
+                    placeholder={getDefaultSystemPrompt(ctx.selectedPromptType)}
+                  />
+                </div>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
