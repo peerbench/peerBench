@@ -17,7 +17,7 @@ export const PATCH = createHandler()
   .use(parseBody(bodySchema))
   .use(pathParams<{ id: string }>())
   .handle(async (req, ctx) => {
-    const feedback = await QuickFeedbackService.upsertQuickFeedback(
+    await QuickFeedbackService.upsertQuickFeedback(
       {
         promptId: ctx.id,
         userId: ctx.userId,
@@ -27,8 +27,11 @@ export const PATCH = createHandler()
     );
 
     if (ctx.body.opinion === QuickFeedbackOpinions.negative) {
-      await sendNegativePromptFeedbackEmail(ctx.id);
+      sendNegativePromptFeedbackEmail(ctx.id).catch((error) => {
+        console.error("Failed to send negative feedback email:", error);
+      });
     }
+
     return NextResponse.json({
       message: "Quick feedback updated",
       success: true,
@@ -39,4 +42,5 @@ export type ResponseType = {
   message?: string;
   success: boolean;
 };
+
 export type RequestBodyType = z.infer<typeof bodySchema>;
