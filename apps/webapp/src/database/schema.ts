@@ -1051,8 +1051,7 @@ export type DbAPIKeyInsert = typeof apiKeysTable.$inferInsert;
 
 export const rankingComputationsTable = pgTable("ranking_computations", {
   id: integer().primaryKey().generatedByDefaultAsIdentity(),
-  minOverlap: integer("min_overlap").notNull().default(5),
-  accountAgeDays: integer("account_age_days").notNull().default(7),
+  parameters: jsonb().notNull(),
   computedAt: timestamp("computed_at").defaultNow().notNull(),
 });
 export type DbRankingComputation = typeof rankingComputationsTable.$inferSelect;
