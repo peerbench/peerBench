@@ -1,6 +1,6 @@
 DROP VIEW "public"."v_user_stats";--> statement-breakpoint
---DROP VIEW "public"."v_users";--> statement-breakpoint
-ALTER TABLE "user_profile" ADD COLUMN "referral_code" varchar(32) DEFAULT encode(gen_random_bytes(16), 'hex');--> statement-breakpoint
+DROP VIEW "public"."v_users";--> statement-breakpoint
+ALTER TABLE "user_profile" ADD COLUMN "referral_code" varchar(32) DEFAULT encode(extensions.gen_random_bytes(16), 'hex');--> statement-breakpoint
 ALTER TABLE "user_profile" ADD CONSTRAINT "user_profile_referral_code_unique" UNIQUE("referral_code");--> statement-breakpoint
 CREATE VIEW "public"."v_user_stats" AS (with "sq_prompt_quick_feedbacks" as (select "quick_feedbacks"."user_id", 
           COALESCE(COUNT(DISTINCT "prompt_sets"."id"), 0)

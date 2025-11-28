@@ -899,7 +899,7 @@ export const userProfileTable = pgTable(
     metadata: jsonb("metadata").$type<any>().default({}),
     referralCode: varchar("referral_code", { length: 32 })
       .unique()
-      .default(sql<string>`encode(gen_random_bytes(16), 'hex')`),
+      .default(sql<string>`encode(extensions.gen_random_bytes(16), 'hex')`),
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -2146,23 +2146,22 @@ export const promptSetStatsView = pgView("v_prompt_set_stats").as((qb) => {
  * Current Ranking Views                          *
  **************************************************/
 
-export const currentReviewerTrustView = pgView(
-  "v_current_reviewer_trust"
-).as((qb) => {
-  const latestComputation = qb
-    .select({ id: rankingComputationsTable.id })
-    .from(rankingComputationsTable)
-    .orderBy(sql`${rankingComputationsTable.computedAt} DESC`)
-    .limit(1)
-    .as("latest");
+export const currentReviewerTrustView = pgView("v_current_reviewer_trust").as(
+  (qb) => {
+    const latestComputation = qb
+      .select({ id: rankingComputationsTable.id })
+      .from(rankingComputationsTable)
+      .orderBy(sql`${rankingComputationsTable.computedAt} DESC`)
+      .limit(1)
+      .as("latest");
 
-  return qb
-    .select({
-      userId: rankingReviewerTrustTable.userId,
-      trustScore: rankingReviewerTrustTable.trustScore,
-      computedAt: rankingComputationsTable.computedAt,
-      displayName: userProfileTable.displayName,
-      email: sql<string | null>`
+    return qb
+      .select({
+        userId: rankingReviewerTrustTable.userId,
+        trustScore: rankingReviewerTrustTable.trustScore,
+        computedAt: rankingComputationsTable.computedAt,
+        displayName: userProfileTable.displayName,
+        email: sql<string | null>`
         CASE 
           WHEN ${authUsers.email} IS NOT NULL THEN
             CONCAT(
@@ -2172,51 +2171,55 @@ export const currentReviewerTrustView = pgView(
           ELSE NULL
         END
       `.as("email"),
-    })
-    .from(rankingReviewerTrustTable)
-    .innerJoin(
-      rankingComputationsTable,
-      eq(rankingReviewerTrustTable.computationId, rankingComputationsTable.id)
-    )
-    .leftJoin(authUsers, eq(authUsers.id, rankingReviewerTrustTable.userId))
-    .leftJoin(userProfileTable, eq(userProfileTable.userId, rankingReviewerTrustTable.userId))
-    .where(
-      eq(
-        rankingReviewerTrustTable.computationId,
-        sql`(SELECT ${latestComputation.id} FROM ${latestComputation})`
+      })
+      .from(rankingReviewerTrustTable)
+      .innerJoin(
+        rankingComputationsTable,
+        eq(rankingReviewerTrustTable.computationId, rankingComputationsTable.id)
       )
-    );
-});
-
-export const currentPromptQualityView = pgView(
-  "v_current_prompt_quality"
-).as((qb) => {
-  const latestComputation = qb
-    .select({ id: rankingComputationsTable.id })
-    .from(rankingComputationsTable)
-    .orderBy(sql`${rankingComputationsTable.computedAt} DESC`)
-    .limit(1)
-    .as("latest");
-
-  return qb
-    .select({
-      promptId: rankingPromptQualityTable.promptId,
-      qualityScore: rankingPromptQualityTable.qualityScore,
-      reviewCount: rankingPromptQualityTable.reviewCount,
-      computedAt: rankingComputationsTable.computedAt,
-    })
-    .from(rankingPromptQualityTable)
-    .innerJoin(
-      rankingComputationsTable,
-      eq(rankingPromptQualityTable.computationId, rankingComputationsTable.id)
-    )
-    .where(
-      eq(
-        rankingPromptQualityTable.computationId,
-        sql`(SELECT ${latestComputation.id} FROM ${latestComputation})`
+      .leftJoin(authUsers, eq(authUsers.id, rankingReviewerTrustTable.userId))
+      .leftJoin(
+        userProfileTable,
+        eq(userProfileTable.userId, rankingReviewerTrustTable.userId)
       )
-    );
-});
+      .where(
+        eq(
+          rankingReviewerTrustTable.computationId,
+          sql`(SELECT ${latestComputation.id} FROM ${latestComputation})`
+        )
+      );
+  }
+);
+
+export const currentPromptQualityView = pgView("v_current_prompt_quality").as(
+  (qb) => {
+    const latestComputation = qb
+      .select({ id: rankingComputationsTable.id })
+      .from(rankingComputationsTable)
+      .orderBy(sql`${rankingComputationsTable.computedAt} DESC`)
+      .limit(1)
+      .as("latest");
+
+    return qb
+      .select({
+        promptId: rankingPromptQualityTable.promptId,
+        qualityScore: rankingPromptQualityTable.qualityScore,
+        reviewCount: rankingPromptQualityTable.reviewCount,
+        computedAt: rankingComputationsTable.computedAt,
+      })
+      .from(rankingPromptQualityTable)
+      .innerJoin(
+        rankingComputationsTable,
+        eq(rankingPromptQualityTable.computationId, rankingComputationsTable.id)
+      )
+      .where(
+        eq(
+          rankingPromptQualityTable.computationId,
+          sql`(SELECT ${latestComputation.id} FROM ${latestComputation})`
+        )
+      );
+  }
+);
 
 export const currentBenchmarkQualityView = pgView(
   "v_current_benchmark_quality"
@@ -2322,7 +2325,10 @@ export const currentContributorScoreView = pgView(
       )
     )
     .leftJoin(authUsers, eq(authUsers.id, rankingContributorScoreTable.userId))
-    .leftJoin(userProfileTable, eq(userProfileTable.userId, rankingContributorScoreTable.userId))
+    .leftJoin(
+      userProfileTable,
+      eq(userProfileTable.userId, rankingContributorScoreTable.userId)
+    )
     .where(
       eq(
         rankingContributorScoreTable.computationId,
