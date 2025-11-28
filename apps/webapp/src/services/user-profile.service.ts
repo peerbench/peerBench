@@ -146,6 +146,30 @@ export class ProfileService {
       };
     }, options.tx);
   }
+
+  static async setInviter(
+    options: DbOptions & {
+      userId: string;
+      referralCode: string;
+    }
+  ) {
+    return withTxOrDb(async (tx) => {
+      const [inviter] = await tx
+        .select()
+        .from(userProfileTable)
+        .where(eq(userProfileTable.referralCode, options.referralCode))
+        .limit(1);
+
+      if (!inviter) {
+        throw ApiError.badRequest("Invalid referral code");
+      }
+
+      await tx
+        .update(userProfileTable)
+        .set({ invitedBy: inviter.userId })
+        .where(eq(userProfileTable.userId, options.userId));
+    }, options.tx);
+  }
 }
 
 export type UserProfile = Awaited<
