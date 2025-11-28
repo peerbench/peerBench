@@ -36,8 +36,9 @@ import {
   ScoringMethods,
   stableStringify,
 } from "peerbench";
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { z } from "zod";
+import { NextResponse } from "next/server";
 
 function DIDSchema<Input, Output>(
   schema: z.ZodSchema<Input, z.ZodTypeDef, Output>
@@ -54,7 +55,7 @@ function DIDSchema<Input, Output>(
 
 const DIDasUUIDSchema = DIDSchema(z.string().uuid({ message: "Invalid DID" }));
 
-export const OldPromptSchema = z
+const OldPromptSchema = z
   .object({
     /**
      * Unique identifier of the Prompt
@@ -164,25 +165,7 @@ export const OldPromptSchema = z
     return prompt;
   });
 
-export const OldNonRevealedPromptSchema = PromptSchema.sourceType().extend({
-  prompt: z.undefined().catch(undefined),
-  fullPrompt: z.undefined().catch(undefined),
-  options: z.undefined().catch(undefined),
-  answer: z.undefined().catch(undefined),
-  answerKey: z.undefined().catch(undefined),
-});
-
-/**
- * peerBench Prompt object
- */
-export type OldPrompt = z.infer<typeof OldPromptSchema>;
-
-/**
- * Non-revealed peerBench Prompt object (not including the original Prompt data but only hashes)
- */
-export type OldNonRevealedPrompt = z.infer<typeof OldNonRevealedPromptSchema>;
-
-export const OldPromptResponseSchema = z.object({
+const OldPromptResponseSchema = z.object({
   /**
    * Unique identifier of the Response
    */
@@ -256,18 +239,7 @@ export const OldPromptResponseSchema = z.object({
   metadata: z.record(z.string(), z.any()).optional(),
 });
 
-export const OldNonRevealedPromptResponseSchema =
-  OldPromptResponseSchema.extend({
-    data: z.undefined().catch(undefined),
-    prompt: OldNonRevealedPromptSchema,
-  });
-
-export type OldPromptResponse = z.infer<typeof OldPromptResponseSchema>;
-export type OldNonRevealedPromptResponse = z.infer<
-  typeof OldNonRevealedPromptResponseSchema
->;
-
-export const OldPromptScoreSchema = OldPromptResponseSchema.extend({
+const OldPromptScoreSchema = OldPromptResponseSchema.extend({
   prompt:
     // Modify some of the fields of the Prompt in case
     // if the Score object doesn't want to include original Prompt data
@@ -323,7 +295,6 @@ export const OldPromptScoreSchema = OldPromptResponseSchema.extend({
     })
     .optional(),
 });
-export type OldPromptScore = z.infer<typeof OldPromptScoreSchema>;
 
 async function migrateOldResponseData(params: {
   tx: DbTx;
@@ -536,70 +507,93 @@ async function processScoreMigration(
 }
 
 export async function GET() {
-  await db.transaction(async (tx) => {
-    const rawDatas = await tx
-      .select({
-        raw: rawDataRegistrationsTable.rawData,
-        cid: rawDataRegistrationsTable.cid,
-        sha256: rawDataRegistrationsTable.sha256,
-      })
-      .from(rawDataRegistrationsTable);
+  let offset = 0;
+  const chunk = 100;
+  while (true) {
+    const ret = await db.transaction(async (tx) => {
+      const rawDatas = await tx
+        .select({
+          raw: rawDataRegistrationsTable.rawData,
+          cid: rawDataRegistrationsTable.cid,
+          sha256: rawDataRegistrationsTable.sha256,
+        })
+        .from(rawDataRegistrationsTable)
+        .orderBy(asc(rawDataRegistrationsTable.id))
+        .offset(offset)
+        .limit(chunk);
 
-    let i = 0;
-    for (const rawData of rawDatas) {
-      if (++i % 100 === 0) {
-        console.log(`Processing ${i} of ${rawDatas.length}`);
+      if (rawDatas.length === 0) {
+        return true;
       }
+      console.log("fetched raw datas", rawDatas.length);
+      offset += chunk;
+      for (const rawData of rawDatas) {
+        try {
+          const obj = JSON.parse(rawData.raw);
 
-      try {
-        const obj = JSON.parse(rawData.raw);
+          // Object is already following the current defined schema.
+          if (
+            PromptScoreSchema.safeParse(obj).success ||
+            PromptResponseSchema.safeParse(obj).success ||
+            PromptSchema.safeParse(obj).success
+          ) {
+            console.log(
+              "object is already up to date",
+              rawData.sha256,
+              rawData.cid
+            );
+            continue;
+          }
 
-        // Object is already following the current defined schema.
-        if (
-          PromptScoreSchema.safeParse(obj).success ||
-          PromptResponseSchema.safeParse(obj).success ||
-          PromptSchema.safeParse(obj).success
-        ) {
-          continue;
+          // Try to validate and migrate as Score
+          const scoreValidation = OldPromptScoreSchema.safeParse(obj);
+          if (scoreValidation.success) {
+            await processScoreMigration(tx, rawData, scoreValidation.data);
+            continue;
+          }
+
+          // Try to validate and migrate as Response
+          const responseValidation = OldPromptResponseSchema.safeParse(obj);
+          if (responseValidation.success) {
+            await processResponseMigration(
+              tx,
+              rawData,
+              responseValidation.data
+            );
+            continue;
+          }
+
+          // Try to validate and migrate as Prompt
+          const promptValidation = OldPromptSchema.safeParse(obj);
+          if (promptValidation.success) {
+            console.log("Prompt data is already up to date");
+            continue;
+          }
+
+          // If none of the validations succeeded, log and skip
+          console.log(
+            "Unknown raw data",
+            rawData.sha256,
+            rawData.cid,
+            obj,
+            responseValidation.error,
+            promptValidation.error,
+            scoreValidation.error
+          );
+        } catch (error) {
+          console.error(
+            `Error processing ${rawData.sha256}, ${rawData.cid}`,
+            error
+          );
         }
-
-        // Try to validate and migrate as Score
-        const scoreValidation = OldPromptScoreSchema.safeParse(obj);
-        if (scoreValidation.success) {
-          await processScoreMigration(tx, rawData, scoreValidation.data);
-          continue;
-        }
-
-        // Try to validate and migrate as Response
-        const responseValidation = OldPromptResponseSchema.safeParse(obj);
-        if (responseValidation.success) {
-          await processResponseMigration(tx, rawData, responseValidation.data);
-          continue;
-        }
-
-        // Try to validate and migrate as Prompt
-        const promptValidation = OldPromptSchema.safeParse(obj);
-        if (promptValidation.success) {
-          console.log("Prompt data is already up to date");
-          continue;
-        }
-
-        // If none of the validations succeeded, log and skip
-        console.log(
-          "Unknown raw data",
-          rawData.sha256,
-          rawData.cid,
-          obj,
-          responseValidation.error,
-          promptValidation.error,
-          scoreValidation.error
-        );
-      } catch (error) {
-        console.error(
-          `Error processing ${rawData.sha256}, ${rawData.cid}`,
-          error
-        );
       }
+      console.log("processed raw data between", offset, offset + chunk);
+    });
+
+    if (ret === true) {
+      break;
     }
-  });
+  }
+
+  return NextResponse.json({ message: "Migration completed" });
 }

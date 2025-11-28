@@ -73,6 +73,7 @@ import { promptFiltersSchema } from "@/validation/api/prompt-filters";
 import { PromptAccessReason } from "@/types/prompt";
 import { basePromptIdentifierSchema } from "@/validation/base-prompt-identifier";
 import { PromptSetService } from "./promptset.service";
+import { InferColumn } from "@/database/utilities";
 
 export class PromptService {
   static async insertPrompts(
@@ -370,7 +371,7 @@ export class PromptService {
     return result;
   }
 
-  static async getPrompts(
+  static async getPrompts<IsRevealed extends boolean = false>(
     options: DbOptions &
       PaginationOptions & {
         /**
@@ -385,11 +386,13 @@ export class PromptService {
           random?: "asc" | "desc";
           feedbackPriority?: "asc" | "desc";
         };
-        filters?: z.infer<typeof promptFiltersSchema>;
+        filters?: z.infer<typeof promptFiltersSchema> & {
+          isRevealed?: IsRevealed;
+        };
       } = {}
   ) {
     return withTxOrDb(async (tx) => {
-      const query = PromptService.buildGetPromptsQuery({
+      const query = PromptService.buildGetPromptsQuery<IsRevealed>({
         tx,
         requestedByUserId: options.requestedByUserId,
         accessReason: options.accessReason,
@@ -784,14 +787,16 @@ export class PromptService {
       .as(query.where(and(...whereConditions)));
   }
 
-  static buildGetPromptsQuery(
+  static buildGetPromptsQuery<IsRevealed extends boolean = false>(
     options: DbOptions<true> & {
       /**
        * Caller user ID of the method. Will be used to apply access control rules if provided.
        */
       requestedByUserId?: string;
       accessReason?: PromptAccessReason;
-      filters?: z.infer<typeof promptFiltersSchema>;
+      filters?: z.infer<typeof promptFiltersSchema> & {
+        isRevealed?: IsRevealed;
+      };
       orderBy?: {
         createdAt?: "asc" | "desc";
         question?: "asc" | "desc";
@@ -886,15 +891,25 @@ export class PromptService {
         id: promptsTable.id,
         type: promptsTable.type,
 
-        question: promptsTable.question,
+        question: sql<
+          InferColumn<typeof promptsTable.question, IsRevealed>
+        >`${promptsTable.question}`,
         cid: promptsTable.cid,
         sha256: promptsTable.sha256,
 
-        options: promptsTable.options,
-        answerKey: promptsTable.answerKey,
-        answer: promptsTable.answer,
+        options: sql<
+          InferColumn<typeof promptsTable.options, IsRevealed>
+        >`${promptsTable.options}`,
+        answerKey: sql<
+          InferColumn<typeof promptsTable.answerKey, IsRevealed>
+        >`${promptsTable.answerKey}`,
+        answer: sql<
+          InferColumn<typeof promptsTable.answer, IsRevealed>
+        >`${promptsTable.answer}`,
 
-        fullPrompt: promptsTable.fullPrompt,
+        fullPrompt: sql<
+          InferColumn<typeof promptsTable.fullPrompt, IsRevealed>
+        >`${promptsTable.fullPrompt}`,
         fullPromptCID: promptsTable.fullPromptCID,
         fullPromptSHA256: promptsTable.fullPromptSHA256,
 

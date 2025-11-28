@@ -1,22 +1,12 @@
 {
-  "name": "turborepo",
   "private": true,
   "scripts": {
-    "dev-web": "turbo dev --filter=!./apps/cli",
-    "dev-cli": "turbo dev --filter=./apps/cli --filter=./packages/sdk",
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types"
+    "lint": "turbo run lint"
   },
   "devDependencies": {
-    "prettier": "^3.5.3",
-    "turbo": "^2.5.2",
-    "typescript": "5.8.2"
-  },
-  "engines": {
-    "node": ">=18"
+    "turbo": "^2.6.1"
   },
   "packageManager": "npm@11.3.0",
   "workspaces": [

@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CopyButton } from "@/components/copy-button";
-import { PromptItem } from "@/lib/hooks/use-prompt-api";
+import { APIPromptItem } from "@/lib/hooks/use-prompt-api";
 import { PromptStatuses } from "@/database/types";
 import Link from "next/link";
 import {
@@ -31,7 +31,7 @@ import { usePromptSearchFiltersContext } from "@/components/prompt-search-filter
 import IncludedByPromptSetLink from "@/components/included-by-prompt-set-link";
 import { MarkdownTruncatedText } from "@/components/markdown-truncated-text";
 
-export type PromptCardProps = PromptItem<false> & {
+export type PromptCardProps = APIPromptItem & {
   tags?: string[];
   className?: string;
   onIncludingPromptSetUpdated?: () => MaybePromise<void>;

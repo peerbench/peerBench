@@ -617,6 +617,20 @@
       "when": 1764266882435,
       "tag": "0087_open_swordsman",
       "breakpoints": true
+    },
+    {
+      "idx": 88,
+      "version": "7",
+      "when": 1764280226894,
+      "tag": "0088_enable_pg_cron",
+      "breakpoints": true
+    },
+    {
+      "idx": 89,
+      "version": "7",
+      "when": 1764280333392,
+      "tag": "0089_setup_cron_for_compute_rankings",
+      "breakpoints": true
     }
   ]
 }

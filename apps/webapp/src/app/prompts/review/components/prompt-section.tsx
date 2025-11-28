@@ -4,11 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LucideHash, LucideSquareArrowOutUpRight } from "lucide-react";
 import { PromptTypes } from "peerbench";
 import { cn } from "@/utils/cn";
+import type { GetPromptsReturnItem } from "@/services/prompt.service";
 import Link from "next/link";
-import { PromptItem } from "@/lib/hooks/use-prompt-api";
 
 export interface PromptSectionProps {
-  prompt: PromptItem;
+  prompt: GetPromptsReturnItem;
 }
 
 export default function PromptSection({ prompt }: PromptSectionProps) {

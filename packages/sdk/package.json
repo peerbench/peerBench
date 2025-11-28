@@ -35,8 +35,7 @@
   ],
   "scripts": {
     "lint": "tsc && eslint",
-    "dev": "tsx scripts/dev.ts",
-    "watch": "tsup --silent --watch --onSuccess 'tsc-alias -p tsconfig.json -f'",
+    "dev": "tsup --silent --watch --onSuccess 'tsc-alias -p tsconfig.json -f'",
     "build": "tsup --onSuccess 'tsc-alias -p tsconfig.json -f'",
     "clean": "rm -rf dist"
   },
@@ -71,8 +70,9 @@
     "@eslint/js": "^9.24.0",
     "@types/node": "^22.14.0",
     "eslint": "^9.24.0",
+    "prettier": "^3.7.1",
     "tsc-alias": "^1.8.13",
-    "tsup": "^8.4.0",
+    "tsup": "^8.5.1",
     "tsx": "^4.19.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.29.0"

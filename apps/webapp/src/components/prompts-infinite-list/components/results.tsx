@@ -6,7 +6,7 @@ import { useComponentContext } from "../context";
 import LoadingSpinner from "@/components/loading-spinner";
 import { usePromptSearchFiltersContext } from "@/components/prompt-search-filters/context";
 import { useDebounce } from "@/lib/hooks/use-debounce";
-import { PromptItem, usePromptAPI } from "@/lib/hooks/use-prompt-api";
+import { APIPromptItem, usePromptAPI } from "@/lib/hooks/use-prompt-api";
 import { useInfinitePrompts } from "@/lib/react-query/use-infinite-prompts";
 import { errorMessage } from "@/utils/error-message";
 import { InfiniteData, useQueryClient } from "@tanstack/react-query";
@@ -60,7 +60,7 @@ export function Results() {
       // Update the local cache with the new updated Prompt data
       queryClient.setQueryData(
         [QK_PROMPTS, queryParams],
-        (prev: InfiniteData<PaginatedResponse<PromptItem>>) => {
+        (prev: InfiniteData<PaginatedResponse<APIPromptItem>>) => {
           return {
             ...prev,
             pages: prev.pages.map((page) => ({
