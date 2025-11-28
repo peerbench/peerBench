@@ -35,8 +35,7 @@
   ],
   "scripts": {
     "lint": "tsc && eslint",
-    "dev": "tsx scripts/dev.ts",
-    "watch": "tsup --silent --watch --onSuccess 'tsc-alias -p tsconfig.json -f'",
+    "dev": "tsup --silent --watch --onSuccess 'tsc-alias -p tsconfig.json -f'",
     "build": "tsup --onSuccess 'tsc-alias -p tsconfig.json -f'",
     "clean": "rm -rf dist"
   },
