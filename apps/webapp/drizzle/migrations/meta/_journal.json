@@ -631,6 +631,13 @@
       "when": 1764280333392,
       "tag": "0089_setup_cron_for_compute_rankings",
       "breakpoints": true
+    },
+    {
+      "idx": 90,
+      "version": "7",
+      "when": 1764353406510,
+      "tag": "0090_cynical_loki",
+      "breakpoints": true
     }
   ]
 }
