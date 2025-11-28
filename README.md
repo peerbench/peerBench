@@ -1,17 +1,24 @@
-
 # peerBench
+
+![NPM Version](https://img.shields.io/npm/v/peerbench?color=green)
+![Website](https://img.shields.io/website?url=https%3A%2F%2Fpeerbench.ai&label=peerbench.ai&color=blue)
+![Whitepaper](https://img.shields.io/badge/arxiv_paper-red?link=https%3A%2F%2Farxiv.org%2Fabs%2F2510.07575)
 
 A decentralized AI model benchmarking platform that addresses industry-wide overfitting issues through continuous validation with private test data and publicly auditable scoring.
 
-# The problem:
+> **📄 Research Paper:** Our approach is detailed in our paper accepted to NeurIPS 2025: ["Benchmarking is Broken -- Don't Let AI be its Own Judge"](https://arxiv.org/abs/2510.07575)
 
-Public benchmark test data sets make AI model performance comparable. But this creates an incentivization for closed source models to cheat the benchmarks by training on test data or creating heuristics that overfit the benchmark test dataset .
+<img src="assets/overall-diagram.png" alt="Overall Architecture" width="700" />
 
-# Our solution:
+## The Problem
+
+Public benchmark test data sets make AI model performance comparable. However, this creates an incentive for closed source models to cheat the benchmarks by training on test data or creating heuristics that overfit the benchmark test dataset.
+
+## Our Solution
 
 A network of independent experts validating models continuously with newly generated private test data and scoring that can be publicly audited.
 
-# Addressing Industry Wide Overfitting of AI Models
+## Addressing Industry Wide Overfitting of AI Models
 
 Another very important piece of context in accelerating AI innovation is **Model Overfitting plaguing the AI industry**.
 
@@ -25,16 +32,12 @@ Requiring recency of test data is another approach taken by LiveBench[^48] but i
 
 **Decentralized systems are strongly positioned to solve** all of those issues thanks to providing proper incentivization to all parties involved while leveraging blockchains' decentralization and transparency. **Private datasets** still can be a fundamental **part of the validation strategy**.
 
-# Test Data Quality Control Process
+## References
 
-# Become a Validator
+[^45]: Dynabench - https://arxiv.org/abs/2104.14337
 
-# Get Your Model Benchmarked
+[^46]: SEAL LLM Leaderboards - https://scale.com/leaderboard
 
-[^45]: Link: https://arxiv.org/abs/2104.14337
+[^47]: Scale.ai - https://scale.com/
 
-[^46]: Link: https://scale.com/leaderboard
-
-[^47]: Link: https://scale.com/
-
-[^48]: Link: https://livebench.ai/#/
+[^48]: LiveBench - https://livebench.ai/#/
