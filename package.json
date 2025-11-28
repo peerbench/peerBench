@@ -1,5 +1,4 @@
 {
-  "name": "turborepo",
   "private": true,
   "scripts": {
     "build": "turbo run build",
@@ -7,10 +6,7 @@
     "lint": "turbo run lint"
   },
   "devDependencies": {
-    "turbo": "^2.5.2"
-  },
-  "engines": {
-    "node": ">=22"
+    "turbo": "^2.6.1"
   },
   "packageManager": "npm@11.3.0",
   "workspaces": [

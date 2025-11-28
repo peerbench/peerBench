@@ -17,11 +17,11 @@
     },
 
     "webapp#build": {
-      "dependsOn": ["^sdk#build"],
+      "dependsOn": ["^peerbench#build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**"]
     },
-    "sdk#build": {
+    "peerbench#build": {
       "inputs": ["$TURBO_DEFAULT$"],
       "outputs": ["dist/**"]
     }
