@@ -435,9 +435,9 @@ export default function TestPrompt() {
 
             <AccordionItem
               value="system-prompt"
-              className="border rounded-xl overflow-hidden"
+              className="border rounded-xl overflow-hidden pb-3"
             >
-              <AccordionTrigger className="px-4 pb-0 text-base hover:no-underline hover:bg-muted/50">
+              <AccordionTrigger className="px-4 pb-0 text-base hover:no-underline">
                 <div className="flex items-center gap-3">
                   <span className="font-medium text-foreground">
                     System Prompt (Optional)
