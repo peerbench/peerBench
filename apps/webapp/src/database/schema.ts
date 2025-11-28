@@ -897,6 +897,9 @@ export const userProfileTable = pgTable(
       onUpdate: "cascade",
     }),
     metadata: jsonb("metadata").$type<any>().default({}),
+    referralCode: varchar("referral_code", { length: 32 })
+      .unique()
+      .default(sql<string>`encode(gen_random_bytes(16), 'hex')`),
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -1052,8 +1055,7 @@ export const rankingComputationsTable = pgTable("ranking_computations", {
   accountAgeDays: integer("account_age_days").notNull().default(7),
   computedAt: timestamp("computed_at").defaultNow().notNull(),
 });
-export type DbRankingComputation =
-  typeof rankingComputationsTable.$inferSelect;
+export type DbRankingComputation = typeof rankingComputationsTable.$inferSelect;
 export type DbRankingComputationInsert =
   typeof rankingComputationsTable.$inferInsert;
 
@@ -1405,6 +1407,7 @@ export const usersView = pgView("v_users").as((qb) => {
       displayName: userProfileTable.displayName,
       orgName: orgsTable.name,
       orgCountry: orgsTable.country,
+      referralCode: userProfileTable.referralCode,
       orgId: sql<number | null>`${orgsTable.id}`.as("org_id"),
 
       // Social links
@@ -1633,8 +1636,13 @@ export const userStatsView = pgView("v_user_stats").as((qb) => {
       avgScoreCreatedPromptSets: avgScoreCreatedPromptSetsSubQuery.avgScore,
       avgScoreCoAuthoredPromptSets:
         avgScoreCoAuthoredPromptSetsSubQuery.avgScore,
+      referredUsersCount:
+        sql<number>`COALESCE(COUNT(DISTINCT ${userProfileTable.userId}), 0)`
+          .mapWith(Number)
+          .as("referred_users_count"),
     })
     .from(authUsers)
+    .leftJoin(userProfileTable, eq(userProfileTable.invitedBy, authUsers.id)) // Referred users
     .leftJoin(promptSetsTable, eq(promptSetsTable.ownerId, authUsers.id))
     .leftJoin(
       userRoleOnPromptSetTable,
