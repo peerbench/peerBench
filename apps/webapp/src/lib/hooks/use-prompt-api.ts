@@ -36,7 +36,6 @@ import {
   ResponseType as GetStatusResponseType,
 } from "@/app/api/v2/prompts/status/post";
 import { createApiCaller } from "@/utils/client/create-api-caller";
-import { Override } from "@/utils/type-helper";
 
 export const PROMPTS_API_URL = "/api/v2/prompts";
 
@@ -52,14 +51,7 @@ const api = {
   /**
    * Get prompts with optional filtering and pagination
    */
-  getPrompts: <AsFileStructured extends boolean = false>(
-    params?: Override<
-      GetRequestQueryParams,
-      {
-        asFileStructured?: AsFileStructured;
-      }
-    >
-  ) => {
+  getPrompts: (params?: GetRequestQueryParams) => {
     // Since get prompts endpoint can return different types,
     // we are extending `createApiCaller`'s return type to have proper
     // return type based on the given parameter.
@@ -68,7 +60,7 @@ const api = {
       errorMessagePrefix: "Failed to get Prompts",
     });
 
-    return callAPI(params) as Promise<GetResponseType<AsFileStructured>>;
+    return callAPI(params) as Promise<GetResponseType>;
   },
 
   getAssignablePromptSets: async (
@@ -181,8 +173,8 @@ export function usePromptAPI() {
   return api;
 }
 
-export type PromptItem<AsFileStructured extends boolean = false> = Awaited<
-  ReturnType<typeof api.getPrompts<AsFileStructured>>
+export type PromptItem = Awaited<
+  ReturnType<typeof api.getPrompts>
 >["data"][number];
 export type APIComment = Awaited<
   ReturnType<typeof api.getTopLevelComments>

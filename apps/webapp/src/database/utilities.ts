@@ -10,6 +10,19 @@ import {
 } from "drizzle-orm";
 
 /**
+ * Infers the data type of the given column. If `IsNonNullable` is `true`, then
+ * the data type inferred as non-nullable. Otherwise it leaves it as it is.
+ */
+export type InferColumn<
+  T extends Column,
+  IsNonNullable extends boolean = false,
+> = IsNonNullable extends true
+  ? T["_"]["data"]
+  : T["_"]["notNull"] extends true
+    ? NonNullable<T["_"]["data"]>
+    : T["_"]["data"] | null;
+
+/**
  * Infer any `SQLWrapper`'s expected return data type.
  * Also supports inferring an object "shape" from a `ColumnsSelection`.
  * @link https://github.com/emmnull/drizzle-orm-helpers

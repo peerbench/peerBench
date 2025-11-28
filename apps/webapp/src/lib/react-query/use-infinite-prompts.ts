@@ -7,19 +7,14 @@ export function useInfinitePrompts(
   params: GetPromptsRequestQueryParams = {},
   infiniteQueryParams?: Partial<UseInfiniteQueryParams<PromptItem>>
 ) {
-  // TODO: Define another endpoint for raw data retrieval so types won't be conflict
-  // Infinite queries don't use file structure
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { asFileStructured: _, ...restParams } = params;
-
   const { getPrompts } = usePromptAPI();
   return useInfiniteQuery({
-    queryKey: [`${QK_PROMPTS}/infinite`, restParams],
+    queryKey: [`${QK_PROMPTS}/infinite`, params],
     queryFn: ({ pageParam }) =>
       getPrompts({
         page: pageParam,
-        pageSize: restParams.pageSize ?? 10,
-        ...restParams,
+        pageSize: params.pageSize ?? 10,
+        ...params,
       }),
     initialPageParam: 1,
     ...(infiniteQueryParams || {}),

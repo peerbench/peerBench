@@ -1,21 +1,15 @@
 import { safeParseQueryParams } from "@/lib/route-helpers/parse-query-params";
-import {
-  GetPromptsAsFileStructuredReturnItem,
-  GetPromptsReturnItem,
-  PromptService,
-} from "@/services/prompt.service";
-import { PaginatedResponse } from "@/types/db";
+import { PromptService } from "@/services/prompt.service";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { StringBool } from "@/validation/string-bool";
 import { createHandler } from "@/lib/route-kit";
 import { smoothAuth } from "@/lib/route-kit/middlewares/smooth-auth";
 import { paginatedResponse } from "@/lib/route-helpers/paginated-response";
 import { NULL_UUID } from "@/lib/constants";
 import { promptFiltersSchema } from "@/validation/api/prompt-filters";
+import { ClientSideResponseType, NextResponseType } from "@/lib/utilities";
 
 export const querySchema = promptFiltersSchema.extend({
-  asFileStructured: StringBool().optional().default("false"),
   page: z.coerce.number().optional().default(1),
   pageSize: z.coerce.number().optional().default(10),
   orderBy: z
@@ -69,47 +63,24 @@ export const querySchema = promptFiltersSchema.extend({
 export const GET = createHandler()
   .use(smoothAuth)
   .handle(async (req, ctx) => {
-    const {
-      accessReason,
-      page,
-      pageSize,
-      orderBy,
-      asFileStructured,
-      ...filters
-    } = safeParseQueryParams(req, querySchema);
+    const { accessReason, page, pageSize, orderBy, ...filters } =
+      safeParseQueryParams(req, querySchema);
 
-    const result = asFileStructured
-      ? paginatedResponse(
-          await PromptService.getPromptsAsFileStructured({
-            page: page,
-            pageSize: pageSize,
-            filters: {
-              promptSetId: filters.promptSetId,
-            },
-            accessReason,
-            requestedByUserId: ctx.userId ?? NULL_UUID,
-          }),
-          page,
-          pageSize
-        )
-      : paginatedResponse(
-          await PromptService.getPrompts({
-            page: page,
-            pageSize: pageSize,
-            orderBy: orderBy,
-            accessReason,
-            requestedByUserId: ctx.userId ?? NULL_UUID,
-            filters,
-          }),
-          page,
-          pageSize
-        );
-
-    return NextResponse.json(result);
+    return NextResponse.json(
+      paginatedResponse(
+        await PromptService.getPrompts({
+          page: page,
+          pageSize: pageSize,
+          orderBy: orderBy,
+          accessReason,
+          requestedByUserId: ctx.userId ?? NULL_UUID,
+          filters,
+        }),
+        page,
+        pageSize
+      )
+    );
   });
 
-export type ResponseType<AsFileStructured = false> =
-  AsFileStructured extends true
-    ? PaginatedResponse<GetPromptsAsFileStructuredReturnItem>
-    : PaginatedResponse<GetPromptsReturnItem>;
+export type ResponseType = ClientSideResponseType<NextResponseType<typeof GET>>;
 export type RequestQueryParams = z.input<typeof querySchema>;

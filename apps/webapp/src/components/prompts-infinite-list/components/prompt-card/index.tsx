@@ -31,7 +31,7 @@ import { usePromptSearchFiltersContext } from "@/components/prompt-search-filter
 import IncludedByPromptSetLink from "@/components/included-by-prompt-set-link";
 import { MarkdownTruncatedText } from "@/components/markdown-truncated-text";
 
-export type PromptCardProps = PromptItem<false> & {
+export type PromptCardProps = PromptItem & {
   tags?: string[];
   className?: string;
   onIncludingPromptSetUpdated?: () => MaybePromise<void>;
