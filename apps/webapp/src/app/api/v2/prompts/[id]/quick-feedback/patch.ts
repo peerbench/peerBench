@@ -1,4 +1,5 @@
 import { QuickFeedbackOpinions } from "@/database/types";
+import { sendNegativePromptFeedbackEmail } from "@/lib/email/sendNegativeReviewEmail";
 import { createHandler } from "@/lib/route-kit";
 import { auth } from "@/lib/route-kit/middlewares/auth";
 import { parseBody } from "@/lib/route-kit/middlewares/parse-body";
@@ -16,7 +17,7 @@ export const PATCH = createHandler()
   .use(parseBody(bodySchema))
   .use(pathParams<{ id: string }>())
   .handle(async (req, ctx) => {
-    await QuickFeedbackService.upsertQuickFeedback(
+    const feedback = await QuickFeedbackService.upsertQuickFeedback(
       {
         promptId: ctx.id,
         userId: ctx.userId,
@@ -24,6 +25,10 @@ export const PATCH = createHandler()
       },
       { requestedByUserId: ctx.userId }
     );
+
+    if (ctx.body.opinion === QuickFeedbackOpinions.negative) {
+      await sendNegativePromptFeedbackEmail(ctx.id);
+    }
     return NextResponse.json({
       message: "Quick feedback updated",
       success: true,
