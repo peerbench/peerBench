@@ -48,6 +48,7 @@ export default function Form() {
   const [isSuccess, setIsSuccess] = useState(false);
   const searchParams = useSearchParams();
   const invitationCode = searchParams.get("code");
+  const referralCode = searchParams.get("referral");
   const redirectPath = searchParams.get("redirect");
   const {
     register,
@@ -62,11 +63,10 @@ export default function Form() {
     setIsSuccess(false);
 
     try {
-      const result = await signUp(
-        formData.email,
-        formData.password,
-        invitationCode || undefined
-      );
+      const result = await signUp(formData.email, formData.password, {
+        invitationCode: invitationCode || undefined,
+        referralCode: referralCode || undefined,
+      });
 
       if (result?.error) {
         throw new Error(result.error);

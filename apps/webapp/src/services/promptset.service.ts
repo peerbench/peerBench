@@ -1361,6 +1361,12 @@ export class PromptSetService {
           },
         });
 
+      // Set the inviter for the invited user
+      await tx
+        .update(userProfileTable)
+        .set({ invitedBy: invitation.createdBy })
+        .where(eq(userProfileTable.userId, data.userId));
+
       return true;
     }, options?.tx);
   }
