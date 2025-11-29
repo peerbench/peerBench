@@ -14,7 +14,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Plus } from "lucide-react";
+import { Plus, AlertTriangle } from "lucide-react";
 
 export default function PromptInformation() {
   const ctx = usePageContext();
@@ -198,38 +198,41 @@ export default function PromptInformation() {
       ctx.prompt.answer.length >= 50
     ) {
       return (
-        <Alert className="my-2" variant="warning">
-          Keep in mind that long expected answers are hard to evaluate.
+        <Alert className="mt-2 border-amber-200 bg-amber-50 text-amber-800">
+          <AlertTriangle className="h-4 w-4" />
+          <span>
+            Keep in mind that long expected answers are hard to evaluate.
+          </span>
         </Alert>
       );
     }
   };
 
   return (
-    <div
+    <section
       id="prompt-creation-section"
-      className="bg-white rounded-lg shadow-lg p-6 border border-gray-200"
+      className="rounded-xl border border-border bg-card p-6"
     >
-      <h2 className="text-xl font-semibold text-gray-700 mb-4">
+      <h2 className="text-lg font-semibold text-foreground mb-6">
         {ctx.generationMode === "llm-generated"
           ? `5. Refinement`
-          : `4. Creation`}
+          : `3. Creation`}
       </h2>
 
-      <div className="space-y-4">
-        <div className="flex flex-col space-y-2">
-          <label className="block font-medium text-gray-700 mb-2">
+      <div className="space-y-6">
+        <div className="space-y-3">
+          <label className="text-base font-medium text-foreground">
             Question
           </label>
           <Textarea
             value={ctx.prompt.prompt}
             onChange={handleQuestionChange}
             disabled={ctx.isInProgress}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full mt-2 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
             rows={3}
             placeholder="Enter your question here..."
           />
-          <p className="text-sm text-gray-600 mb-3">
+          <p className="text-sm text-muted-foreground">
             💡 Ensure the content of the question is aligned with the
             &quot;System Prompt&quot; below, in the &quot;Test Prompt&quot;
             section.
@@ -237,29 +240,33 @@ export default function PromptInformation() {
         </div>
 
         {ctx.selectedPromptType === PromptTypes.MultipleChoice ? (
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <label className="block font-medium text-gray-700">Options</label>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <label className="text-base font-medium text-foreground">
+                Options
+              </label>
               <Button
                 onClick={handleAddOptionClick}
                 disabled={ctx.isInProgress}
+                size="default"
+                variant="outline"
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Add Option
               </Button>
             </div>
             {Object.keys(ctx.prompt.options ?? {}).length > 0 ? (
-              <p className="text-sm text-gray-600 mb-3">
+              <p className="text-sm text-muted-foreground">
                 💡 Click the letter button next to the correct answer to select
                 it
-              </p>
+                </p>
             ) : (
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-base text-muted-foreground">
                 No options available. Add new options via &quot;Add Option&quot;
                 button.
               </p>
             )}
-            <div className="space-y-2">
+            <div className="space-y-3">
               {Object.entries(ctx.prompt.options ?? {}).map(([key, value]) => (
                 <OptionInput
                   key={key}
@@ -273,17 +280,20 @@ export default function PromptInformation() {
             </div>
           </div>
         ) : (
-          <div>
-            <label className="block font-medium text-gray-700 mb-2">
-              Expected Answer (Optional)
+          <div className="space-y-3">
+            <label className="text-base font-medium text-foreground">
+              Expected Answer{" "}
+              <span className="font-normal text-muted-foreground">
+                (Optional)
+              </span>
             </label>
             <Textarea
               value={ctx.prompt.answer}
               onChange={handleExpectedAnswerChange}
               disabled={ctx.isInProgress}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-              rows={3}
-              placeholder="Enter the expected answer or answer guidelines..."
+              className="resize-none text-base"
+              rows={4}
+              placeholder="Enter the expected answer or guidelines..."
             />
             {renderExpectedAnswerAlert()}
           </div>
@@ -291,13 +301,12 @@ export default function PromptInformation() {
 
         {/* Document Selection for Open Ended with Docs */}
         {ctx.selectedPromptType === PromptTypes.OpenEndedWithDocs && (
-          <div>
-            <label className="block font-medium text-gray-700 mb-2">
+          <div className="space-y-3">
+            <label className="text-base font-medium text-foreground">
               Supporting Documents
             </label>
-            <p className="text-sm text-gray-600 mb-3">
-              Select documents to attach to your prompt. These will be included
-              in the full prompt sent to the AI.
+            <p className="text-sm text-muted-foreground">
+              Select documents to include in the prompt sent to the AI.
             </p>
             <DocumentSelector
               selectedDocuments={ctx.selectedDocuments}
@@ -306,39 +315,37 @@ export default function PromptInformation() {
             />
           </div>
         )}
-        <div>
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem
-              value="full-prompt"
-              className="border rounded-lg border-gray-200"
-            >
-              <AccordionTrigger className="pl-4 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 hover:no-underline">
-                <div className="flex flex-col items-start">
-                  <span className="font-medium text-gray-700">Full Prompt</span>
-                  <span className="text-xs text-gray-500 font-normal">
-                    The complete Prompt that will be sent to the model
-                    {ctx.prompt.fullPrompt.length > 0 && (
-                      <span className="ml-2">
-                        ({ctx.prompt.fullPrompt.length} characters)
-                      </span>
-                    )}
+
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem
+            value="full-prompt"
+            className="border rounded-xl overflow-hidden"
+          >
+            <AccordionTrigger className="px-4 py-3 text-base hover:no-underline hover:bg-muted/50">
+              <div className="flex flex-col items-start gap-1">
+                <span className="font-medium text-foreground">
+                  Full Prompt Preview
+                </span>
+                {ctx.prompt.fullPrompt.length > 0 && (
+                  <span className="text-sm text-muted-foreground font-normal">
+                    {ctx.prompt.fullPrompt.length} characters
                   </span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="pb-0">
-                <div className="p-2 border-t bg-gray-50 border-gray-200">
-                  <Textarea
-                    value={ctx.prompt.fullPrompt}
-                    readOnly
-                    className="min-h-[300px] max-h-[500px] resize-none font-mono text-sm border-0 focus:ring-0 bg-white"
-                    placeholder="Full prompt will appear here..."
-                  />
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </div>
+                )}
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pb-0">
+ <div className="p-2 border-t bg-gray-50 border-gray-200">             
+  <Textarea
+                value={ctx.prompt.fullPrompt}
+                readOnly
+                className="min-h-[200px] max-h-[400px] resize-none font-mono text-sm bg-white"
+                placeholder="Full prompt will appear here..."
+              />
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </div>
-    </div>
+    </section>
   );
 }

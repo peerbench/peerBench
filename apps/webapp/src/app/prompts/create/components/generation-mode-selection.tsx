@@ -32,37 +32,37 @@ export default function GenerationModeSelection() {
   };
 
   return (
-    <div className="bg-white rounded-lg flex flex-col shadow-lg p-6 border border-gray-200">
-      <h2 className="text-xl font-semibold text-gray-700 mb-4">
+    <section className="rounded-xl border border-border bg-card p-6 flex flex-col">
+      <h2 className="text-lg font-semibold text-foreground mb-5">
         2. Generation Mode
       </h2>
-      <div className="flex flex-col flex-1 justify-between flex-wrap">
-        <div className="grid grid-cols-2 gap-3 flex-wrap">
+      <div className="flex flex-col flex-1 gap-5">
+        <div className="grid grid-cols-2 gap-3">
           <Button
-            variant="outline"
+            variant="ghost"
             onClick={onManualModeClick}
             disabled={ctx.isInProgress}
             className={cn(
-              "!p-6 w-full h-full rounded-lg border-2 transition-all duration-200 text-left",
+              "h-auto py-4 px-5 justify-start text-base font-normal transition-all",
               ctx.generationMode === "manual"
-                ? "border-blue-500 bg-blue-50 text-blue-700"
-                : "border-gray-200 hover:border-gray-300"
+                ? "border-1 border-blue-500 bg-blue-50 text-blue-700 shadow-sm hover:border-blue-500"
+                : "border border-border hover:bg-muted hover:border-muted-foreground/20"
             )}
           >
-            <div className="font-medium">Manual</div>
+            Manual
           </Button>
           <Button
-            variant="outline"
+            variant="ghost"
             onClick={onLLMGenerationModeClick}
             disabled={ctx.isInProgress}
             className={cn(
-              "!p-6 w-full h-full rounded-lg border-2 transition-all duration-200 text-left",
+              "h-auto py-4 px-5 justify-start text-base font-normal transition-all",
               ctx.generationMode === "llm-generated"
-                ? "border-green-500 bg-green-50 text-green-700"
-                : "border-gray-200 hover:border-gray-300"
+                ? " border-1 border-green-500 bg-green-50 text-green-600 shadow-sm hover:border-green-500"
+                : "border border-border hover:bg-muted hover:border-muted-foreground/20"
             )}
           >
-            <div className="font-medium">LLM-aided</div>
+            LLM-aided
           </Button>
         </div>
         <p className="flex-1 flex flex-col-reverse text-sm text-gray-500">
@@ -71,6 +71,6 @@ export default function GenerationModeSelection() {
             : `You can use an LLM model to generate the question and the expected answer (or possible answers). You just need to provide instructions (how the question should be generated) and an input text that is going to be used as the source.`}
         </p>
       </div>
-    </div>
+    </section>
   );
 }

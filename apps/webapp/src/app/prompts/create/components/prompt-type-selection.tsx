@@ -2,18 +2,22 @@
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/utils/cn";
-import { PromptType, PromptTypes } from "peerbench";
+import { type PromptType, PromptTypes } from "peerbench";
 import { usePageContext } from "../context";
 import { capitalize } from "@/utils/capitalize";
 import { useEffect } from "react";
+import { useSettingExtra } from "@/lib/hooks/settings/use-setting-extra";
 
 export default function PromptTypeSelection() {
   const ctx = usePageContext();
-
+  const [extrasEnabled] = useSettingExtra();
   const handlePromptTypeChange = (promptType: PromptType) => {
     ctx.setSelectedPromptType(promptType);
     ctx.clearPrompt();
   };
+  const allowedTypes = !extrasEnabled
+    ? [PromptTypes.MultipleChoice, PromptTypes.OpenEnded]
+    : Object.values(PromptTypes);
 
   useEffect(() => {
     if (ctx.generationMode === "llm-generated") {
@@ -23,17 +27,16 @@ export default function PromptTypeSelection() {
   }, [ctx.generationMode]);
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-      <h2 className="text-xl font-semibold text-gray-700 mb-4">
-        3. Prompt Type
+    <section className="rounded-xl border border-border bg-card p-6">
+      <h2 className="text-lg font-semibold text-foreground mb-5">
+        {extrasEnabled ? "3. Prompt Type" : "2. Prompt Type"}
       </h2>
       <div className="grid grid-cols-2 gap-3">
-        {Object.values(PromptTypes).map((value) => (
+        {allowedTypes.map((value) => (
           <Button
-            variant={"outline"}
+            variant="ghost"
             key={value}
             disabled={
-              // We only have Generators for those types
               (value !== PromptTypes.MultipleChoice &&
                 value !== PromptTypes.OpenEnded &&
                 value !== PromptTypes.OpenEndedWithDocs &&
@@ -42,18 +45,16 @@ export default function PromptTypeSelection() {
             }
             onClick={() => handlePromptTypeChange(value as PromptType)}
             className={cn(
-              "py-7 rounded-lg border-2 transition-all duration-200 text-left",
+              "h-auto py-4 px-5 justify-start text-base font-normal transition-all",
               ctx.selectedPromptType === value
-                ? "border-blue-500 bg-blue-50 text-blue-700"
-                : "border-gray-200 hover:border-gray-300"
+                ? "border-blue-500 border-1 bg-blue-50 text-blue-700 shadow-sm hover:border-blue-500"
+                : "border border-border hover:bg-muted hover:border-muted-foreground/20"
             )}
           >
-            <div className="font-medium capitalize">
-              {capitalize(value.split("-").join(" "), true)}
-            </div>
+            {capitalize(value.split("-").join(" "), true)}
           </Button>
         ))}
       </div>
-    </div>
+    </section>
   );
 }
