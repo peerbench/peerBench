@@ -1,4 +1,5 @@
 import { QuickFeedbackOpinions } from "@/database/types";
+import { sendNegativePromptFeedbackEmail } from "@/lib/email/sendNegativeReviewEmail";
 import { createHandler } from "@/lib/route-kit";
 import { auth } from "@/lib/route-kit/middlewares/auth";
 import { parseBody } from "@/lib/route-kit/middlewares/parse-body";
@@ -24,6 +25,13 @@ export const PATCH = createHandler()
       },
       { requestedByUserId: ctx.userId }
     );
+
+    if (ctx.body.opinion === QuickFeedbackOpinions.negative) {
+      sendNegativePromptFeedbackEmail(ctx.id).catch((error) => {
+        console.error("Failed to send negative feedback email:", error);
+      });
+    }
+
     return NextResponse.json({
       message: "Quick feedback updated",
       success: true,
@@ -34,4 +42,5 @@ export type ResponseType = {
   message?: string;
   success: boolean;
 };
+
 export type RequestBodyType = z.infer<typeof bodySchema>;
