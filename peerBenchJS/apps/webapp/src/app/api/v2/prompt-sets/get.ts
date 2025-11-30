@@ -20,6 +20,21 @@ const querySchema = z.object({
   id: z.coerce.number().optional(),
   ownerId: z.string().optional(),
   accessReason: EnumSchema(PromptSetAccessReasons).optional(),
+
+  // ---------- search and sort filters ----------
+  search: z.string().optional(),
+  avgMin: z.coerce.number().optional(),
+  avgMax: z.coerce.number().optional(),
+  promptsMin: z.coerce.number().optional(),
+  promptsMax: z.coerce.number().optional(),
+  sortBy: z
+    .enum([
+      "createdAt-asc",
+      "createdAt-desc",
+      "updatedAt-asc",
+      "updatedAt-desc",
+    ])
+    .optional(),
 });
 
 export const GET = createHandler()
@@ -33,10 +48,14 @@ export const GET = createHandler()
       filters: {
         ownerId: query.ownerId,
         id: query.id,
+        search: query.search,
+        avgMin: query.avgMin,
+        avgMax: query.avgMax,
+        promptsMin: query.promptsMin,
+        promptsMax: query.promptsMax,
+        sortBy: query.sortBy,
       },
       accessReason: query.accessReason,
-
-      // Apply access control rules by using an empty UUID if the user is not authenticated
       requestedByUserId: ctx.userId ?? NULL_UUID,
     });
 
