@@ -8,7 +8,7 @@ import {
   PromptSetService,
 } from "@/services/promptset.service";
 import { PaginatedResponse } from "@/types/db";
-import { PromptSetOrderings, PromptSetAccessReasons } from "@/types/prompt-set";
+import { PromptSetAccessReasons, PromptSetOrderings } from "@/types/prompt-set";
 import { Override } from "@/utils/type-helper";
 import { EnumSchema } from "peerbench";
 import { NextResponse } from "next/server";
@@ -21,48 +21,23 @@ const querySchema = promptSetFiltersSchema.extend({
   pageSize: z.coerce.number().max(1000).optional().default(10),
   orderBy: orderBySchema(PromptSetOrderings).optional(),
   accessReason: EnumSchema(PromptSetAccessReasons).optional(),
-  // ---------- search and sort filters ----------
-  search: z.string().optional(),
-  avgMin: z.coerce.number().optional(),
-  avgMax: z.coerce.number().optional(),
-  promptsMin: z.coerce.number().optional(),
-  promptsMax: z.coerce.number().optional(),
-
-  sortBy: z
-    .enum([
-      "createdAt-asc",
-      "createdAt-desc",
-      "updatedAt-asc",
-      "updatedAt-desc",
-    ])
-    .optional(),
 });
 
 export const GET = createHandler()
   .use(smoothAuth)
   .handle(async (req, ctx) => {
-    const parsed = safeParseQueryParams(req, querySchema);
-
-    const { page, pageSize, accessReason, ...filters } = parsed;
+    const { page, pageSize, orderBy, ...filters } = safeParseQueryParams(
+      req,
+      querySchema
+    );
 
     const promptSets = await PromptSetService.getPromptSets({
       page,
       pageSize,
-      filters: {
-        ownerId: filters.ownerId,
-        id: filters.id,
-        title: filters.title,
+      filters,
+      orderBy: orderBy ? { [orderBy.key]: orderBy.direction } : undefined,
 
-        // new ones
-        search: filters.search?.trim(),
-        avgMin: filters.avgMin,
-        avgMax: filters.avgMax,
-        promptsMin: filters.promptsMin,
-        promptsMax: filters.promptsMax,
-        sortBy: filters.sortBy,
-      },
-
-      accessReason,
+      // Apply access control rules by using an empty UUID if the user is not authenticated
       requestedByUserId: ctx.userId ?? NULL_UUID,
     });
 

@@ -15,7 +15,7 @@ export function useInfinitePromptSets(
       getPromptSets({
         page: pageParam,
         pageSize: params.pageSize ?? 10,
-        ...params, // now includes search, ranges, sort
+        ...params,
       }),
     initialPageParam: 1,
     ...(infiniteQueryParams || {}),
