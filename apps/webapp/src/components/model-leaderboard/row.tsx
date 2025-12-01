@@ -11,6 +11,7 @@ import type { ModelLeaderboardItem } from "@/services/leaderboard.service";
 export type ModelLeaderboardRowProps = ModelLeaderboardItem & {
   index: number;
   promptCountThreshold?: number;
+  showThresholdWarning?: boolean;
 };
 
 export function ModelLeaderboardRow({
@@ -20,6 +21,7 @@ export function ModelLeaderboardRow({
   totalPromptsTested,
   avgResponseTime,
   promptCountThreshold,
+  showThresholdWarning = true,
 }: ModelLeaderboardRowProps) {
   return (
     <TableRow className="hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
@@ -39,7 +41,8 @@ export function ModelLeaderboardRow({
       <TableCell className="text-right text-gray-600 dark:text-gray-400">
         <div className="flex items-center justify-end gap-1.5">
           <span>{totalPromptsTested}</span>
-          {promptCountThreshold !== undefined &&
+          {showThresholdWarning &&
+            promptCountThreshold !== undefined &&
             totalPromptsTested < promptCountThreshold && (
               <Tooltip>
                 <TooltipTrigger asChild>

@@ -10,15 +10,12 @@ export type NextResponseType<T> = T extends
     ? NextResponseType<ReturnType<T>>
     : never;
 
-export type ClientSideResponseType<T> =
-  T extends Record<string, any>
-    ? {
-        [K in keyof T]: T[K] extends Date
-          ? string
-          : ClientSideResponseType<T[K]>;
-      }
+export type ClientSideResponseType<T> = T extends Date
+  ? string
+  : T extends null
+    ? T
     : T extends Array<infer U>
       ? Array<ClientSideResponseType<U>>
-      : T extends Date
-        ? string
+      : T extends Record<string, any>
+        ? { [K in keyof T]: ClientSideResponseType<T[K]> }
         : T;

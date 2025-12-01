@@ -142,7 +142,7 @@ export default function CoauthorsTableRow({
             {coauthor.displayName} {user?.id === coauthor.userId && "(You)"}
           </h3>
           <h4 className="text-sm text-gray-500 dark:text-gray-400">
-            {coauthor.email}
+            {coauthor.displayName}
           </h4>
           <p className="text-xs text-gray-500 dark:text-gray-400">
             {coauthor.userId}

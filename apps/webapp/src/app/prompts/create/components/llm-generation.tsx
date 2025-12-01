@@ -1,13 +1,15 @@
 "use client";
 
-import ModelSelect, { ModelSelectValue } from "@/components/model-select";
-import { LLMGenerationConfig, usePageContext } from "../context";
+import type React from "react";
+
+import ModelSelect, { type ModelSelectValue } from "@/components/model-select";
+import { type LLMGenerationConfig, usePageContext } from "../context";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
   MCQGenerator,
   OpenEndedGenerator,
-  Prompt,
+  type Prompt,
   PromptTypes,
 } from "peerbench";
 import { toast } from "react-toastify";
@@ -119,50 +121,52 @@ export default function LLMGeneration() {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200 space-y-4">
-      <h2 className="text-xl font-semibold text-gray-700">4. Generation</h2>
-      <div className="space-y-4">
-        <div className="space-y-1">
-          <label className="block font-medium text-gray-700">
+    <section className="rounded-xl border border-border bg-card p-6 space-y-6">
+      <h2 className="text-lg font-semibold text-foreground">4. Generation</h2>
+
+      <div className="space-y-5">
+        <div className="space-y-3">
+          <label className="text-base font-medium text-foreground">
             Generation Model
           </label>
-          <span className="text-sm text-gray-500 dark:text-gray-300">
-            The LLM model that is going to be used to generate the Prompts.
-          </span>
+          <p className="text-sm text-muted-foreground">
+            The LLM model used to generate the Prompts.
+          </p>
+          <ModelSelect
+            value={ctx.llmGenerationConfig?.selectedGenerationModel ?? null}
+            options={ctx.modelSelectOptions}
+            isLoading={isAnyProviderLoading(ctx.providers)}
+            isMulti={false}
+            onModelSelected={handleModelSelected}
+            disabled={ctx.isInProgress}
+          />
         </div>
-        <ModelSelect
-          value={ctx.llmGenerationConfig?.selectedGenerationModel ?? null}
-          options={ctx.modelSelectOptions}
-          isLoading={isAnyProviderLoading(ctx.providers)}
-          isMulti={false}
-          onModelSelected={handleModelSelected}
-          disabled={ctx.isInProgress}
-        />
 
-        <div>
-          <label className="block font-medium text-gray-700 mb-2">
+        <div className="space-y-3">
+          <label className="text-base font-medium text-foreground">
             Instructions
           </label>
           <Textarea
             value={ctx.llmGenerationConfig?.instructions}
             onChange={handleInstructionsChange}
             disabled={ctx.isInProgress}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+            className="resize-none text-base"
             rows={4}
-            placeholder="Enter the instructions for the LLM about how the question should be generated from the input..."
+            placeholder="Enter instructions for how the question should be generated..."
           />
         </div>
-        <div>
-          <label className="block font-medium text-gray-700 mb-2">
+
+        <div className="space-y-3">
+          <label className="text-base font-medium text-foreground">
             Input Text
           </label>
           <Textarea
             value={ctx.llmGenerationConfig?.input}
             onChange={handleInputChange}
             disabled={ctx.isInProgress}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+            className="resize-none text-base"
             rows={4}
-            placeholder="Enter the text to be fed to the LLM..."
+            placeholder="Enter the source text to generate questions from..."
           />
         </div>
 
@@ -174,14 +178,14 @@ export default function LLMGeneration() {
             !ctx.llmGenerationConfig?.selectedGenerationModel ||
             ctx.isInProgress
           }
-          className="w-full"
+          className="w-full h-12 text-base"
         >
-          <Sparkles className="mr-2 h-4 w-4" />
+          <Sparkles className="mr-2 h-5 w-5" />
           {ctx.llmGenerationConfig?.isGenerating
             ? "Generating..."
             : "Generate Prompt"}
         </Button>
       </div>
-    </div>
+    </section>
   );
 }

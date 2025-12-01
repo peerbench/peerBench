@@ -40,7 +40,7 @@ export function PromptSetCard({ item }: { item: PromptSetItem }) {
             {/* Title */}
             <div className="flex items-center gap-2">
               <Link
-                href={`/prompt-sets/view/${item.id}`}
+                href={`/benchmarks/view/${item.id}`}
                 className="text-lg font-bold text-card-foreground line-clamp-1 hover:text-primary hover:underline transition-colors duration-200 "
               >
                 {item.title}
@@ -221,14 +221,14 @@ export function PromptSetCard({ item }: { item: PromptSetItem }) {
         {/* Action area */}
         <div className="flex items-center gap-3">
           <Button asChild variant="outline">
-            <Link href={`/prompt-sets/view/${item.id}`}>
+            <Link href={`/benchmarks/view/${item.id}`}>
               <LucideEye size={16} />
               <span>View</span>
             </Link>
           </Button>
           {item.permissions?.canEdit && (
             <Button asChild variant="outline">
-              <Link href={`/prompt-sets/view/${item.id}/edit`}>
+              <Link href={`/benchmarks/view/${item.id}/edit`}>
                 <LucidePen size={16} />
                 <span>Edit</span>
               </Link>

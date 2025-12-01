@@ -57,7 +57,7 @@ export function Filters() {
             </p>
             <Link
               className="underline text-gray-600 hover:text-gray-800 transition-colors duration-200"
-              href={`/prompt-sets/view/${res.id}`}
+              href={`/benchmarks/view/${res.id}`}
             >
               View Benchmark
             </Link>

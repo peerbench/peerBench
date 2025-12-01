@@ -94,7 +94,7 @@ export default async function Page({
                   )}
                   {promptSet.permissions?.canEdit && (
                     <Button asChild variant="outline">
-                      <Link href={`/prompt-sets/view/${promptSet.id}/edit`}>
+                      <Link href={`/benchmarks/view/${promptSet.id}/edit`}>
                         <LucidePen size={16} />
                         Edit
                       </Link>
@@ -106,7 +106,9 @@ export default async function Page({
                       variant="outline"
                       className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
                     >
-                      <Link href={`/benchmark?promptSetId=${promptSet.id}`}>
+                      <Link
+                        href={`/benchmarks/run?promptSetId=${promptSet.id}`}
+                      >
                         <LucidePlay size={16} />
                         Run Benchmark
                       </Link>

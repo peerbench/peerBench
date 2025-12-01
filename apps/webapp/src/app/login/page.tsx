@@ -86,7 +86,7 @@ export default function LoginPage() {
 
       startTransition(() => {
         if (invitationCode) {
-          router.push(`/prompt-sets/invite/${encodeURI(invitationCode)}`);
+          router.push(`/benchmarks/invite/${encodeURI(invitationCode)}`);
         } else if (redirectPath) {
           // Redirect to the original page they were trying to access
           router.push(redirectPath);

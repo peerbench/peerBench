@@ -5,12 +5,8 @@ import { safeParseQueryParams } from "@/lib/route-helpers/parse-query-params";
 import { createHandler } from "@/lib/route-kit";
 import { pathParams } from "@/lib/route-kit/middlewares/path-params";
 import { smoothAuth } from "@/lib/route-kit/middlewares/smooth-auth";
-import {
-  GetCoAuthorsReturnItem,
-  PromptSetService,
-} from "@/services/promptset.service";
-import { PaginatedResponse } from "@/types/db";
-import { Override } from "@/utils/type-helper";
+import { ClientSideResponseType, NextResponseType } from "@/lib/utilities";
+import { PromptSetService } from "@/services/promptset.service";
 import { StringBool } from "@/validation/string-bool";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -43,12 +39,5 @@ export const GET = createHandler()
     );
   });
 
-export type ResponseType = PaginatedResponse<
-  Override<
-    GetCoAuthorsReturnItem,
-    {
-      joinedAt: string | null;
-    }
-  >
->;
+export type ResponseType = ClientSideResponseType<NextResponseType<typeof GET>>;
 export type RequestQueryParams = z.input<typeof querySchema>;

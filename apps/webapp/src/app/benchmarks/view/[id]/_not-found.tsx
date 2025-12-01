@@ -13,7 +13,7 @@ export function NotFound() {
             the required permissions to access it.
           </p>
           <Button variant="outline" className="mt-4" asChild>
-            <Link href="/prompt-sets">Back to Benchmarks</Link>
+            <Link href="/benchmarks/explore">Back to Benchmarks</Link>
           </Button>
         </CardContent>
       </Card>

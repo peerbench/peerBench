@@ -310,7 +310,7 @@ export default async function MyActivityPage() {
                   {recentPromptSets.map((promptSet) => (
                     <Link
                       key={promptSet.id}
-                      href={`/prompt-sets/view/${promptSet.id}`}
+                      href={`/benchmarks/view/${promptSet.id}`}
                       className="block p-4 border rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                     >
                       <div className="flex items-start justify-between gap-4">

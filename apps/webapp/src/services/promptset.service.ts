@@ -23,17 +23,12 @@ import {
   userProfileTable,
   promptSetInvitationsTable,
   promptSetPrompts,
-  hashRegistrationsTable,
-  responsesTable,
-  scoresTable,
-  orgToPeopleTable,
-  orgsTable,
   promptSetStatsView,
   reviewContributorsPerPromptSetView,
   uploadContributorsPerPromptSetView,
   usersView,
 } from "@/database/schema";
-import { DbOptions, DbTx, PaginationOptions } from "@/types/db";
+import { DbOptions, PaginationOptions } from "@/types/db";
 import { excluded, exists1, withTxOrDb, withTxOrTx } from "@/database/helpers";
 import { PromptType } from "peerbench";
 import { paginateQuery } from "@/database/query";
@@ -43,10 +38,9 @@ import {
   PromptStatuses,
   UserRoleOnPromptSet,
 } from "@/database/types";
-import { PgColumn, unionAll } from "drizzle-orm/pg-core";
+import { PgColumn } from "drizzle-orm/pg-core";
 import { ApiError } from "@/errors/api-error";
 import { randomBytes } from "node:crypto";
-import { authUsers } from "drizzle-orm/supabase";
 import {
   PromptSetAccessReason,
   PromptSetAccessReasons,
@@ -885,156 +879,6 @@ export class PromptSetService {
           .select({ count: countDistinct(countQuery.userId) })
           .from(countQuery)
           .$dynamic(),
-        {
-          page: options.page,
-          pageSize: options.pageSize,
-        }
-      );
-    }, options?.tx);
-  }
-
-  static async getCoAuthors(
-    options: DbOptions<false> &
-      PaginationOptions & {
-        promptSetId: number;
-
-        filters?: {
-          /**
-           * If the target Prompt Set is public, that means it may have
-           * bunch of public co-authors. If given `true`, then those public
-           * co-authors will be excluded from the results even though Prompt
-           * Set is marked as public.
-           */
-          excludePublicCoAuthors?: boolean;
-        };
-
-        /**
-         * Caller user ID of the method. Will be used to apply access control rules if provided.
-         */
-        requestedByUserId?: string;
-      }
-  ) {
-    return await withTxOrDb(async (tx) => {
-      const whereConditions: (PgColumn<any> | SQL<any> | undefined)[] = [
-        isNull(promptSetsTable.deletedAt), // exclude deleted Prompt Sets
-      ];
-      const contributionsQuery = this.buildContributionsQuery(tx);
-
-      const query = tx
-        .select({
-          userId: contributionsQuery.userId,
-          role: userRoleOnPromptSetTable.role,
-          joinedAt: userRoleOnPromptSetTable.createdAt,
-          // totalContributions: .....
-          displayName: userProfileTable.displayName,
-          email: authUsers.email,
-          orgName: orgsTable.name,
-        })
-        .from(contributionsQuery)
-        .leftJoin(
-          userRoleOnPromptSetTable,
-          and(
-            // Only join if the user has a role on the Prompt Set
-            eq(userRoleOnPromptSetTable.userId, contributionsQuery.userId),
-            eq(
-              userRoleOnPromptSetTable.promptSetId,
-              contributionsQuery.promptSetId
-            )
-          )
-        )
-        .leftJoin(
-          userProfileTable,
-          eq(userProfileTable.userId, contributionsQuery.userId)
-        )
-        .leftJoin(
-          orgToPeopleTable,
-          eq(orgToPeopleTable.userId, contributionsQuery.userId)
-        )
-        .leftJoin(orgsTable, eq(orgsTable.id, orgToPeopleTable.orgId))
-        .innerJoin(authUsers, eq(authUsers.id, contributionsQuery.userId))
-        .innerJoin(
-          promptSetsTable,
-          eq(promptSetsTable.id, contributionsQuery.promptSetId)
-        )
-        .orderBy(
-          sql`
-            CASE
-              WHEN ${userRoleOnPromptSetTable.role} = ${UserRoleOnPromptSet.owner} THEN 0
-              WHEN ${userRoleOnPromptSetTable.role} = ${UserRoleOnPromptSet.admin} THEN 1
-              WHEN ${userRoleOnPromptSetTable.role} = ${UserRoleOnPromptSet.collaborator} THEN 2
-              WHEN ${userRoleOnPromptSetTable.role} = ${UserRoleOnPromptSet.reviewer} THEN 3
-              ELSE 4
-            END
-          `
-        )
-        .groupBy(
-          contributionsQuery.userId,
-          userRoleOnPromptSetTable.role,
-          userProfileTable.displayName,
-          userRoleOnPromptSetTable.createdAt,
-          authUsers.email,
-          orgsTable.name
-        )
-        .$dynamic();
-      let countQuery = tx
-        .select({ count: countDistinct(contributionsQuery.userId) })
-        .from(contributionsQuery)
-        .innerJoin(
-          promptSetsTable,
-          eq(promptSetsTable.id, contributionsQuery.promptSetId)
-        )
-        .$dynamic();
-
-      whereConditions.push(
-        eq(contributionsQuery.promptSetId, options.promptSetId)
-      );
-
-      if (options.filters?.excludePublicCoAuthors) {
-        // Exclude the contributors who don't have a role on the Prompt Set
-        whereConditions.push(isNotNull(userRoleOnPromptSetTable.role));
-
-        // Join the role table to the count query, so we can apply the same where condition
-        countQuery = countQuery.leftJoin(
-          userRoleOnPromptSetTable,
-          and(
-            // Only join if the user has a role on the Prompt Set
-            eq(userRoleOnPromptSetTable.userId, contributionsQuery.userId),
-            eq(
-              userRoleOnPromptSetTable.promptSetId,
-              contributionsQuery.promptSetId
-            )
-          )
-        );
-      }
-
-      if (
-        options.requestedByUserId !== undefined &&
-        options.requestedByUserId !== ADMIN_USER_ID // ACL rules doesn't apply to admin user
-      ) {
-        whereConditions.push(
-          or(
-            // Either if user has any of the roles that allow to view Prompt Set...
-            sql`EXISTS (
-              SELECT 1
-              FROM ${userRoleOnPromptSetTable}
-              WHERE ${userRoleOnPromptSetTable.role} IN (
-                ${UserRoleOnPromptSet.owner},
-                ${UserRoleOnPromptSet.admin},
-                ${UserRoleOnPromptSet.collaborator},
-                ${UserRoleOnPromptSet.reviewer}
-              ) AND
-              ${userRoleOnPromptSetTable.promptSetId} = ${options.promptSetId} AND
-              ${userRoleOnPromptSetTable.userId} = ${options.requestedByUserId}
-            )`,
-            // ...or Prompt Set marked as public
-            eq(promptSetsTable.isPublic, true)
-          )
-        );
-      }
-
-      return await paginateQuery(
-        query.where(and(...whereConditions)),
-        countQuery.where(and(...whereConditions)),
         {
           page: options.page,
           pageSize: options.pageSize,
@@ -1953,109 +1797,26 @@ export class PromptSetService {
     }, options?.tx);
   }
 
-  /// Query builders
-
-  /**
-   * Builds a query that combines all the contributions that are made for
-   * the Prompt Sets and returns the user IDs who made those contributions.
-   */
-  private static buildContributionsQuery(
-    tx: DbTx,
-    queryName = "contributions"
+  static async hasRoleOnPromptSet(
+    options: DbOptions & {
+      userId: string;
+      promptSetId: number;
+    }
   ) {
-    // TODO: Contribution types can be included too if needed
-    // TODO: Contributors who made reviews for the Prompts
-
-    // We have a where condition so the uploader id won't be null
-    const uploaderId = sql<string>`${hashRegistrationsTable.uploaderId}`.as(
-      "hash_registration_uploader_id"
-    );
-
-    // Contributors who uploaded the Prompts
-    const promptContributionsQuery = tx
-      .select({
-        promptSetId: promptSetPrompts.promptSetId,
-        userId: uploaderId,
-      })
-      .from(promptsTable)
-      .innerJoin(
-        hashRegistrationsTable,
-        and(
-          eq(
-            hashRegistrationsTable.sha256,
-            promptsTable.hashSha256Registration
-          ),
-          eq(hashRegistrationsTable.cid, promptsTable.hashCIDRegistration)
+    return withTxOrDb(async (tx) => {
+      return await tx
+        .select({
+          role: userRoleOnPromptSetTable.role,
+        })
+        .from(userRoleOnPromptSetTable)
+        .where(
+          and(
+            eq(userRoleOnPromptSetTable.userId, options.userId),
+            eq(userRoleOnPromptSetTable.promptSetId, options.promptSetId)
+          )
         )
-      )
-      .innerJoin(
-        promptSetPrompts,
-        eq(promptSetPrompts.promptId, promptsTable.id)
-      )
-      .where(isNotNull(hashRegistrationsTable.uploaderId))
-      .groupBy(promptSetPrompts.promptSetId, hashRegistrationsTable.uploaderId);
-
-    // Contributors who uploaded the Responses
-    const responseContributionsQuery = tx
-      .select({
-        promptSetId: promptSetPrompts.promptSetId,
-        userId: uploaderId,
-      })
-      .from(responsesTable)
-      .innerJoin(
-        hashRegistrationsTable,
-        and(
-          eq(
-            hashRegistrationsTable.sha256,
-            responsesTable.hashSha256Registration
-          ),
-          eq(hashRegistrationsTable.cid, responsesTable.hashCIDRegistration)
-        )
-      )
-      .innerJoin(
-        promptSetPrompts,
-        eq(promptSetPrompts.promptId, responsesTable.promptId)
-      )
-      .where(isNotNull(hashRegistrationsTable.uploaderId))
-      .groupBy(promptSetPrompts.promptSetId, hashRegistrationsTable.uploaderId);
-
-    // Contributors who uploaded the Scores
-    const scoreContributionsQuery = tx
-      .select({
-        promptSetId: promptSetPrompts.promptSetId,
-        userId: uploaderId,
-      })
-      .from(scoresTable)
-      .innerJoin(
-        hashRegistrationsTable,
-        and(
-          eq(hashRegistrationsTable.sha256, scoresTable.hashSha256Registration),
-          eq(hashRegistrationsTable.cid, scoresTable.hashCIDRegistration)
-        )
-      )
-      .innerJoin(
-        promptSetPrompts,
-        eq(promptSetPrompts.promptId, scoresTable.promptId)
-      )
-      .where(isNotNull(hashRegistrationsTable.uploaderId))
-      .groupBy(promptSetPrompts.promptSetId, hashRegistrationsTable.uploaderId);
-
-    // Contributors who are invited to collaborate on the Prompt Set (reviewers, collaborators etc.)
-    const promptSetCollaboratorsQuery = tx
-      .select({
-        promptSetId: userRoleOnPromptSetTable.promptSetId,
-        userId: userRoleOnPromptSetTable.userId,
-      })
-      .from(userRoleOnPromptSetTable)
-      .where(isNotNull(userRoleOnPromptSetTable.role));
-
-    // Union those queries into a single one
-    return unionAll(
-      promptContributionsQuery,
-      responseContributionsQuery,
-      scoreContributionsQuery,
-      promptSetCollaboratorsQuery
-    ).as(queryName);
+        .then((result) => Boolean(result[0]?.role));
+    }, options?.tx);
   }
 }
 
@@ -2066,10 +1827,6 @@ export type GetPromptSetsReturnItem = Awaited<
 export type InsertPromptSetData = Awaited<
   ReturnType<(typeof PromptSetService)["insertPromptSet"]>
 >;
-
-export type GetCoAuthorsReturnItem = Awaited<
-  ReturnType<(typeof PromptSetService)["getCoAuthors"]>
->["data"][number];
 
 export type GetInvitationsReturnItem = Awaited<
   ReturnType<(typeof PromptSetService)["getInvitations"]>

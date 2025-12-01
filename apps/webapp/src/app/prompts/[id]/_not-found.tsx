@@ -19,7 +19,7 @@ export function NotFound() {
         <CardContent className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button variant="outline" className="w-full sm:w-auto" asChild>
-              <Link href="/prompts">
+              <Link href="/prompts/explore">
                 <LucideArrowLeft className="w-4 h-4 mr-2" />
                 Back to Prompts
               </Link>

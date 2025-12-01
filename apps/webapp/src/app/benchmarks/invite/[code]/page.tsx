@@ -36,10 +36,10 @@ export default async function Page({ params }: PageProps) {
       <div className="flex flex-col items-center">
         <h1 className="text-2xl font-bold">Success</h1>
         <p className="text-sm text-gray-500">
-          Invitation validated and accepted. You can now start contributing! Redirecting to the dashboard in 5
-          seconds...
+          Invitation validated and accepted. You can now start contributing!
+          Redirecting to the dashboard in 5 seconds...
         </p>
-        <Redirect timeout={5000} to="/prompt-sets" />
+        <Redirect timeout={5000} to="/benchmarks/explore" />
       </div>
     );
   } catch (err) {

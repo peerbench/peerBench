@@ -41,7 +41,7 @@ const menuItems: UserMenuItem[] = [
   },
   {
     label: "My Activity",
-    href: "/myActivity",
+    href: "/my-activity",
     icon: <LucideActivity className="w-5 h-5" />,
   },
   {

@@ -40,7 +40,7 @@ export default async function Page({
       >
         <div className="flex flex-col items-start gap-4">
           <Button asChild variant="link">
-            <Link href={`/prompt-sets/view/${promptSetId}`}>
+            <Link href={`/benchmarks/view/${promptSetId}`}>
               <LucideArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Link>
