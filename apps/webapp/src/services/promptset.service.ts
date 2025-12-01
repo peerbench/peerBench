@@ -1953,6 +1953,28 @@ export class PromptSetService {
     }, options?.tx);
   }
 
+  static async hasRoleOnPromptSet(
+    options: DbOptions & {
+      userId: string;
+      promptSetId: number;
+    }
+  ) {
+    return withTxOrDb(async (tx) => {
+      return await tx
+        .select({
+          role: userRoleOnPromptSetTable.role,
+        })
+        .from(userRoleOnPromptSetTable)
+        .where(
+          and(
+            eq(userRoleOnPromptSetTable.userId, options.userId),
+            eq(userRoleOnPromptSetTable.promptSetId, options.promptSetId)
+          )
+        )
+        .then((result) => Boolean(result[0]?.role));
+    }, options?.tx);
+  }
+
   /// Query builders
 
   /**
