@@ -36,7 +36,7 @@ export default function Feedback({ promptId, onSubmittingChange }: FeedbackProps
       toast.success(
         <div>
           Feedback submitted successfully!{" "}
-          <Link href="/myActivity" className="underline font-semibold">
+          <Link href="/my-activity" className="underline font-semibold">
             View your activity
           </Link>
         </div>

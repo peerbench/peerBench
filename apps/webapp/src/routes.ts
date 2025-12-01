@@ -9,7 +9,7 @@
 export const protectedRoutes = [
   "/reset-password",
   "/compare",
-  "/myActivity",
+  "/my-activity",
   "/profile",
   "/benchmarks/run",
   "/benchmarks/create",
