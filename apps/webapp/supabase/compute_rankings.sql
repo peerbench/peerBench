@@ -2,8 +2,8 @@
 CREATE OR REPLACE FUNCTION compute_rankings(
   p_reviews_for_consensus_prompt INTEGER DEFAULT 3,
   p_account_age_days INTEGER DEFAULT 7,
-  p_k INTEGER DEFAULT 10,
-  p_min_review_percentage REAL DEFAULT 0.05,
+  p_k INTEGER DEFAULT 250,
+  p_min_review_percentage REAL DEFAULT 0.1,
   p_max_trust_cap REAL DEFAULT 0.75
 ) RETURNS INTEGER AS $$
 DECLARE
@@ -41,7 +41,7 @@ BEGIN
       CASE 
         WHEN otp.user_id IS NOT NULL 
           AND u.created_at <= NOW() - INTERVAL '1 day' * p_account_age_days
-        THEN 0.75
+        THEN 0.5
         ELSE 0.0
       END AS trust_score
     FROM auth.users u
@@ -251,7 +251,7 @@ BEGIN
     COUNT(DISTINCT prompt_id) AS prompts_tested_count
   FROM model_scores
   GROUP BY model
-  HAVING COUNT(*) > 0;
+  HAVING COUNT(*) > 25;
 
   -- ============================================
   -- STEP 5: COMPUTE CONTRIBUTOR SCORES
