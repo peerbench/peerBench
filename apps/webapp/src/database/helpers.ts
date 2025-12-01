@@ -265,3 +265,7 @@ export function intervalValue(values: {
 export function dateDiff(value1: SQLWrapper, value2: SQLWrapper) {
   return sql`(${value1} - ${value2})::interval`;
 }
+
+export function getColumnName<T extends PgColumn>(column: T) {
+  return column["name"];
+}
