@@ -87,7 +87,7 @@ export const links = [
       },
       {
         label: "View",
-        href: "/prompts",
+        href: "/prompts/explore",
         description: "Explore Prompts",
         icon: <LucideSearch />,
       },
