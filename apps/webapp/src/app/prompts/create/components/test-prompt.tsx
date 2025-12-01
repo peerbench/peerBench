@@ -483,129 +483,128 @@ export default function TestPrompt() {
               <h3 className="text-base font-medium text-foreground">
                 Model Responses
               </h3>
-              <div className="space-y-3">
+
+              <Accordion type="single" collapsible className="space-y-3">
                 {ctx.selectedTestModels.map((testModel, index) => (
-                  <Accordion
+                  <AccordionItem
                     key={`${testModel.provider}-${testModel.modelId}`}
-                    type="single"
-                    collapsible
+                    value={index.toString()}
+                    className="border rounded-xl overflow-hidden"
                   >
-                    <AccordionItem
-                      value={index.toString()}
-                      className="border rounded-xl overflow-hidden"
-                    >
-                      <AccordionTrigger className="px-5 py-4 text-base hover:no-underline hover:bg-muted/50">
-                        <div className="flex items-center gap-3">
-                          {testModel.icon && (
-                            <div className="w-5 h-5 relative shrink-0">
-                              <Image
-                                src={testModel.icon || "/placeholder.svg"}
-                                alt={`${testModel.providerLabel} logo`}
-                                fill
-                                className="object-contain"
+                    <AccordionTrigger className="px-5 py-4 text-base hover:no-underline hover:bg-muted/50">
+                      <div className="flex items-center gap-3">
+                        {testModel.icon && (
+                          <div className="w-5 h-5 relative shrink-0">
+                            <Image
+                              src={testModel.icon || "/placeholder.svg"}
+                              alt={`${testModel.providerLabel} logo`}
+                              fill
+                              className="object-contain"
+                            />
+                          </div>
+                        )}
+                        <span className="font-medium text-foreground truncate">
+                          {testModel.modelId}
+                        </span>
+
+                        {ctx.isTesting &&
+                        testModel.score === undefined &&
+                        !testModel.error ? (
+                          <LoaderCircleIcon className="w-4 h-4 animate-spin text-muted-foreground" />
+                        ) : testModel.error ? (
+                          <span className="text-sm text-destructive">
+                            Error: {testModel.error.slice(0, 20)}...
+                          </span>
+                        ) : testModel.score !== undefined ? (
+                          <span className="text-sm text-muted-foreground">
+                            (
+                            {testModel.response?.response.slice(0, 15) ||
+                              "No response"}
+                            ...) - Score {testModel.score.score}
+                          </span>
+                        ) : null}
+                      </div>
+                    </AccordionTrigger>
+
+                    <AccordionContent className="px-5 pb-5 space-y-4">
+                      {testModel.error ? (
+                        <div className="p-4 rounded-lg bg-destructive/10 text-base text-destructive">
+                          {testModel.error}
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex justify-between items-start">
+                            <span className="text-sm font-medium text-muted-foreground">
+                              Response
+                            </span>
+                            {testModel.response?.inputCost &&
+                              testModel.response?.outputCost && (
+                                <span className="text-sm text-muted-foreground">
+                                  Cost:{" "}
+                                  {formatUsd(
+                                    new Decimal(
+                                      testModel.response.inputCost
+                                    ).add(
+                                      new Decimal(testModel.response.outputCost)
+                                    )
+                                  )}
+                                </span>
+                              )}
+                          </div>
+
+                          {testModel.score?.scorerAIInputCost &&
+                            testModel.score?.scorerAIOutputCost && (
+                              <>
+                                <div>AI Scorer Cost:</div>
+                                <div>
+                                  {formatUsd(
+                                    new Decimal(
+                                      testModel.score.scorerAIInputCost
+                                    ).add(
+                                      new Decimal(
+                                        testModel.score.scorerAIOutputCost
+                                      )
+                                    )
+                                  )}
+                                </div>
+                              </>
+                            )}
+
+                          <div className="p-4 rounded-lg bg-muted">
+                            {testModel.response ? (
+                              <MarkdownText className="text-base">
+                                {testModel.response.response}
+                              </MarkdownText>
+                            ) : (
+                              <p className="text-base text-muted-foreground italic">
+                                {ctx.isTesting
+                                  ? "Testing..."
+                                  : "No response yet"}
+                              </p>
+                            )}
+                          </div>
+                        </>
+                      )}
+
+                      {testModel.score !== undefined &&
+                        Object.keys(testModel.score.scoreMetadata || {})
+                          .length > 0 && (
+                          <div className="space-y-2">
+                            <span className="text-sm font-medium text-muted-foreground">
+                              Score Metadata
+                            </span>
+                            <div className="p-4 rounded-lg border bg-background">
+                              <JSONView
+                                collapsed
+                                data={testModel.score.scoreMetadata}
                               />
                             </div>
-                          )}
-                          <span className="font-medium text-foreground truncate">
-                            {testModel.modelId}
-                          </span>
-                          {ctx.isTesting &&
-                          testModel.score === undefined &&
-                          !testModel.error ? (
-                            <LoaderCircleIcon className="w-4 h-4 animate-spin text-muted-foreground" />
-                          ) : testModel.error ? (
-                            <span className="text-sm text-destructive">
-                              Error: {testModel.error.slice(0, 20)}...
-                            </span>
-                          ) : testModel.score !== undefined ? (
-                            <span className="text-sm text-muted-foreground">
-                              (
-                              {testModel.response?.response.slice(0, 15) ||
-                                "No response"}
-                              ...) - Score {testModel.score.score}
-                            </span>
-                          ) : null}
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent className="px-5 pb-5 space-y-4">
-                        {testModel.error ? (
-                          <div className="p-4 rounded-lg bg-destructive/10 text-base text-destructive">
-                            {testModel.error}
                           </div>
-                        ) : (
-                          <>
-                            <div className="flex justify-between items-start">
-                              <span className="text-sm font-medium text-muted-foreground">
-                                Response
-                              </span>
-                              {testModel.response?.inputCost &&
-                                testModel.response?.outputCost && (
-                                  <span className="text-sm text-muted-foreground">
-                                    Cost:{" "}
-                                    {formatUsd(
-                                      new Decimal(
-                                        testModel.response.inputCost
-                                      ).add(
-                                        new Decimal(
-                                          testModel.response.outputCost
-                                        )
-                                      )
-                                    )}
-                                  </span>
-                                )}
-                            </div>
-                            {testModel.score?.scorerAIInputCost &&
-                              testModel.score?.scorerAIOutputCost && (
-                                <>
-                                  <div>AI Scorer Cost:</div>
-                                  <div>
-                                    {formatUsd(
-                                      new Decimal(
-                                        testModel.score.scorerAIInputCost
-                                      ).add(
-                                        new Decimal(
-                                          testModel.score.scorerAIOutputCost
-                                        )
-                                      )
-                                    )}
-                                  </div>
-                                </>
-                              )}
-                            <div className="p-4 rounded-lg bg-muted">
-                              {testModel.response ? (
-                                <MarkdownText className="text-base">
-                                  {testModel.response.response}
-                                </MarkdownText>
-                              ) : (
-                                <p className="text-base text-muted-foreground italic">
-                                  {ctx.isTesting
-                                    ? "Testing..."
-                                    : "No response yet"}
-                                </p>
-                              )}
-                            </div>
-                          </>
                         )}
-                        {testModel.score !== undefined &&
-                          Object.keys(testModel.score.scoreMetadata || {})
-                            .length > 0 && (
-                            <div className="space-y-2">
-                              <span className="text-sm font-medium text-muted-foreground">
-                                Score Metadata
-                              </span>
-                              <div className="p-4 rounded-lg border bg-background">
-                                <JSONView
-                                  collapsed
-                                  data={testModel.score.scoreMetadata}
-                                />
-                              </div>
-                            </div>
-                          )}
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
+                    </AccordionContent>
+                  </AccordionItem>
                 ))}
-              </div>
+              </Accordion>
             </div>
           )}
 
