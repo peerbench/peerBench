@@ -15,6 +15,7 @@ import {
   providerModelsTable,
   quickFeedbacksView,
   userStatsView,
+  promptCommentsTable,
 } from "@/database/schema";
 import { db } from "../database/client";
 import {
@@ -925,6 +926,7 @@ export class PromptService {
         negativeQuickFeedbackCount,
 
         responseAndScoreStats,
+        last48HCommentCount: countDistinct(promptCommentsTable.id),
 
         userQuickFeedback,
       })
@@ -948,6 +950,16 @@ export class PromptService {
       .leftJoin(
         quickFeedbacksView,
         eq(promptsTable.id, quickFeedbacksView.promptId)
+      )
+      .leftJoin(
+        promptCommentsTable,
+        and(
+          eq(promptsTable.id, promptCommentsTable.promptId),
+          gte(
+            promptCommentsTable.createdAt,
+            sql`NOW() - ${intervalValue({ hours: 48 })}`
+          )
+        )
       )
       .groupBy(promptsTable.id)
       .$dynamic();
