@@ -47,20 +47,20 @@ export const links = [
     menu: [
       {
         label: "Create Benchmark",
-        href: "/prompt-sets/create",
+        href: "/benchmarks/create",
         description: "Create new benchmarks",
         access: "authenticated",
         icon: <LucideFileCog />,
       },
       {
         label: "View Benchmarks",
-        href: "/prompt-sets",
+        href: "/benchmarks/explore",
         description: "Explore benchmarks",
         icon: <LucideSearch />,
       },
       {
         label: "Run Benchmark",
-        href: "/benchmark",
+        href: "/benchmarks/run",
         description: "Test benchmarks against models",
         icon: <LucideWrench />,
         access: "authenticated",

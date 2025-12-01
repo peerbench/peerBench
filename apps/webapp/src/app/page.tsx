@@ -78,10 +78,13 @@ export default function Home() {
                 </a>
               </p>
               <p className="text-lg text-gray-600">
-              <span>We will be publishing a series of subsequent papers on PeerBench and want to 
-              reward those who make it possible. </span>
+                <span>
+                  We will be publishing a series of subsequent papers on
+                  PeerBench and want to reward those who make it possible.{" "}
+                </span>
                 <span className="font-bold">
-                  Get your name in the paper by contributing to the community (create prompts, comment, review).
+                  Get your name in the paper by contributing to the community
+                  (create prompts, comment, review).
                 </span>
               </p>
             </div>
@@ -93,8 +96,9 @@ export default function Home() {
       <div className="mb-4 flex justify-center">
         <div className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-200 rounded-2xl p-6 shadow-lg max-w-3xl">
           <p className="text-lg text-gray-600 text-center">
-            <span className="font-bold">PeerBench.ai</span> is an open-source, non-profit community implementation
-            of the NeurIPS paper, bringing the research to life.
+            <span className="font-bold">PeerBench.ai</span> is an open-source,
+            non-profit community implementation of the NeurIPS paper, bringing
+            the research to life.
           </p>
         </div>
       </div>
@@ -139,7 +143,7 @@ export default function Home() {
         <Card className="w-full">
           <CardContent className="pt-6">
             <div className="text-center">
-              <Link href="/prompt-sets/create">
+              <Link href="/benchmarks/create">
                 <Button
                   size="lg"
                   variant="outline"

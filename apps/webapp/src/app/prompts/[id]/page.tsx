@@ -71,14 +71,17 @@ export default async function PromptDetailPage({
         <div className="flex items-center justify-between">
           {fromPromptSetId ? (
             <Link
-              href={`/prompt-sets/view/${fromPromptSetId}`}
+              href={`/benchmarks/view/${fromPromptSetId}`}
               className="flex items-center gap-2 group"
             >
               <LucideArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
               Back to Benchmark
             </Link>
           ) : (
-            <Link href="/prompts/explore" className="flex items-center gap-2 group">
+            <Link
+              href="/prompts/explore"
+              className="flex items-center gap-2 group"
+            >
               <LucideArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
               Back to Prompts
             </Link>

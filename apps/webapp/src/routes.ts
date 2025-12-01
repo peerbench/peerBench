@@ -8,12 +8,12 @@
  */
 export const protectedRoutes = [
   "/reset-password",
-  "/benchmark",
   "/compare",
   "/myActivity",
   "/profile",
-  "/prompt-sets/create",
-  "/prompt-sets/view/:id/edit",
+  "/benchmarks/run",
+  "/benchmarks/create",
+  "/benchmarks/view/:id/edit",
   "/prompts/create",
   "/prompts/review",
   "/settings",

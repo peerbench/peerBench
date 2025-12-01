@@ -21,7 +21,7 @@ export default function IncludedByPromptSetLink({
           "text-red-600 font-bold": promptStatus !== PromptStatuses.included,
         }
       )}
-      href={`/prompt-sets/view/${promptSetId}`}
+      href={`/benchmarks/view/${promptSetId}`}
     >
       {promptSetTitle} ({promptSetId})
     </Link>

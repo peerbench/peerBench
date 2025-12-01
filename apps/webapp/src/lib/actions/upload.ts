@@ -76,7 +76,7 @@ export async function uploadAction(params: {
         );
 
         revalidatePath(
-          `/prompt-sets/view/${promptsValidation.data.promptSetId}`
+          `/benchmarks/view/${promptsValidation.data.promptSetId}`
         );
       }
 
@@ -104,7 +104,7 @@ export async function uploadAction(params: {
 
         // TODO: Maybe we can revalidate only the Prompts and Prompt Sets that were affected by the new Scores? But probably this will be too much overhead.
         revalidatePath(`/prompts/[id]`, "page");
-        revalidatePath(`/prompt-sets/view/[id]`, "page");
+        revalidatePath(`/benchmarks/view/[id]`, "page");
       }
     });
   } catch (err) {

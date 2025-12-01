@@ -33,7 +33,7 @@ export default function InputForm({
     await queryClient.invalidateQueries({ queryKey: [QK_PROMPT_SETS] });
 
     toast.success("Benchmark updated");
-    router.push(`/prompt-sets/view/${promptSet.id}`);
+    router.push(`/benchmarks/view/${promptSet.id}`);
   };
 
   return (

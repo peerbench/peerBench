@@ -61,7 +61,7 @@ export default function InvitationLinksTableRow({
   const isRevoked = !!invitation.revokedAt;
 
   const getInvitationLink = () => {
-    return `${window.location.origin}/prompt-sets/invite/${invitation.code}`;
+    return `${window.location.origin}/benchmarks/invite/${invitation.code}`;
   };
 
   const getStatusBadge = () => {
