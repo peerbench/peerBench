@@ -72,3 +72,9 @@ export const ApiKeyProviders = {
 } as const;
 export type ApiKeyProvider =
   (typeof ApiKeyProviders)[keyof typeof ApiKeyProviders];
+
+export const NotificationTypes = {
+  promptComment: "promptComment",
+} as const;
+export type NotificationType =
+  (typeof NotificationTypes)[keyof typeof NotificationTypes];

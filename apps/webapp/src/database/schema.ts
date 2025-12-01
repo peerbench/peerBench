@@ -33,6 +33,7 @@ import {
   UserRoleOnPromptSet,
   ApiKeyProvider,
   PromptStatuses,
+  NotificationType,
 } from "./types";
 import {
   aliasedTable,
@@ -1274,6 +1275,24 @@ export const systemPromptLabelsTable = pgTable(
 export type DbSystemPromptLabel = typeof systemPromptLabelsTable.$inferSelect;
 export type DbSystemPromptLabelInsert =
   typeof systemPromptLabelsTable.$inferInsert;
+
+export const notificationsTable = pgTable("notifications", {
+  id: integer().primaryKey().generatedByDefaultAsIdentity(),
+  userId: uuid("user_id")
+    .references(() => authUsers.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    })
+    .notNull(),
+  content: text().notNull(),
+  metadata: jsonb("metadata")
+    .$type<Record<string, any>>()
+    .default({})
+    .notNull(),
+  type: varchar({ length: 20 }).$type<NotificationType>().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  readAt: timestamp("read_at"),
+});
 
 /**************************************************
  * Views                                          *
