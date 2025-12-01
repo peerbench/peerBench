@@ -1,6 +1,12 @@
-import { withTxOrDb, withTxOrTx } from "@/database/helpers";
+import {
+  getColumnName,
+  jsonbBuildObject,
+  withTxOrDb,
+  withTxOrTx,
+} from "@/database/helpers";
 import { paginateQuery } from "@/database/query";
 import {
+  notificationsTable,
   promptCommentsTable,
   promptSetPrompts,
   promptSetsTable,
@@ -12,7 +18,7 @@ import {
   userRoleOnPromptSetTable,
   usersView,
 } from "@/database/schema";
-import { UserRoleOnPromptSet } from "@/database/types";
+import { NotificationTypes, UserRoleOnPromptSet } from "@/database/types";
 import { ApiError } from "@/errors/api-error";
 import { ADMIN_USER_ID } from "@/lib/constants";
 import { DbOptions, PaginationOptions } from "@/types/db";
@@ -24,6 +30,7 @@ import {
   inArray,
   isNull,
   or,
+  sql,
   SQL,
 } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
@@ -99,6 +106,39 @@ export class CommentService {
           throw ApiError.forbidden();
         }
       }
+
+      // Add notification for the owner of the prompt
+      // NOTE: Drizzle has issues with TS native `INSERT ... SELECT` that's why we
+      // are using SQL directly. More info: https://github.com/drizzle-team/drizzle-orm/issues/3608
+      const metadata = jsonbBuildObject({
+        promptId: promptsTable.id,
+      });
+      await tx.execute(sql`
+        INSERT INTO ${notificationsTable}
+          (
+            ${sql.raw(getColumnName(notificationsTable.userId))},
+            ${sql.raw(getColumnName(notificationsTable.content))},
+            ${sql.raw(getColumnName(notificationsTable.type))},
+            ${sql.raw(getColumnName(notificationsTable.metadata))}
+          )
+        SELECT
+          ${sql.raw(getColumnName(promptsTable.uploaderId))} AS "${sql.raw(getColumnName(notificationsTable.userId))}",
+          FORMAT(
+            '%s commented on your Prompt "%s"',
+            COALESCE(
+              ${usersView.displayName},
+              'User ' || ${usersView.id}
+            ),
+            COALESCE(
+              LEFT(${promptsTable.question}, 20),
+              ${promptsTable.id}::text
+            )
+          ) AS "${sql.raw(getColumnName(notificationsTable.content))}",
+          ${NotificationTypes.promptComment} AS "${sql.raw(getColumnName(notificationsTable.type))}",
+          ${metadata} AS "${sql.raw(getColumnName(notificationsTable.metadata))}"
+        FROM ${promptsTable}
+        INNER JOIN ${usersView} ON ${eq(promptsTable.uploaderId, usersView.id)}
+        WHERE ${eq(promptsTable.id, data.promptId)}`);
 
       const [comment] = await tx
         .insert(promptCommentsTable)

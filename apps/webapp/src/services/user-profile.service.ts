@@ -1,4 +1,10 @@
-import { eq, getViewSelectedFields, sql } from "drizzle-orm";
+import {
+  countDistinct,
+  desc,
+  eq,
+  getViewSelectedFields,
+  sql,
+} from "drizzle-orm";
 import {
   userProfileTable,
   userStatsView,
@@ -6,11 +12,13 @@ import {
   promptsTable,
   quickFeedbacksTable,
   hashRegistrationsTable,
+  notificationsTable,
 } from "@/database/schema";
-import { DbOptions } from "@/types/db";
+import { DbOptions, PaginationOptions } from "@/types/db";
 import { withTxOrDb } from "@/database/helpers";
 import { ApiError } from "@/errors/api-error";
 import { and } from "drizzle-orm";
+import { paginateQuery } from "@/database/query";
 
 export class ProfileService {
   static async getUserStats(
@@ -168,6 +176,62 @@ export class ProfileService {
         .update(userProfileTable)
         .set({ invitedBy: inviter.userId })
         .where(eq(userProfileTable.userId, options.userId));
+    }, options.tx);
+  }
+
+  static async getNotifications(
+    options: DbOptions &
+      PaginationOptions & {
+        userId: string;
+      }
+  ) {
+    return withTxOrDb(async (tx) => {
+      const query = tx
+        .select({
+          id: notificationsTable.id,
+          type: notificationsTable.type,
+          createdAt: notificationsTable.createdAt,
+          readAt: notificationsTable.readAt,
+          metadata: notificationsTable.metadata,
+          content: notificationsTable.content,
+        })
+        .from(notificationsTable)
+        .where(eq(notificationsTable.userId, options.userId))
+        .$dynamic();
+
+      const mainQuery = query.as("main_query");
+      const countQuery = tx
+        .select({ count: countDistinct(mainQuery.id) })
+        .from(mainQuery)
+        .$dynamic();
+
+      return await paginateQuery(
+        query.orderBy(desc(notificationsTable.createdAt)),
+        countQuery,
+        {
+          page: options.page,
+          pageSize: options.pageSize,
+        }
+      );
+    }, options.tx);
+  }
+
+  static async readNotification(
+    options: DbOptions & {
+      userId: string;
+      notificationId: number;
+    }
+  ) {
+    return withTxOrDb(async (tx) => {
+      await tx
+        .update(notificationsTable)
+        .set({ readAt: sql`NOW()` })
+        .where(
+          and(
+            eq(notificationsTable.userId, options.userId),
+            eq(notificationsTable.id, options.notificationId)
+          )
+        );
     }, options.tx);
   }
 }
