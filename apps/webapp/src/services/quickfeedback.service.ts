@@ -1,5 +1,11 @@
-import { withTxOrTx } from "@/database/helpers";
 import {
+  getColumnName,
+  insertInto,
+  jsonbBuildObject,
+  withTxOrTx,
+} from "@/database/helpers";
+import {
+  notificationsTable,
   promptSetPrompts,
   promptSetsTable,
   promptsTable,
@@ -7,13 +13,20 @@ import {
   quickFeedbacksTable,
   responsesTable,
   scoresTable,
+  userNotificationSubscriptionsView,
   userRoleOnPromptSetTable,
+  usersView,
 } from "@/database/schema";
-import { QuickFeedbackOpinion, UserRoleOnPromptSet } from "@/database/types";
+import {
+  NotificationType,
+  NotificationTypes,
+  QuickFeedbackOpinion,
+  UserRoleOnPromptSet,
+} from "@/database/types";
 import { ApiError } from "@/errors/api-error";
 import { ADMIN_USER_ID } from "@/lib/constants";
 import { DbOptions } from "@/types/db";
-import { eq, isNotNull, sql } from "drizzle-orm";
+import { and, eq, isNotNull, not, sql, StringChunk } from "drizzle-orm";
 
 export class QuickFeedbackService {
   static async upsertQuickFeedback(
@@ -159,7 +172,7 @@ export class QuickFeedbackService {
         throw ApiError.badRequest("Only one relation can be provided");
       }
 
-      await tx
+      const result = await tx
         .insert(quickFeedbacksTable)
         .values({
           promptId: data.promptId,
@@ -173,8 +186,108 @@ export class QuickFeedbackService {
           target: [quickFeedbacksTable.userId, relationColumns[0]!],
           set: {
             opinion: data.opinion,
+            updatedAt: sql`NOW()`,
           },
-        });
+        })
+        .returning({
+          isNewInsert: sql<boolean>`${eq(
+            quickFeedbacksTable.updatedAt,
+            quickFeedbacksTable.createdAt
+          )}`,
+        })
+        .then((r) => r[0]!);
+
+      // Send notification to all users that have interacted with the entity only if this is a new quick feedback
+      if (result.isNewInsert) {
+        // TODO: Expand to other entities (currently only Prompts are supported)
+        if (data.promptId !== undefined) {
+          // Sub query to get the info of the user that gave the feedback.
+          const feedbackGiverSubQuery = tx.$with("sq_feedback_giver").as((qb) =>
+            qb
+              .select({
+                promptId: sql<string>`${data.promptId}::uuid`.as("prompt_id"),
+                feedbackGiverUserId: usersView.id,
+                feedbackGiverUserDisplayName: sql<string>`
+                  COALESCE(${usersView.displayName}, 'User ' || ${usersView.id})
+                `.as("feedback_giver_user_display_name"),
+              })
+              .from(usersView)
+              .where(eq(usersView.id, data.userId))
+          );
+
+          // Add notification for all the users that has interacted with the Prompt
+          const insertSelect = tx
+            .with(feedbackGiverSubQuery)
+            .select({
+              // Use the same SQL column names as the INSERT statement.
+              [getColumnName(notificationsTable.userId)]:
+                userNotificationSubscriptionsView.userId,
+              // NOTE: Update this part in case if you want to change notification message
+              [getColumnName(notificationsTable.content)]: sql<string>`
+                FORMAT(
+                  '%s gave a %s feedback on %s Prompt "%s"',
+                  ${feedbackGiverSubQuery.feedbackGiverUserDisplayName},
+                  ${data.opinion}::text,
+                  CASE
+                    WHEN ${eq(userNotificationSubscriptionsView.userId, promptsTable.uploaderId)} THEN 'your'
+                    ELSE 'the'
+                  END,
+                  COALESCE(
+                    LEFT(${promptsTable.question}, 20),
+                    ${promptsTable.id}::text
+                  )
+                )`,
+              [getColumnName(notificationsTable.type)]:
+                sql<NotificationType>`${NotificationTypes.promptQuickFeedback}`,
+              [getColumnName(notificationsTable.metadata)]: jsonbBuildObject({
+                opinion: sql<QuickFeedbackOpinion>`${data.opinion}::text`,
+                promptId: promptsTable.id,
+              }),
+            })
+            .from(userNotificationSubscriptionsView)
+            .innerJoin(
+              feedbackGiverSubQuery,
+              eq(
+                // https://github.com/drizzle-team/drizzle-orm/issues/3731
+                sql.join([
+                  new StringChunk(`"${feedbackGiverSubQuery._.alias}"`),
+                  new StringChunk("."),
+                  feedbackGiverSubQuery.promptId,
+                ]),
+                userNotificationSubscriptionsView.promptId
+              )
+            )
+            .innerJoin(
+              promptsTable,
+              eq(userNotificationSubscriptionsView.promptId, promptsTable.id)
+            )
+            .groupBy(
+              userNotificationSubscriptionsView.userId,
+              feedbackGiverSubQuery.feedbackGiverUserId,
+              feedbackGiverSubQuery.feedbackGiverUserDisplayName,
+              promptsTable.id,
+              promptsTable.question
+            )
+            .where(
+              and(
+                eq(userNotificationSubscriptionsView.promptId, data.promptId),
+                not(eq(userNotificationSubscriptionsView.userId, data.userId))
+              )
+            )
+            .$dynamic();
+
+          // NOTE: Drizzle has issues with TS native `INSERT ... SELECT` that's why we
+          // are using SQL directly. More info: https://github.com/drizzle-team/drizzle-orm/issues/3608
+          await tx.execute(
+            sql`${insertInto(notificationsTable, [
+              sql.raw(getColumnName(notificationsTable.userId)),
+              sql.raw(getColumnName(notificationsTable.content)),
+              sql.raw(getColumnName(notificationsTable.type)),
+              sql.raw(getColumnName(notificationsTable.metadata)),
+            ])} ${insertSelect}`
+          );
+        }
+      }
     });
   }
 

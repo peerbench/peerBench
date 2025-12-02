@@ -2,11 +2,20 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LucideBell, LucideMessageSquare } from "lucide-react";
+import {
+  LucideBell,
+  LucideMessageSquare,
+  LucideThumbsUp,
+  LucideThumbsDown,
+} from "lucide-react";
 import { DateTime } from "luxon";
 import { cn } from "@/utils/cn";
 import { cva, type VariantProps } from "class-variance-authority";
-import { NotificationType, NotificationTypes } from "@/database/types";
+import {
+  NotificationType,
+  NotificationTypes,
+  QuickFeedbackOpinions,
+} from "@/database/types";
 import { normalizeDate } from "@/utils/normalize-date";
 
 const notificationCardVariants = cva(
@@ -43,6 +52,7 @@ export interface NotificationCardProps extends VariantProps<
 export function NotificationCard({
   type,
   content,
+  metadata,
   readAt,
   createdAt,
   variant,
@@ -83,6 +93,7 @@ export function NotificationCard({
           <div className={cn("mt-0.5", isCompact && "mt-0")}>
             <NotificationIcon
               type={type}
+              metadata={metadata}
               size={isCompact ? "compact" : "default"}
             />
           </div>
@@ -132,9 +143,11 @@ export function NotificationCard({
 
 function NotificationIcon({
   type,
+  metadata,
   size = "default",
 }: {
   type: NotificationType;
+  metadata: Record<string, any>;
   size?: "default" | "compact";
 }) {
   const iconSize = size === "compact" ? "w-4 h-4" : "w-5 h-5";
@@ -142,6 +155,13 @@ function NotificationIcon({
   switch (type) {
     case NotificationTypes.promptComment:
       return <LucideMessageSquare className={cn(iconSize, "text-blue-600")} />;
+    case NotificationTypes.promptQuickFeedback:
+      const opinion = metadata?.opinion;
+      if (opinion === QuickFeedbackOpinions.negative) {
+        return <LucideThumbsDown className={cn(iconSize, "text-red-600")} />;
+      }
+
+      return <LucideThumbsUp className={cn(iconSize, "text-green-600")} />;
     default:
       return <LucideBell className={cn(iconSize, "text-gray-600")} />;
   }
@@ -151,6 +171,8 @@ function getNotificationTitle(type: NotificationType): string {
   switch (type) {
     case NotificationTypes.promptComment:
       return "New comment";
+    case NotificationTypes.promptQuickFeedback:
+      return "New feedback";
     default:
       return "Notification";
   }

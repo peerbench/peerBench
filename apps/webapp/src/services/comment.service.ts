@@ -1,5 +1,6 @@
 import {
   getColumnName,
+  insertInto,
   jsonbBuildObject,
   withTxOrDb,
   withTxOrTx,
@@ -15,10 +16,15 @@ import {
   responsesTable,
   scoreCommentsTable,
   scoresTable,
+  userNotificationSubscriptionsView,
   userRoleOnPromptSetTable,
   usersView,
 } from "@/database/schema";
-import { NotificationTypes, UserRoleOnPromptSet } from "@/database/types";
+import {
+  NotificationType,
+  NotificationTypes,
+  UserRoleOnPromptSet,
+} from "@/database/types";
 import { ApiError } from "@/errors/api-error";
 import { ADMIN_USER_ID } from "@/lib/constants";
 import { DbOptions, PaginationOptions } from "@/types/db";
@@ -29,9 +35,11 @@ import {
   eq,
   inArray,
   isNull,
+  not,
   or,
   sql,
   SQL,
+  StringChunk,
 } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
@@ -107,45 +115,102 @@ export class CommentService {
         }
       }
 
-      // Add notification for the owner of the prompt
-      // NOTE: Drizzle has issues with TS native `INSERT ... SELECT` that's why we
-      // are using SQL directly. More info: https://github.com/drizzle-team/drizzle-orm/issues/3608
-      const metadata = jsonbBuildObject({
-        promptId: promptsTable.id,
-      });
-      await tx.execute(sql`
-        INSERT INTO ${notificationsTable}
-          (
-            ${sql.raw(getColumnName(notificationsTable.userId))},
-            ${sql.raw(getColumnName(notificationsTable.content))},
-            ${sql.raw(getColumnName(notificationsTable.type))},
-            ${sql.raw(getColumnName(notificationsTable.metadata))}
-          )
-        SELECT
-          ${sql.raw(getColumnName(promptsTable.uploaderId))} AS "${sql.raw(getColumnName(notificationsTable.userId))}",
-          FORMAT(
-            '%s commented on your Prompt "%s"',
-            COALESCE(
-              ${usersView.displayName},
-              'User ' || ${usersView.id}
-            ),
-            COALESCE(
-              LEFT(${promptsTable.question}, 20),
-              ${promptsTable.id}::text
-            )
-          ) AS "${sql.raw(getColumnName(notificationsTable.content))}",
-          ${NotificationTypes.promptComment} AS "${sql.raw(getColumnName(notificationsTable.type))}",
-          ${metadata} AS "${sql.raw(getColumnName(notificationsTable.metadata))}"
-        FROM ${promptsTable}
-        INNER JOIN ${usersView} ON ${eq(promptsTable.uploaderId, usersView.id)}
-        WHERE ${eq(promptsTable.id, data.promptId)}`);
-
-      const [comment] = await tx
+      const comment = await tx
         .insert(promptCommentsTable)
         .values(data)
-        .returning();
+        .returning()
+        .then((r) => r[0]!);
 
-      return comment!.id;
+      // Sub query to get the info of the user that made the comment.
+      const commenterSubQuery = tx.$with("sq_commenter").as((qb) =>
+        qb
+          .select({
+            promptId: sql<string>`${data.promptId}::uuid`.as("prompt_id"),
+            commenterUserId: usersView.id,
+            commenterUserDisplayName: sql<string>`
+              COALESCE(${usersView.displayName}, 'User ' || ${usersView.id})
+            `.as("commenter_user_display_name"),
+          })
+          .from(usersView)
+          .where(eq(usersView.id, data.userId))
+      );
+
+      // Add notification for all the users that has interacted with the Prompt
+      const insertSelect = tx
+        .with(commenterSubQuery)
+        .select({
+          // Use the same SQL column names as the INSERT statement.
+          [getColumnName(notificationsTable.userId)]:
+            userNotificationSubscriptionsView.userId,
+          // NOTE: Update this part in case if you want to change notification message
+          [getColumnName(notificationsTable.content)]: sql<string>`
+            FORMAT(
+              '%s commented on %s Prompt "%s" and saying "%s..."',
+              ${commenterSubQuery.commenterUserDisplayName},
+              CASE
+                WHEN ${eq(userNotificationSubscriptionsView.userId, promptsTable.uploaderId)} THEN 'your'
+                ELSE 'the'
+              END,
+              COALESCE(
+                LEFT(${promptsTable.question}, 20),
+                ${promptsTable.id}::text
+              ),
+              ${data.content.slice(0, 20)}::text
+            )`,
+          [getColumnName(notificationsTable.type)]:
+            sql<NotificationType>`${NotificationTypes.promptComment}`,
+          [getColumnName(notificationsTable.metadata)]: jsonbBuildObject({
+            parentCommentId: sql<
+              number | null
+            >`${data.parentCommentId ?? null}::integer`,
+            commentId: sql<number>`${comment.id}::integer`,
+            promptId: promptsTable.id,
+          }),
+        })
+        .from(userNotificationSubscriptionsView)
+        .innerJoin(
+          commenterSubQuery,
+          eq(
+            // https://github.com/drizzle-team/drizzle-orm/issues/3731
+            sql.join([
+              new StringChunk(`"${commenterSubQuery._.alias}"`),
+              new StringChunk("."),
+              commenterSubQuery.promptId,
+            ]),
+            userNotificationSubscriptionsView.promptId
+          )
+        )
+        .innerJoin(
+          promptsTable,
+          eq(userNotificationSubscriptionsView.promptId, promptsTable.id)
+        )
+        .groupBy(
+          userNotificationSubscriptionsView.userId,
+          commenterSubQuery.commenterUserId,
+          commenterSubQuery.commenterUserDisplayName,
+          promptsTable.id,
+          promptsTable.question
+        )
+        .where(
+          and(
+            eq(userNotificationSubscriptionsView.promptId, data.promptId),
+            not(eq(userNotificationSubscriptionsView.userId, data.userId))
+          )
+        )
+        .$dynamic();
+
+      // NOTE: Drizzle has issues with TS native `INSERT ... SELECT` that's why we
+      // are using SQL directly. More info: https://github.com/drizzle-team/drizzle-orm/issues/3608
+      await tx.execute(
+        sql`${insertInto(notificationsTable, [
+          sql.raw(getColumnName(notificationsTable.userId)),
+          sql.raw(getColumnName(notificationsTable.content)),
+          sql.raw(getColumnName(notificationsTable.type)),
+          sql.raw(getColumnName(notificationsTable.metadata)),
+        ])} ${insertSelect}`
+      );
+
+      return comment.id;
     }, options?.tx);
   }
 
