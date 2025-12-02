@@ -1,3 +1,4 @@
+
 -- Function to compute all rankings using trust propagation algorithm
 CREATE OR REPLACE FUNCTION compute_rankings(
   p_reviews_for_consensus_prompt INTEGER DEFAULT 3,
@@ -234,7 +235,7 @@ BEGIN
     INNER JOIN ranking_prompt_quality rpq 
       ON rpq.prompt_id = r.prompt_id 
       AND rpq.computation_id = v_computation_id
-    WHERE rpq.quality_score > 0.5 -- Only quality prompts
+    WHERE rpq.quality_score >= 0.5 -- Only quality prompts
   ),
   model_scores AS (
     SELECT 
@@ -274,7 +275,7 @@ BEGIN
   INNER JOIN ranking_prompt_quality rpq 
     ON rpq.prompt_id = r.prompt_id 
     AND rpq.computation_id = v_computation_id
-  WHERE rpq.quality_score > 0.5;
+  WHERE rpq.quality_score >= 0.5;
 
   -- Create temp table for pairwise match results
   -- Each row represents matches between model_a and model_b
@@ -403,7 +404,7 @@ BEGIN
     INNER JOIN ranking_prompt_quality rpq 
       ON rpq.prompt_id = p.id 
       AND rpq.computation_id = v_computation_id
-    WHERE rpq.quality_score > 0.5
+    WHERE rpq.quality_score >= 0.5
     GROUP BY hr.uploader_id
   ),
   contributor_reviews AS (
@@ -415,7 +416,7 @@ BEGIN
       ON rpq.prompt_id = qf.prompt_id 
       AND rpq.computation_id = v_computation_id
     WHERE 
-      (qf.opinion = 'positive' AND rpq.quality_score > 0.5) OR
+      (qf.opinion = 'positive' AND rpq.quality_score >= 0.5) OR
       (qf.opinion = 'negative' AND rpq.quality_score < 0.5)
     GROUP BY qf.user_id
   ),
@@ -497,7 +498,7 @@ Parameters:
 Trust update formula: new_trust = old_trust + alpha * (alignment_rate - old_trust)
   where alpha = review_count / (review_count + k)
 ELO ranking (Step 4B):
-- Pairwise comparison on quality prompts (quality_score > 0.5)
+- Pairwise comparison on quality prompts (quality_score >= 0.5)
 - Match: two models scored on the same prompt
 - Win condition: higher score wins, ties ignored
 - ELO formula: R_new = R_old + K * (S - E), K=32
@@ -505,4 +506,3 @@ ELO ranking (Step 4B):
 - 10 iterations for convergence
 All parameters are stored as JSON in the ranking_computations table for version tracking.
 Returns: computation_id of the newly created ranking computation';
-
