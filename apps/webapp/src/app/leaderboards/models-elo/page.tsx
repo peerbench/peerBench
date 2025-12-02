@@ -1,31 +1,41 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Trophy, UserCheck, Clock, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Trophy,
+  Swords,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+  TrendingUp,
+  TrendingDown,
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { useState } from "react";
 import { ExperimentalNotice } from "../components/experimental-notice";
 
-interface ReviewerRanking {
-  userId: string;
-  trustScore: number;
+interface ModelEloRanking {
+  model: string;
+  eloScore: number;
+  winCount: number;
+  lossCount: number;
+  matchCount: number;
   computedAt: string;
-  displayName: string | null;
-  email: string | null;
 }
 
-export default function ReviewersLeaderboardPage() {
+export default function ModelsEloLeaderboardPage() {
   const [page, setPage] = useState(1);
   const limit = 10;
   const offset = (page - 1) * limit;
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["rankings", "reviewers", page, limit, offset],
+    queryKey: ["rankings", "models-elo", page, limit, offset],
     queryFn: async () => {
-      const response = await fetch(`/api/rankings/reviewers?limit=${limit}&offset=${offset}`);
-      if (!response.ok) throw new Error("Failed to fetch reviewer rankings");
+      const response = await fetch(
+        `/api/rankings/models-elo?limit=${limit}&offset=${offset}`
+      );
+      if (!response.ok) throw new Error("Failed to fetch model ELO rankings");
       return response.json();
     },
   });
@@ -38,13 +48,13 @@ export default function ReviewersLeaderboardPage() {
     <main className="flex flex-col items-center justify-center mx-auto px-4 py-8 max-w-7xl">
       <div className="w-full mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <UserCheck className="h-8 w-8 text-black dark:text-white" />
+          <Swords className="h-8 w-8 text-black dark:text-white" />
           <h1 className="text-3xl font-bold text-black dark:text-white">
-            Trusted Reviewers Leaderboard
+            Model ELO Leaderboard
           </h1>
         </div>
         <p className="text-gray-600 dark:text-gray-400">
-          Community members with the highest review trust scores
+          Head-to-head rankings based on pairwise comparisons on quality prompts
         </p>
         {data?.data?.[0]?.computedAt && (
           <p className="text-sm text-gray-500 mt-2 flex items-center gap-1">
@@ -58,7 +68,7 @@ export default function ReviewersLeaderboardPage() {
 
       {error && (
         <div className="w-full p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-          Failed to load rankings. Please try again later.
+          Failed to load ELO rankings. Please try again later.
         </div>
       )}
 
@@ -73,53 +83,64 @@ export default function ReviewersLeaderboardPage() {
         </div>
       ) : (
         <div className="w-full space-y-3">
-          {data?.data?.map((reviewer: ReviewerRanking, index: number) => {
+          {data?.data?.map((model: ModelEloRanking, index: number) => {
             const rank = offset + index + 1;
             return (
-              <Link key={reviewer.userId} href={`/profile/${reviewer.userId}`} className="block">
-                <Card className="p-5 hover:shadow-md transition-shadow cursor-pointer">
-                  <div className="flex items-center gap-4">
-                    {/* Rank */}
-                    <div
-                      className={`flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full font-bold text-lg ${
-                        rank === 1
-                          ? "bg-yellow-100 text-yellow-700"
-                          : rank === 2
-                            ? "bg-gray-100 text-gray-700"
-                            : rank === 3
-                              ? "bg-orange-100 text-orange-700"
-                              : "bg-gray-50 text-gray-600"
-                      }`}
-                    >
-                      {rank <= 3 ? <Trophy className="h-6 w-6" /> : rank}
-                    </div>
+              <Card
+                key={model.model}
+                className="p-5 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-center gap-4">
+                  {/* Rank */}
+                  <div
+                    className={`flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full font-bold text-lg ${
+                      rank === 1
+                        ? "bg-yellow-100 text-yellow-700"
+                        : rank === 2
+                          ? "bg-gray-100 text-gray-700"
+                          : rank === 3
+                            ? "bg-orange-100 text-orange-700"
+                            : "bg-gray-50 text-gray-600"
+                    }`}
+                  >
+                    {rank <= 3 ? <Trophy className="h-6 w-6" /> : rank}
+                  </div>
 
-                  {/* User Info */}
+                  {/* Model Name */}
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100 truncate">
-                      {reviewer.displayName || reviewer.email || "Anonymous"}
+                      {model.model}
                     </h3>
-                    <div className="text-xs text-gray-500 font-mono mt-1 truncate">
-                      {reviewer.userId}
+                    <div className="flex items-center gap-4 mt-1 text-sm text-gray-600 dark:text-gray-400">
+                      <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                        <TrendingUp className="h-4 w-4" />
+                        {model.winCount} W
+                      </span>
+                      <span className="flex items-center gap-1 text-red-500 dark:text-red-400">
+                        <TrendingDown className="h-4 w-4" />
+                        {model.lossCount} L
+                      </span>
+                      <span className="text-gray-500">
+                        {model.matchCount} matches
+                      </span>
                     </div>
                   </div>
 
-                  {/* Trust Score */}
+                  {/* ELO Score */}
                   <div className="flex-shrink-0 text-right">
-                    <div className="text-2xl font-bold text-green-600">
-                      {(reviewer.trustScore * 100).toFixed(1)}
+                    <div className="text-2xl font-bold text-blue-600">
+                      {Math.max(0, model.eloScore).toFixed(1)}
                     </div>
-                    <div className="text-xs text-gray-500">trust points</div>
+                    <div className="text-xs text-gray-500">ELO</div>
                   </div>
                 </div>
               </Card>
-            </Link>
             );
           })}
 
           {data?.data?.length === 0 && (
             <div className="text-center py-12 text-gray-500">
-              No reviewer rankings available yet.
+              No ELO rankings available yet.
             </div>
           )}
         </div>
@@ -137,7 +158,7 @@ export default function ReviewersLeaderboardPage() {
             <ChevronLeft className="h-4 w-4" />
             Previous
           </Button>
-          
+
           <div className="text-sm text-gray-600 text-center">
             <div>Page {page}</div>
             {totalCount > 0 && (
@@ -146,7 +167,7 @@ export default function ReviewersLeaderboardPage() {
               </div>
             )}
           </div>
-          
+
           <Button
             variant="outline"
             onClick={() => setPage(page + 1)}
@@ -161,4 +182,3 @@ export default function ReviewersLeaderboardPage() {
     </main>
   );
 }
-

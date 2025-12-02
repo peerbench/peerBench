@@ -10,7 +10,6 @@ import { APIPromptItem, usePromptAPI } from "@/lib/hooks/use-prompt-api";
 import { useInfinitePrompts } from "@/lib/react-query/use-infinite-prompts";
 import { errorMessage } from "@/utils/error-message";
 import { InfiniteData, useQueryClient } from "@tanstack/react-query";
-import { QK_PROMPTS } from "@/lib/react-query/query-keys";
 import { PaginatedResponse } from "@/types/db";
 import { LucideLoader2 } from "lucide-react";
 
@@ -28,15 +27,18 @@ export function Results() {
     [convertFiltersToApiParams, debouncedFilters]
   );
 
-  const {
-    data: prompts,
-    isLoading,
-    isFetchingNextPage,
-    isReachingEnd,
-    refetch,
-    error,
-    loadingRef,
-  } = useInfinitePrompts(queryParams, {
+  const [
+    {
+      data: prompts,
+      isLoading,
+      isFetchingNextPage,
+      isReachingEnd,
+      refetch,
+      error,
+      loadingRef,
+    },
+    infinitePromptsQueryKey,
+  ] = useInfinitePrompts(queryParams, {
     enableInfiniteScroll: true,
     autoLoadNextPage: false,
   });
@@ -59,7 +61,7 @@ export function Results() {
       // TODO: Use server-state pattern where the API call returns the updated entity
       // Update the local cache with the new updated Prompt data
       queryClient.setQueryData(
-        [QK_PROMPTS, queryParams],
+        infinitePromptsQueryKey,
         (prev: InfiniteData<PaginatedResponse<APIPromptItem>>) => {
           return {
             ...prev,
@@ -77,7 +79,7 @@ export function Results() {
         }
       );
     },
-    [getPrompts, queryParams, queryClient, prompts]
+    [getPrompts, queryClient, prompts, infinitePromptsQueryKey]
   );
 
   // Show loading spinner for initial load

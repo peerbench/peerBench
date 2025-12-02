@@ -11,7 +11,6 @@ import {
   LucideExternalLink,
   LucideTrophy,
   LucideUsers,
-  LucideBot,
   LucideUserCheck,
 } from "lucide-react";
 import { SiDiscord, SiGithub } from "@icons-pack/react-simple-icons";
@@ -21,12 +20,18 @@ export const links = [
     label: "Leaderboards",
     icon: <LucideTrophy size={16} />,
     menu: [
-      {
-        label: "Models",
-        href: "/leaderboards/models",
-        description: "Top performing AI models",
-        icon: <LucideBot />,
-      },
+      // {
+      //   label: "Models (Performance)",
+      //   href: "/leaderboards/models-performance",
+      //   description: "Top performing AI models",
+      //   icon: <LucideBot />,
+      // },
+      // {
+      //   label: "Models (ELO)",
+      //   href: "/leaderboards/models-elo",
+      //   description: "Head-to-head model rankings",
+      //   icon: <LucideSwords />,
+      // },
       {
         label: "Reviewers",
         href: "/leaderboards/reviewers",

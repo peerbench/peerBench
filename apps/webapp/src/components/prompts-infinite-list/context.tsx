@@ -80,9 +80,15 @@ export function ComponentContextProvider({
   const convertFiltersToApiParams = useCallback(
     (filters: Filters) => {
       const promptSetId: number[] = [];
-      if (promptFiltersCtx.fixedFilters?.promptSetId) {
+      if (
+        promptFiltersCtx.fixedFilters?.promptSetId !== undefined &&
+        promptFiltersCtx.fixedFilters.promptSetId !== null
+      ) {
         promptSetId.push(promptFiltersCtx.fixedFilters.promptSetId);
-      } else if (filters.promptSetId?.value?.value) {
+      } else if (
+        filters.promptSetId?.value?.value !== undefined &&
+        filters.promptSetId.value.value !== null
+      ) {
         promptSetId.push(filters.promptSetId.value.value);
       }
 

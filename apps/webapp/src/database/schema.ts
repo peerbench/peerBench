@@ -1160,6 +1160,28 @@ export type DbRankingModelPerformance =
 export type DbRankingModelPerformanceInsert =
   typeof rankingModelPerformanceTable.$inferInsert;
 
+export const rankingModelEloTable = pgTable(
+  "ranking_model_elo",
+  {
+    id: integer().primaryKey().generatedByDefaultAsIdentity(),
+    computationId: integer("computation_id")
+      .references(() => rankingComputationsTable.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      })
+      .notNull(),
+    model: text().notNull(),
+    eloScore: real("elo_score").notNull().default(1500),
+    winCount: integer("win_count").notNull().default(0),
+    lossCount: integer("loss_count").notNull().default(0),
+    matchCount: integer("match_count").notNull().default(0),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [unique().on(table.computationId, table.model)]
+);
+export type DbRankingModelElo = typeof rankingModelEloTable.$inferSelect;
+export type DbRankingModelEloInsert = typeof rankingModelEloTable.$inferInsert;
+
 export const rankingContributorScoreTable = pgTable(
   "ranking_contributor_score",
   {
@@ -2299,6 +2321,36 @@ export const currentModelPerformanceView = pgView(
     .where(
       eq(
         rankingModelPerformanceTable.computationId,
+        sql`(SELECT ${latestComputation.id} FROM ${latestComputation})`
+      )
+    );
+});
+
+export const currentModelEloView = pgView("v_current_model_elo").as((qb) => {
+  const latestComputation = qb
+    .select({ id: rankingComputationsTable.id })
+    .from(rankingComputationsTable)
+    .orderBy(sql`${rankingComputationsTable.computedAt} DESC`)
+    .limit(1)
+    .as("latest");
+
+  return qb
+    .select({
+      model: rankingModelEloTable.model,
+      eloScore: rankingModelEloTable.eloScore,
+      winCount: rankingModelEloTable.winCount,
+      lossCount: rankingModelEloTable.lossCount,
+      matchCount: rankingModelEloTable.matchCount,
+      computedAt: rankingComputationsTable.computedAt,
+    })
+    .from(rankingModelEloTable)
+    .innerJoin(
+      rankingComputationsTable,
+      eq(rankingModelEloTable.computationId, rankingComputationsTable.id)
+    )
+    .where(
+      eq(
+        rankingModelEloTable.computationId,
         sql`(SELECT ${latestComputation.id} FROM ${latestComputation})`
       )
     );
