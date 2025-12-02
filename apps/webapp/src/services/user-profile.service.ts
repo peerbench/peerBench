@@ -3,6 +3,7 @@ import {
   desc,
   eq,
   getViewSelectedFields,
+  isNull,
   sql,
 } from "drizzle-orm";
 import {
@@ -183,6 +184,7 @@ export class ProfileService {
     options: DbOptions &
       PaginationOptions & {
         userId: string;
+        unreadOnly?: boolean;
       }
   ) {
     return withTxOrDb(async (tx) => {
@@ -196,7 +198,12 @@ export class ProfileService {
           content: notificationsTable.content,
         })
         .from(notificationsTable)
-        .where(eq(notificationsTable.userId, options.userId))
+        .where(
+          and(
+            eq(notificationsTable.userId, options.userId),
+            options.unreadOnly ? isNull(notificationsTable.readAt) : undefined
+          )
+        )
         .$dynamic();
 
       const mainQuery = query.as("main_query");

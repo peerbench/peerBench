@@ -6,20 +6,26 @@ import { ClientSideResponseType, NextResponseType } from "@/lib/utilities";
 import { paginatedResponse } from "@/lib/route-helpers/paginated-response";
 import { safeParseQueryParams } from "@/lib/route-helpers/parse-query-params";
 import { z } from "zod";
+import { StringBool } from "@/validation/string-bool";
 
 export const querySchema = z.object({
   page: z.coerce.number().min(1).optional().default(1),
   pageSize: z.coerce.number().max(1000).optional().default(10),
+  unreadOnly: StringBool().optional().default("false"),
 });
 
 export const GET = createHandler()
   .use(auth)
   .handle(async (req, ctx) => {
-    const { page, pageSize } = safeParseQueryParams(req, querySchema);
+    const { page, pageSize, unreadOnly } = safeParseQueryParams(
+      req,
+      querySchema
+    );
     const notifications = await ProfileService.getNotifications({
       userId: ctx.userId,
       page,
       pageSize,
+      unreadOnly,
     });
 
     return NextResponse.json(paginatedResponse(notifications, page, pageSize));
