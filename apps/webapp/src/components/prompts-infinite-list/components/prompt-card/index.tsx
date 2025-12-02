@@ -6,8 +6,10 @@ import { cn } from "@/utils/cn";
 import { motion } from "motion/react";
 import {
   LucideEye,
+  LucideFlame,
   LucideHash,
   LucideLoader2,
+  LucideMessageCircle,
   LucidePlus,
   LucideTrash,
 } from "lucide-react";
@@ -47,6 +49,7 @@ export function PromptCard({
   tags = [],
   responseAndScoreStats = [],
   className,
+  last48HCommentCount,
   onIncludingPromptSetUpdated,
 }: PromptCardProps) {
   const [isExcludingPrompt, setIsExcludingPrompt] = useState(false);
@@ -172,16 +175,43 @@ export function PromptCard({
                 </Badge>
               )}
             </h3>
-            <CopyButton
-              className="text-muted-foreground hover:text-gray-700"
-              text={id}
-              variant="ghost"
-            >
-              <div className="flex items-center">
-                <LucideHash size={16} />
-                <span className="font-mono ml-2 mr-1 text-[14px]">{id}</span>
-              </div>
-            </CopyButton>
+            <div className="flex items-center gap-2">
+              {last48HCommentCount > 0 && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge
+                      variant="outline"
+                      className="text-xs font-medium px-2 py-1 border-gray-400 flex items-center "
+                      style={{
+                        backgroundColor:
+                          getCommentCountBadgeColor(last48HCommentCount),
+                      }}
+                    >
+                      {last48HCommentCount > 10 ? (
+                        <LucideFlame className="text-red-700" />
+                      ) : (
+                        <LucideMessageCircle />
+                      )}
+                      {last48HCommentCount} comments
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {last48HCommentCount} comments made by users in the last 48
+                    hours
+                  </TooltipContent>
+                </Tooltip>
+              )}
+              <CopyButton
+                className="text-muted-foreground hover:text-gray-700"
+                text={id}
+                variant="ghost"
+              >
+                <div className="flex items-center">
+                  <LucideHash size={16} />
+                  <span className="font-mono ml-2 mr-1 text-[14px]">{id}</span>
+                </div>
+              </CopyButton>
+            </div>
           </div>
 
           <div className="w-full overflow-hidden line-clamp-2 text-sm flex flex-col gap-3">
@@ -324,4 +354,8 @@ function getBadgeColor(score: number | null) {
   // Score range: 0-1, where 0 is red and 1 is green
   const hue = score * 120; // 0 = red (0°), 1 = green (120°)
   return `hsl(${hue}, 60%, 90%)`; // Light colors with good saturation and brightness
+}
+
+function getCommentCountBadgeColor(commentCount: number) {
+  return `hsl(${commentCount * 120}, 60%, 90%)`;
 }
