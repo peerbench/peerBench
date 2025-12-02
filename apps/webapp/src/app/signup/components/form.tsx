@@ -47,7 +47,7 @@ export default function Form() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const searchParams = useSearchParams();
-  const invitationCode = searchParams.get("code");
+  const invitationCode = searchParams.get("invitation");
   const referralCode = searchParams.get("referral");
   const redirectPath = searchParams.get("redirect");
   const {
@@ -157,7 +157,7 @@ export default function Form() {
                   size="default"
                 >
                   <Link
-                    href={`/login${redirectPath ? `?redirect=${encodeURIComponent(redirectPath)}` : invitationCode ? `?code=${invitationCode}` : ""}`}
+                    href={`/login${redirectPath ? `?redirect=${encodeURIComponent(redirectPath)}` : invitationCode ? `?invitation=${invitationCode}` : ""}`}
                   >
                     Sign In to Your Account
                   </Link>
@@ -285,7 +285,7 @@ export default function Form() {
                 <p className="text-sm text-muted-foreground">
                   Already have an account?{" "}
                   <Link
-                    href={`/login${redirectPath ? `?redirect=${encodeURIComponent(redirectPath)}` : invitationCode ? `?code=${invitationCode}` : ""}`}
+                    href={`/login${redirectPath ? `?redirect=${encodeURIComponent(redirectPath)}` : invitationCode ? `?invitation=${invitationCode}` : ""}`}
                     className="font-medium text-primary hover:text-primary/80 transition-colors duration-200"
                   >
                     Sign in

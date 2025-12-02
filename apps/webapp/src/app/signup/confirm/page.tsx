@@ -4,15 +4,19 @@ import { ApiKeyService } from "@/services/apikey.service";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { OpenRouterApiKeySetter } from "./openrouter-apikey-setter";
+import { PromptSetService } from "@/services/promptset.service";
+import { ProfileService } from "@/services/user-profile.service";
 
 type PageProps = {
-  params: Promise<{
+  searchParams: Promise<{
     code?: string;
+    invitation?: string;
+    referral?: string;
   }>;
 };
 
-export default async function Page({ params }: PageProps) {
-  const { code } = await params;
+export default async function Page({ searchParams }: PageProps) {
+  const { code, invitation, referral } = await searchParams;
   const client = await createClient();
 
   if (!code) {
@@ -34,6 +38,28 @@ export default async function Page({ params }: PageProps) {
         </p>
       </main>
     );
+  }
+
+  // TODO: In case if the user creation was successful but there is a race condition between that newly created user and another user who are using the same invitation code, the user will remain as created but wouldn't be added to the target Prompt Set (because other user has used the invitation code and the `useInvitation` call below failed.)
+  if (invitation) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    await PromptSetService.useInvitation({
+      code: invitation,
+      userId: authResult.data.session.user.id,
+    }).catch((err) => {
+      // Ignore the error if the invitation code is invalid
+      console.error(`Error while using invitation code: ${err.message}`);
+    });
+  }
+
+  if (referral) {
+    await ProfileService.setInviter({
+      userId: authResult.data.session.user.id,
+      referralCode: referral,
+    }).catch((err) => {
+      // Ignore the error if the referral code is invalid
+      console.error(`Error while applying referral code: ${err.message}`);
+    });
   }
 
   // Provision a new one key or get it from the database (if there is already one)
@@ -58,7 +84,10 @@ export default async function Page({ params }: PageProps) {
       <p className="text-gray-400">
         You&apos;ll be redirected to the login page in 5 seconds...
       </p>
-      <Redirect to="/login?redirect=prompt-sets" timeout={5000} />
+      <Redirect
+        to={`/login?redirect=${encodeURIComponent("benchmarks/explore")}`}
+        timeout={5000}
+      />
     </main>
   );
 }

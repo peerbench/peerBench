@@ -44,7 +44,7 @@ export default function LoginPage() {
   const [isPending, startTransition] = useTransition();
   const [openRouterApiKey, setOpenRouterApiKey] = useSettingOpenRouterKey();
   const { refetch: getOpenRouterServerKey } = useOpenRouterServerKey(false);
-  const invitationCode = searchParams.get("code");
+  const invitationCode = searchParams.get("invitation");
   const redirectPath = searchParams.get("redirect");
   const queryClient = useQueryClient();
 

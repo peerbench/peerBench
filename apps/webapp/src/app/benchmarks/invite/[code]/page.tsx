@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 
 type PageProps = {
   params: Promise<{
+    // TODO: Rename to `invitation` to make it clear.
     code?: string;
   }>;
 };
@@ -22,7 +23,7 @@ export default async function Page({ params }: PageProps) {
 
   // User is not logged, redirect to the signup page with the invitation code
   if (!user) {
-    redirect(`/signup?code=${encodeURI(code)}`);
+    redirect(`/signup?invitation=${encodeURI(code)}`);
   }
 
   try {

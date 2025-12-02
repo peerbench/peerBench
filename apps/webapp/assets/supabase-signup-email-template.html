@@ -56,7 +56,7 @@
             </p>
 
             <a
-              href="{{ .RedirectTo }}/{{ .TokenHash }}"
+              href="{{ .RedirectTo }}&code={{ .TokenHash }}"
               style="
                 display: inline-block;
                 background-color: #16a34a;
@@ -83,7 +83,7 @@
               into your browser:
             </p>
             <p style="word-break: break-all; color: #2563eb; font-size: 13px">
-              {{ .RedirectTo }}/{{ .TokenHash }}
+              {{ .RedirectTo }}&code={{ .TokenHash }}
             </p>
           </td>
         </tr>
