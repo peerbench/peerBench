@@ -22,7 +22,7 @@ export default function ModelsLeaderboardPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["rankings", "models", page, limit, offset],
     queryFn: async () => {
-      const response = await fetch(`/api/rankings/model-performance?limit=${limit}&offset=${offset}`);
+      const response = await fetch(`/api/rankings/models-performance?limit=${limit}&offset=${offset}`);
       if (!response.ok) throw new Error("Failed to fetch model rankings");
       return response.json();
     },

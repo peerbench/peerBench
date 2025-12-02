@@ -24,7 +24,7 @@ export const links = [
     menu: [
       // {
       //   label: "Models (Performance)",
-      //   href: "/leaderboards/model-performance",
+      //   href: "/leaderboards/models-performance",
       //   description: "Top performing AI models",
       //   icon: <LucideBot />,
       // },
