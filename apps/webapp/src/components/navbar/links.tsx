@@ -22,18 +22,18 @@ export const links = [
     label: "Leaderboards",
     icon: <LucideTrophy size={16} />,
     menu: [
-      {
-        label: "Models (Performance)",
-        href: "/leaderboards/model-performance",
-        description: "Top performing AI models",
-        icon: <LucideBot />,
-      },
-      {
-        label: "Models (ELO)",
-        href: "/leaderboards/models-elo",
-        description: "Head-to-head model rankings",
-        icon: <LucideSwords />,
-      },
+      // {
+      //   label: "Models (Performance)",
+      //   href: "/leaderboards/model-performance",
+      //   description: "Top performing AI models",
+      //   icon: <LucideBot />,
+      // },
+      // {
+      //   label: "Models (ELO)",
+      //   href: "/leaderboards/models-elo",
+      //   description: "Head-to-head model rankings",
+      //   icon: <LucideSwords />,
+      // },
       {
         label: "Reviewers",
         href: "/leaderboards/reviewers",
