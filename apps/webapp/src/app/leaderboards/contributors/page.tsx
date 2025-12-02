@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useState } from "react";
+import { ExperimentalNotice } from "../components/experimental-notice";
 
 interface ContributorRanking {
   userId: string;
@@ -56,6 +57,8 @@ export default function ContributorsLeaderboardPage() {
           </p>
         )}
       </div>
+
+      <ExperimentalNotice />
 
       {error && (
         <div className="w-full p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
