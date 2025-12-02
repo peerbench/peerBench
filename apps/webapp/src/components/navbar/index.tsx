@@ -2,6 +2,7 @@ import { UserMenu } from "./user-menu";
 import { MobileNavigation } from "./mobile-navigation";
 import { NavigationMenu } from "@/components/navbar/navigation-menu";
 import { DesktopNavigation } from "./desktop-navigation";
+import { Notifications } from "./notifications";
 import { getUser } from "@/lib/actions/auth";
 import Link from "next/link";
 import Image from "next/image";
@@ -30,6 +31,7 @@ export default async function Navbar() {
       {/* Onboarding Tutorial - aligned to right */}
       <DesktopNavigation user={user} onlyExternal />
 
+      {user && <Notifications />}
       <UserMenu user={user} />
       {/* Mobile Navigation */}
       <div className="lg:hidden">
