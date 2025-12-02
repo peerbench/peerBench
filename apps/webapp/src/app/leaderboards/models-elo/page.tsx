@@ -129,7 +129,7 @@ export default function ModelsEloLeaderboardPage() {
                   {/* ELO Score */}
                   <div className="flex-shrink-0 text-right">
                     <div className="text-2xl font-bold text-blue-600">
-                      {model.eloScore.toFixed(1)}
+                      {Math.max(0, model.eloScore).toFixed(1)}
                     </div>
                     <div className="text-xs text-gray-500">ELO</div>
                   </div>

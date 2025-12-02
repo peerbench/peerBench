@@ -346,7 +346,7 @@ BEGIN
     )
     SELECT 
       e.model,
-      GREATEST(0, e.elo_score + COALESCE(ma.total_adjustment, 0)) AS new_elo
+      e.elo_score + COALESCE(ma.total_adjustment, 0) AS new_elo
     FROM temp_model_elo e
     LEFT JOIN model_adjustments ma ON ma.model = e.model;
 
