@@ -659,6 +659,13 @@
       "when": 1764700182949,
       "tag": "0093_tiresome_shooting_star",
       "breakpoints": true
+    },
+    {
+      "idx": 94,
+      "version": "7",
+      "when": 1764702475428,
+      "tag": "0094_setup_cron_for_deleting_old_notifications",
+      "breakpoints": true
     }
   ]
 }
