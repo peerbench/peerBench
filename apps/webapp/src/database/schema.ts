@@ -34,6 +34,8 @@ import {
   ApiKeyProvider,
   PromptStatuses,
   NotificationType,
+  UserNotificationSubscriptionReason,
+  UserNotificationSubscriptionReasons,
 } from "./types";
 import {
   aliasedTable,
@@ -49,6 +51,7 @@ import {
   StringChunk,
 } from "drizzle-orm";
 import { avg, jsonbAgg, jsonbBuildObject, sum } from "./helpers";
+import { InferData } from "./utilities";
 
 /**************************************************
  * Tables                                         *
@@ -2105,6 +2108,49 @@ export const promptSetStatsView = pgView("v_prompt_set_stats").as((qb) => {
       overallScorePerPromptSetView.totalScoreCount,
       overallScorePerPromptSetView.avgScore
     );
+});
+
+export const userNotificationSubscriptionsView = pgView(
+  "v_user_notification_subscriptions"
+).as((qb) => {
+  const commentSubs = qb
+    .select({
+      promptId: promptCommentsTable.promptId,
+      userId: promptCommentsTable.userId,
+      reason:
+        sql<UserNotificationSubscriptionReason>`${UserNotificationSubscriptionReasons.commented}`.as(
+          "reason"
+        ),
+    })
+    .from(promptCommentsTable);
+
+  const quickFeedbackSubs = qb
+    .select({
+      promptId: quickFeedbacksTable.promptId,
+      userId: quickFeedbacksTable.userId,
+      reason:
+        sql<UserNotificationSubscriptionReason>`${UserNotificationSubscriptionReasons.gaveQuickFeedback}`.as(
+          "reason"
+        ),
+    })
+    .from(quickFeedbacksTable)
+    // TODO: Remove `where` clause if there are more entities (e.g scores, responses) that user should be subscribed after an interaction. Currently they are only Prompts.
+    .where(isNotNull(quickFeedbacksTable.promptId));
+
+  const ownPromptSubs = qb
+    .select({
+      promptId: sql<InferData<typeof promptsTable.id>>`${promptsTable.id}`.as(
+        "prompt_id"
+      ),
+      userId: promptsTable.uploaderId,
+      reason:
+        sql<UserNotificationSubscriptionReason>`${UserNotificationSubscriptionReasons.owns}`.as(
+          "reason"
+        ),
+    })
+    .from(promptsTable);
+
+  return commentSubs.union(quickFeedbackSubs).union(ownPromptSubs);
 });
 
 // export const modelScoreStatsPerPromptView = pgView(
