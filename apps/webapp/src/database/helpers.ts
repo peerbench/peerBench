@@ -10,6 +10,7 @@ import {
   SQLChunk,
   ColumnsSelection,
   StringChunk,
+  Table,
 } from "drizzle-orm";
 import { InferData } from "./utilities";
 
@@ -266,6 +267,35 @@ export function dateDiff(value1: SQLWrapper, value2: SQLWrapper) {
   return sql`(${value1} - ${value2})::interval`;
 }
 
-export function getColumnName<T extends PgColumn>(column: T) {
+export function getColumnName<T extends PgColumn>(column: T): T["name"] {
   return column["name"];
+}
+
+/**
+ * Builds the following SQL statement:
+ * ```sql
+ * INSERT INTO ${table} (${columns.join(", ")})
+ * ```
+ */
+export function insertInto<TTable extends Table, TColumns extends SQLWrapper[]>(
+  table: TTable,
+  columns: TColumns
+) {
+  const chunks: SQLChunk[] = [
+    new StringChunk("INSERT INTO "),
+    table,
+    new StringChunk(" ("),
+  ];
+
+  for (let i = 0; i < columns.length; i++) {
+    chunks.push(columns[i]);
+
+    if (i < columns.length - 1) {
+      chunks.push(new StringChunk(","));
+    }
+  }
+
+  chunks.push(new StringChunk(")"));
+
+  return sql.join(chunks);
 }
