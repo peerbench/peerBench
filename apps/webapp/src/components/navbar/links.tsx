@@ -11,9 +11,7 @@ import {
   LucideExternalLink,
   LucideTrophy,
   LucideUsers,
-  LucideBot,
   LucideUserCheck,
-  LucideSwords,
 } from "lucide-react";
 import { SiDiscord, SiGithub } from "@icons-pack/react-simple-icons";
 
