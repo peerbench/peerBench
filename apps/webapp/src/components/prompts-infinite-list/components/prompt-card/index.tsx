@@ -6,7 +6,6 @@ import { cn } from "@/utils/cn";
 import { motion } from "motion/react";
 import {
   LucideEye,
-  LucideFlame,
   LucideHash,
   LucideLoader2,
   LucideMessageCircle,
@@ -181,17 +180,9 @@ export function PromptCard({
                   <TooltipTrigger asChild>
                     <Badge
                       variant="outline"
-                      className="text-xs font-medium px-2 py-1 border-gray-400 flex items-center "
-                      style={{
-                        backgroundColor:
-                          getCommentCountBadgeColor(last48HCommentCount),
-                      }}
+                      className="text-xs font-medium px-2 py-1 border-gray-400 flex items-center bg-yellow-200"
                     >
-                      {last48HCommentCount > 10 ? (
-                        <LucideFlame className="text-red-700" />
-                      ) : (
-                        <LucideMessageCircle />
-                      )}
+                      <LucideMessageCircle />
                       {last48HCommentCount} comments
                     </Badge>
                   </TooltipTrigger>
@@ -354,8 +345,4 @@ function getBadgeColor(score: number | null) {
   // Score range: 0-1, where 0 is red and 1 is green
   const hue = score * 120; // 0 = red (0°), 1 = green (120°)
   return `hsl(${hue}, 60%, 90%)`; // Light colors with good saturation and brightness
-}
-
-function getCommentCountBadgeColor(commentCount: number) {
-  return `hsl(${commentCount * 120}, 60%, 90%)`;
 }
