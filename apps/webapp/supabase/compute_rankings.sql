@@ -5,7 +5,12 @@ CREATE OR REPLACE FUNCTION compute_rankings(
   p_account_age_days INTEGER DEFAULT 7,
   p_k INTEGER DEFAULT 250,
   p_min_review_percentage REAL DEFAULT 0.1,
-  p_max_trust_cap REAL DEFAULT 0.75
+  p_max_trust_cap REAL DEFAULT 0.75,
+  p_percentile_trust_for_reviewers REAL DEFAULT 0.5,
+  p_quality_threshold_prompt REAL DEFAULT 0.5,
+  p_reviews_for_quality_prompt INTEGER DEFAULT 1,
+  p_min_prompts_for_model_ranking INTEGER DEFAULT 25,
+  p_elo_iterations INTEGER DEFAULT 10
 ) RETURNS INTEGER AS $$
 DECLARE
   v_computation_id INTEGER;
@@ -20,7 +25,12 @@ BEGIN
     'accountAgeDays', p_account_age_days,
     'k', p_k,
     'minReviewPercentage', p_min_review_percentage,
-    'maxTrustCap', p_max_trust_cap
+    'maxTrustCap', p_max_trust_cap,
+    'trustPercentile', p_percentile_trust_for_reviewers,
+    'qualityThreshold', p_quality_threshold_prompt,
+    'reviewsForQualityPrompt', p_reviews_for_quality_prompt,
+    'minPromptsForModelRanking', p_min_prompts_for_model_ranking,
+    'eloIterations', p_elo_iterations
   ))
   RETURNING id INTO v_computation_id;
 
@@ -65,9 +75,9 @@ BEGIN
     ) latest ON rrt.computation_id = latest.id;
     
     -- Run single trust propagation iteration
-    -- Compute trust threshold (50th percentile with minimum of 0.5)
+    -- Compute trust threshold (percentile with minimum of 0.5)
     SELECT GREATEST(
-      PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY trust_score),
+      PERCENTILE_CONT(p_percentile_trust_for_reviewers) WITHIN GROUP (ORDER BY trust_score),
       0.5
     )
     INTO v_trust_threshold
@@ -163,7 +173,7 @@ BEGIN
 
   -- Compute final threshold for use in quality calculations
   SELECT GREATEST(
-    PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY trust_score),
+    PERCENTILE_CONT(p_percentile_trust_for_reviewers) WITHIN GROUP (ORDER BY trust_score),
     0.5
   )
   INTO v_trust_threshold
@@ -197,7 +207,7 @@ BEGIN
     AND rrt.trust_score >= v_trust_threshold
   WHERE qf.prompt_id IS NOT NULL
   GROUP BY qf.prompt_id
-  HAVING COUNT(*) > 0;
+  HAVING COUNT(*) >= p_reviews_for_quality_prompt;
 
   -- ============================================
   -- STEP 3: COMPUTE BENCHMARK QUALITY
@@ -235,7 +245,7 @@ BEGIN
     INNER JOIN ranking_prompt_quality rpq 
       ON rpq.prompt_id = r.prompt_id 
       AND rpq.computation_id = v_computation_id
-    WHERE rpq.quality_score >= 0.5 -- Only quality prompts
+    WHERE rpq.quality_score >= p_quality_threshold_prompt -- Only quality prompts
     GROUP BY pm.model_id, r.prompt_id, rpq.quality_score, rpq.review_count
   ),
   model_scores AS (
@@ -253,7 +263,7 @@ BEGIN
     COUNT(DISTINCT prompt_id) AS prompts_tested_count
   FROM model_scores
   GROUP BY model
-  HAVING COUNT(*) > 25;
+  HAVING COUNT(*) >= p_min_prompts_for_model_ranking;
 
   -- ============================================
   -- STEP 4B: COMPUTE MODEL ELO RANKINGS
@@ -276,7 +286,7 @@ BEGIN
   INNER JOIN ranking_prompt_quality rpq 
     ON rpq.prompt_id = r.prompt_id 
     AND rpq.computation_id = v_computation_id
-  WHERE rpq.quality_score >= 0.5
+  WHERE rpq.quality_score >= p_quality_threshold_prompt
   GROUP BY pm.model_id, r.prompt_id, rpq.quality_score;
 
   -- Create temp table for pairwise match results
@@ -301,9 +311,9 @@ BEGIN
   SELECT DISTINCT model, 1500.0::REAL AS elo_score
   FROM temp_model_prompt_scores;
 
-  -- Iterative ELO computation (10 iterations for convergence)
+  -- Iterative ELO computation for convergence
   -- Each iteration updates all ELO scores simultaneously based on expected vs actual outcomes
-  FOR i IN 1..10 LOOP
+  FOR i IN 1..p_elo_iterations LOOP
     -- Calculate ELO adjustments for each model
     CREATE TEMP TABLE temp_elo_updates AS
     WITH match_expectations AS (
@@ -406,7 +416,7 @@ BEGIN
     INNER JOIN ranking_prompt_quality rpq 
       ON rpq.prompt_id = p.id 
       AND rpq.computation_id = v_computation_id
-    WHERE rpq.quality_score >= 0.5
+    WHERE rpq.quality_score >= p_quality_threshold_prompt
     GROUP BY hr.uploader_id
   ),
   contributor_reviews AS (
@@ -418,8 +428,8 @@ BEGIN
       ON rpq.prompt_id = qf.prompt_id 
       AND rpq.computation_id = v_computation_id
     WHERE 
-      (qf.opinion = 'positive' AND rpq.quality_score >= 0.5) OR
-      (qf.opinion = 'negative' AND rpq.quality_score < 0.5)
+      (qf.opinion = 'positive' AND rpq.quality_score >= p_quality_threshold_prompt) OR
+      (qf.opinion = 'negative' AND rpq.quality_score < p_quality_threshold_prompt)
     GROUP BY qf.user_id
   ),
   contributor_comments AS (
@@ -497,14 +507,19 @@ Parameters:
 - p_k: Virtual sample size for Bayesian shrinkage 
 - p_min_review_percentage: Minimum % of prompts reviewed to exceed trust cap 
 - p_max_trust_cap: Maximum trust for low-volume reviewers
+- p_percentile_trust_for_reviewers: Percentile for trust threshold calculation (default 0.5 = median)
+- p_quality_threshold_prompt: Minimum quality score for a prompt to be considered "quality" (default 0.5)
+- p_reviews_for_quality_prompt: Minimum reviews needed to calculate prompt quality score
+- p_min_prompts_for_model_ranking: Minimum prompts a model must be tested on to appear in rankings
+- p_elo_iterations: Number of iterations for ELO convergence (default 10)
 Trust update formula: new_trust = old_trust + alpha * (alignment_rate - old_trust)
   where alpha = review_count / (review_count + k)
 ELO ranking (Step 4B):
-- Pairwise comparison on quality prompts (quality_score >= 0.5)
+- Pairwise comparison on quality prompts (quality_score >= p_quality_threshold_prompt)
 - Match: two models scored on the same prompt
 - Win condition: higher score wins, ties ignored
 - ELO formula: R_new = R_old + K * (S - E), K=32
 - Expected score: E = 1 / (1 + 10^((R_opponent - R_self)/400))
-- 10 iterations for convergence
+- p_elo_iterations iterations for convergence
 All parameters are stored as JSON in the ranking_computations table for version tracking.
 Returns: computation_id of the newly created ranking computation';
