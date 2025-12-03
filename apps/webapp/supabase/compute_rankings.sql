@@ -224,7 +224,7 @@ BEGIN
   WITH model_prompt_scores AS (
     -- Aggregate multiple responses per model-prompt pair
     SELECT 
-      COALESCE(km.name, pm.model_id) AS model,
+      pm.model_id AS model,
       r.prompt_id,
       AVG(s.score) AS avg_score,
       rpq.quality_score,
@@ -232,12 +232,11 @@ BEGIN
     FROM responses r
     INNER JOIN scores s ON s.response_id = r.id
     INNER JOIN provider_models pm ON pm.id = r.model_id
-    LEFT JOIN known_models km ON km.id = pm.known_model_id
     INNER JOIN ranking_prompt_quality rpq 
       ON rpq.prompt_id = r.prompt_id 
       AND rpq.computation_id = v_computation_id
     WHERE rpq.quality_score >= 0.5 -- Only quality prompts
-    GROUP BY COALESCE(km.name, pm.model_id), r.prompt_id, rpq.quality_score, rpq.review_count
+    GROUP BY pm.model_id, r.prompt_id, rpq.quality_score, rpq.review_count
   ),
   model_scores AS (
     SELECT 
@@ -267,19 +266,18 @@ BEGIN
   -- Aggregate multiple responses per model-prompt pair using AVG
   CREATE TEMP TABLE temp_model_prompt_scores AS
   SELECT 
-    COALESCE(km.name, pm.model_id) AS model,
+    pm.model_id AS model,
     r.prompt_id,
     AVG(s.score) AS score,
     rpq.quality_score AS prompt_quality
   FROM responses r
   INNER JOIN scores s ON s.response_id = r.id
   INNER JOIN provider_models pm ON pm.id = r.model_id
-  LEFT JOIN known_models km ON km.id = pm.known_model_id
   INNER JOIN ranking_prompt_quality rpq 
     ON rpq.prompt_id = r.prompt_id 
     AND rpq.computation_id = v_computation_id
   WHERE rpq.quality_score >= 0.5
-  GROUP BY COALESCE(km.name, pm.model_id), r.prompt_id, rpq.quality_score;
+  GROUP BY pm.model_id, r.prompt_id, rpq.quality_score;
 
   -- Create temp table for pairwise match results
   -- Each row represents matches between model_a and model_b
