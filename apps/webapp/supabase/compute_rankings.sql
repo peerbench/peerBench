@@ -221,11 +221,12 @@ BEGIN
   -- ============================================
   
   INSERT INTO ranking_model_performance (computation_id, model, score, prompts_tested_count)
-  WITH model_responses AS (
+  WITH model_prompt_scores AS (
+    -- Aggregate multiple responses per model-prompt pair
     SELECT 
       COALESCE(km.name, pm.model_id) AS model,
       r.prompt_id,
-      s.score AS response_score,
+      AVG(s.score) AS avg_score,
       rpq.quality_score,
       rpq.review_count
     FROM responses r
@@ -236,14 +237,15 @@ BEGIN
       ON rpq.prompt_id = r.prompt_id 
       AND rpq.computation_id = v_computation_id
     WHERE rpq.quality_score >= 0.5 -- Only quality prompts
+    GROUP BY COALESCE(km.name, pm.model_id), r.prompt_id, rpq.quality_score, rpq.review_count
   ),
   model_scores AS (
     SELECT 
       model,
       prompt_id,
-      response_score,
+      avg_score AS response_score,
       quality_score * (1 + LN(5.0 * review_count) - LN(5.0)) AS prompt_weight
-    FROM model_responses
+    FROM model_prompt_scores
   )
   SELECT 
     v_computation_id,
@@ -262,11 +264,12 @@ BEGIN
   -- Win: higher score wins, ties are ignored
   
   -- Create temp table with model scores on quality prompts
+  -- Aggregate multiple responses per model-prompt pair using AVG
   CREATE TEMP TABLE temp_model_prompt_scores AS
   SELECT 
     COALESCE(km.name, pm.model_id) AS model,
     r.prompt_id,
-    s.score,
+    AVG(s.score) AS score,
     rpq.quality_score AS prompt_quality
   FROM responses r
   INNER JOIN scores s ON s.response_id = r.id
@@ -275,7 +278,8 @@ BEGIN
   INNER JOIN ranking_prompt_quality rpq 
     ON rpq.prompt_id = r.prompt_id 
     AND rpq.computation_id = v_computation_id
-  WHERE rpq.quality_score >= 0.5;
+  WHERE rpq.quality_score >= 0.5
+  GROUP BY COALESCE(km.name, pm.model_id), r.prompt_id, rpq.quality_score;
 
   -- Create temp table for pairwise match results
   -- Each row represents matches between model_a and model_b
