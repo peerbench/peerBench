@@ -1,0 +1,5410 @@
+{
+  "id": "4638f4d3-ace7-48e2-a70a-dd81e207c262",
+  "prevId": "b51a7e20-4861-4dcf-b7ab-247df041cb02",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.api_keys": {
+      "name": "api_keys",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "api_keys_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "key": {
+          "name": "key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "assigned_user_id": {
+          "name": "assigned_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider": {
+          "name": "provider",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "api_keys_assigned_user_id_users_id_fk": {
+          "name": "api_keys_assigned_user_id_users_id_fk",
+          "tableFrom": "api_keys",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "assigned_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.evaluations": {
+      "name": "evaluations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "evaluations_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "9223372036854775807",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "source": {
+          "name": "source",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "run_id": {
+          "name": "run_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "score": {
+          "name": "score",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "file_id": {
+          "name": "file_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "agreement_id": {
+          "name": "agreement_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "offer_id": {
+          "name": "offer_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "validator_id": {
+          "name": "validator_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "provider_id": {
+          "name": "provider_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "commit_hash": {
+          "name": "commit_hash",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "session_id": {
+          "name": "session_id",
+          "type": "varchar(15)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "protocol_name": {
+          "name": "protocol_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "protocol_address": {
+          "name": "protocol_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "prompt_set_id": {
+          "name": "prompt_set_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "finished_at": {
+          "name": "finished_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "evaluations_file_id_files_id_fk": {
+          "name": "evaluations_file_id_files_id_fk",
+          "tableFrom": "evaluations",
+          "tableTo": "files",
+          "columnsFrom": [
+            "file_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "evaluations_prompt_set_id_prompt_sets_id_fk": {
+          "name": "evaluations_prompt_set_id_prompt_sets_id_fk",
+          "tableFrom": "evaluations",
+          "tableTo": "prompt_sets",
+          "columnsFrom": [
+            "prompt_set_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.file_chunks": {
+      "name": "file_chunks",
+      "schema": "",
+      "columns": {
+        "chunk_id": {
+          "name": "chunk_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "file_chunks_chunk_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "merge_id": {
+          "name": "merge_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "file_chunks_merge_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "uploader_id": {
+          "name": "uploader_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "file_chunks_uploader_id_users_id_fk": {
+          "name": "file_chunks_uploader_id_users_id_fk",
+          "tableFrom": "file_chunks",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "uploader_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.files": {
+      "name": "files",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "files_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "cid": {
+          "name": "cid",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sha256": {
+          "name": "sha256",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "uploader_id": {
+          "name": "uploader_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "format": {
+          "name": "format",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "signature": {
+          "name": "signature",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "signed_by": {
+          "name": "signed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "files_uploader_id_users_id_fk": {
+          "name": "files_uploader_id_users_id_fk",
+          "tableFrom": "files",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "uploader_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "files_signed_by_users_id_fk": {
+          "name": "files_signed_by_users_id_fk",
+          "tableFrom": "files",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "signed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "files_cid_unique": {
+          "name": "files_cid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "cid"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.forestai_providers": {
+      "name": "forestai_providers",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "forestai_providers_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.hash_registrations": {
+      "name": "hash_registrations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "hash_registrations_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "cid": {
+          "name": "cid",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sha256": {
+          "name": "sha256",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "signature": {
+          "name": "signature",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "signature_type": {
+          "name": "signature_type",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'cid'"
+        },
+        "public_key": {
+          "name": "public_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "key_type": {
+          "name": "key_type",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'secp256k1n'"
+        },
+        "uploader_id": {
+          "name": "uploader_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "hash_registrations_cid_sha256_unique": {
+          "name": "hash_registrations_cid_sha256_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "cid",
+            "sha256"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.key_to_user": {
+      "name": "key_to_user",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "key_to_user_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "public_key": {
+          "name": "public_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "key_type": {
+          "name": "key_type",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'secp256k1n'"
+        },
+        "user_uuid": {
+          "name": "user_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "key_signing_uuid": {
+          "name": "key_signing_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'{}'::jsonb"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "key_to_user_user_uuid_users_id_fk": {
+          "name": "key_to_user_user_uuid_users_id_fk",
+          "tableFrom": "key_to_user",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "user_uuid"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "public_key_unique": {
+          "name": "public_key_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "public_key"
+          ]
+        },
+        "user_uuid_public_key_unique": {
+          "name": "user_uuid_public_key_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "user_uuid",
+            "public_key"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.known_models": {
+      "name": "known_models",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "known_models_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "owner": {
+          "name": "owner",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "elo": {
+          "name": "elo",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 1000
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'{}'::jsonb"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "known_models_name_owner_unique": {
+          "name": "known_models_name_owner_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name",
+            "owner"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.model_matches": {
+      "name": "model_matches",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "model_a_id": {
+          "name": "model_a_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "model_b_id": {
+          "name": "model_b_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "winner_id": {
+          "name": "winner_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "prompt_id": {
+          "name": "prompt_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "model_a_response_id": {
+          "name": "model_a_response_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "model_b_response_id": {
+          "name": "model_b_response_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_shareable": {
+          "name": "is_shareable",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "model_matches_model_a_id_provider_models_id_fk": {
+          "name": "model_matches_model_a_id_provider_models_id_fk",
+          "tableFrom": "model_matches",
+          "tableTo": "provider_models",
+          "columnsFrom": [
+            "model_a_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "model_matches_model_b_id_provider_models_id_fk": {
+          "name": "model_matches_model_b_id_provider_models_id_fk",
+          "tableFrom": "model_matches",
+          "tableTo": "provider_models",
+          "columnsFrom": [
+            "model_b_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "model_matches_winner_id_provider_models_id_fk": {
+          "name": "model_matches_winner_id_provider_models_id_fk",
+          "tableFrom": "model_matches",
+          "tableTo": "provider_models",
+          "columnsFrom": [
+            "winner_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "model_matches_prompt_id_prompts_id_fk": {
+          "name": "model_matches_prompt_id_prompts_id_fk",
+          "tableFrom": "model_matches",
+          "tableTo": "prompts",
+          "columnsFrom": [
+            "prompt_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "model_matches_model_a_response_id_responses_id_fk": {
+          "name": "model_matches_model_a_response_id_responses_id_fk",
+          "tableFrom": "model_matches",
+          "tableTo": "responses",
+          "columnsFrom": [
+            "model_a_response_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "model_matches_model_b_response_id_responses_id_fk": {
+          "name": "model_matches_model_b_response_id_responses_id_fk",
+          "tableFrom": "model_matches",
+          "tableTo": "responses",
+          "columnsFrom": [
+            "model_b_response_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.notifications": {
+      "name": "notifications",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "notifications_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "read_at": {
+          "name": "read_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "notifications_user_id_users_id_fk": {
+          "name": "notifications_user_id_users_id_fk",
+          "tableFrom": "notifications",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.org_domains": {
+      "name": "org_domains",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "org_domains_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "domain": {
+          "name": "domain",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "org_domains_org_id_orgs_id_fk": {
+          "name": "org_domains_org_id_orgs_id_fk",
+          "tableFrom": "org_domains",
+          "tableTo": "orgs",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "org_domains_domain_unique": {
+          "name": "org_domains_domain_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "domain"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.org_to_people": {
+      "name": "org_to_people",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "org_to_people_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "org_to_people_org_id_orgs_id_fk": {
+          "name": "org_to_people_org_id_orgs_id_fk",
+          "tableFrom": "org_to_people",
+          "tableTo": "orgs",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "org_to_people_user_id_users_id_fk": {
+          "name": "org_to_people_user_id_users_id_fk",
+          "tableFrom": "org_to_people",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "org_id_user_id_unique": {
+          "name": "org_id_user_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "org_id",
+            "user_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.orgs": {
+      "name": "orgs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "orgs_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "web_page": {
+          "name": "web_page",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "alpha_two_code": {
+          "name": "alpha_two_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "country": {
+          "name": "country",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.prompt_comments": {
+      "name": "prompt_comments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "prompt_comments_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prompt_id": {
+          "name": "prompt_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "parent_comment_id": {
+          "name": "parent_comment_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "prompt_comments_user_id_users_id_fk": {
+          "name": "prompt_comments_user_id_users_id_fk",
+          "tableFrom": "prompt_comments",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "prompt_comments_prompt_id_prompts_id_fk": {
+          "name": "prompt_comments_prompt_id_prompts_id_fk",
+          "tableFrom": "prompt_comments",
+          "tableTo": "prompts",
+          "columnsFrom": [
+            "prompt_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "prompt_comments_parent_comment_id_prompt_comments_id_fk": {
+          "name": "prompt_comments_parent_comment_id_prompt_comments_id_fk",
+          "tableFrom": "prompt_comments",
+          "tableTo": "prompt_comments",
+          "columnsFrom": [
+            "parent_comment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.prompt_reviews_review_flags": {
+      "name": "prompt_reviews_review_flags",
+      "schema": "",
+      "columns": {
+        "prompt_review_id": {
+          "name": "prompt_review_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "flag_id": {
+          "name": "flag_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "prompt_reviews_review_flags_prompt_review_id_prompt_reviews_id_fk": {
+          "name": "prompt_reviews_review_flags_prompt_review_id_prompt_reviews_id_fk",
+          "tableFrom": "prompt_reviews_review_flags",
+          "tableTo": "prompt_reviews",
+          "columnsFrom": [
+            "prompt_review_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "prompt_reviews_review_flags_flag_id_review_flags_id_fk": {
+          "name": "prompt_reviews_review_flags_flag_id_review_flags_id_fk",
+          "tableFrom": "prompt_reviews_review_flags",
+          "tableTo": "review_flags",
+          "columnsFrom": [
+            "flag_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "prompt_reviews_review_flags_prompt_review_id_flag_id_pk": {
+          "name": "prompt_reviews_review_flags_prompt_review_id_flag_id_pk",
+          "columns": [
+            "prompt_review_id",
+            "flag_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.prompt_reviews": {
+      "name": "prompt_reviews",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "prompt_reviews_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "opinion": {
+          "name": "opinion",
+          "type": "varchar(8)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "comment": {
+          "name": "comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prompt_id": {
+          "name": "prompt_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "prompt_reviews_user_id_users_id_fk": {
+          "name": "prompt_reviews_user_id_users_id_fk",
+          "tableFrom": "prompt_reviews",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "prompt_reviews_prompt_id_prompts_id_fk": {
+          "name": "prompt_reviews_prompt_id_prompts_id_fk",
+          "tableFrom": "prompt_reviews",
+          "tableTo": "prompts",
+          "columnsFrom": [
+            "prompt_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "id_user_id_prompt_id_unique": {
+          "name": "id_user_id_prompt_id_unique",
+          "nullsNotDistinct": true,
+          "columns": [
+            "user_id",
+            "prompt_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.prompt_set_invitations": {
+      "name": "prompt_set_invitations",
+      "schema": "",
+      "columns": {
+        "code": {
+          "name": "code",
+          "type": "varchar(32)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "prompt_set_id": {
+          "name": "prompt_set_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "used_at": {
+          "name": "used_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "revoked_at": {
+          "name": "revoked_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "is_reusable": {
+          "name": "is_reusable",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "prompt_set_invitations_prompt_set_id_prompt_sets_id_fk": {
+          "name": "prompt_set_invitations_prompt_set_id_prompt_sets_id_fk",
+          "tableFrom": "prompt_set_invitations",
+          "tableTo": "prompt_sets",
+          "columnsFrom": [
+            "prompt_set_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "prompt_set_invitations_created_by_users_id_fk": {
+          "name": "prompt_set_invitations_created_by_users_id_fk",
+          "tableFrom": "prompt_set_invitations",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "created_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.prompt_set_prompts": {
+      "name": "prompt_set_prompts",
+      "schema": "",
+      "columns": {
+        "prompt_set_id": {
+          "name": "prompt_set_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prompt_id": {
+          "name": "prompt_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "prompt_set_prompts_prompt_set_id_prompt_sets_id_fk": {
+          "name": "prompt_set_prompts_prompt_set_id_prompt_sets_id_fk",
+          "tableFrom": "prompt_set_prompts",
+          "tableTo": "prompt_sets",
+          "columnsFrom": [
+            "prompt_set_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "prompt_set_prompts_prompt_id_prompts_id_fk": {
+          "name": "prompt_set_prompts_prompt_id_prompts_id_fk",
+          "tableFrom": "prompt_set_prompts",
+          "tableTo": "prompts",
+          "columnsFrom": [
+            "prompt_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "prompt_set_prompts_prompt_set_id_prompt_id_pk": {
+          "name": "prompt_set_prompts_prompt_set_id_prompt_id_pk",
+          "columns": [
+            "prompt_set_id",
+            "prompt_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.prompt_set_tags": {
+      "name": "prompt_set_tags",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "prompt_set_tags_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "prompt_set_id": {
+          "name": "prompt_set_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tag": {
+          "name": "tag",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "prompt_set_tags_prompt_set_id_prompt_sets_id_fk": {
+          "name": "prompt_set_tags_prompt_set_id_prompt_sets_id_fk",
+          "tableFrom": "prompt_set_tags",
+          "tableTo": "prompt_sets",
+          "columnsFrom": [
+            "prompt_set_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.prompt_sets": {
+      "name": "prompt_sets",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "prompt_sets_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "citationInfo": {
+          "name": "citationInfo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "category": {
+          "name": "category",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'Default'"
+        },
+        "license": {
+          "name": "license",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'cc-by-4.0'"
+        },
+        "owner_id": {
+          "name": "owner_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_public": {
+          "name": "is_public",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "is_public_submissions_allowed": {
+          "name": "is_public_submissions_allowed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'{}'::jsonb"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "prompt_sets_owner_id_users_id_fk": {
+          "name": "prompt_sets_owner_id_users_id_fk",
+          "tableFrom": "prompt_sets",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "owner_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "prompt_sets_title_unique": {
+          "name": "prompt_sets_title_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "title"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.prompts": {
+      "name": "prompts",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "file_id": {
+          "name": "file_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "question": {
+          "name": "question",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cid": {
+          "name": "cid",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sha256": {
+          "name": "sha256",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "full_prompt": {
+          "name": "full_prompt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "full_prompt_cid": {
+          "name": "full_prompt_cid",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "full_prompt_sha256": {
+          "name": "full_prompt_sha256",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "options": {
+          "name": "options",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "answer_key": {
+          "name": "answer_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "answer": {
+          "name": "answer",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scorers": {
+          "name": "scorers",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hash_sha256_registration": {
+          "name": "hash_sha256_registration",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "hash_cid_registration": {
+          "name": "hash_cid_registration",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "uploader_id": {
+          "name": "uploader_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_revealed": {
+          "name": "is_revealed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "prompts_file_id_files_id_fk": {
+          "name": "prompts_file_id_files_id_fk",
+          "tableFrom": "prompts",
+          "tableTo": "files",
+          "columnsFrom": [
+            "file_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.provider_models": {
+      "name": "provider_models",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "provider_models_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "provider": {
+          "name": "provider",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "host": {
+          "name": "host",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "owner": {
+          "name": "owner",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "model_id": {
+          "name": "model_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "per_million_token_input_cost": {
+          "name": "per_million_token_input_cost",
+          "type": "numeric(14, 10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "per_million_token_output_cost": {
+          "name": "per_million_token_output_cost",
+          "type": "numeric(14, 10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "known_model_id": {
+          "name": "known_model_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "elo": {
+          "name": "elo",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 1000
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "provider_models_known_model_id_known_models_id_fk": {
+          "name": "provider_models_known_model_id_known_models_id_fk",
+          "tableFrom": "provider_models",
+          "tableTo": "known_models",
+          "columnsFrom": [
+            "known_model_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "unique_model": {
+          "name": "unique_model",
+          "nullsNotDistinct": false,
+          "columns": [
+            "model_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.review_flags": {
+      "name": "review_flags",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "review_flags_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "flag": {
+          "name": "flag",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "opinion": {
+          "name": "opinion",
+          "type": "varchar(8)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "review_flags_flag_unique": {
+          "name": "review_flags_flag_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "flag"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.quick_feedbacks": {
+      "name": "quick_feedbacks",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "quick_feedbacks_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "response_id": {
+          "name": "response_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "prompt_id": {
+          "name": "prompt_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "score_id": {
+          "name": "score_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "opinion": {
+          "name": "opinion",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "quick_feedbacks_user_id_users_id_fk": {
+          "name": "quick_feedbacks_user_id_users_id_fk",
+          "tableFrom": "quick_feedbacks",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "quick_feedbacks_response_id_responses_id_fk": {
+          "name": "quick_feedbacks_response_id_responses_id_fk",
+          "tableFrom": "quick_feedbacks",
+          "tableTo": "responses",
+          "columnsFrom": [
+            "response_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "quick_feedbacks_prompt_id_prompts_id_fk": {
+          "name": "quick_feedbacks_prompt_id_prompts_id_fk",
+          "tableFrom": "quick_feedbacks",
+          "tableTo": "prompts",
+          "columnsFrom": [
+            "prompt_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "quick_feedbacks_score_id_scores_id_fk": {
+          "name": "quick_feedbacks_score_id_scores_id_fk",
+          "tableFrom": "quick_feedbacks",
+          "tableTo": "scores",
+          "columnsFrom": [
+            "score_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "quick_feedbacks_user_id_response_id_unique": {
+          "name": "quick_feedbacks_user_id_response_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "user_id",
+            "response_id"
+          ]
+        },
+        "quick_feedbacks_user_id_score_id_unique": {
+          "name": "quick_feedbacks_user_id_score_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "user_id",
+            "score_id"
+          ]
+        },
+        "quick_feedbacks_user_id_prompt_id_unique": {
+          "name": "quick_feedbacks_user_id_prompt_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "user_id",
+            "prompt_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.quick_feedbacks_quick_feedback_flags": {
+      "name": "quick_feedbacks_quick_feedback_flags",
+      "schema": "",
+      "columns": {
+        "quick_feedback_id": {
+          "name": "quick_feedback_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "flag_id": {
+          "name": "flag_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "quick_feedbacks_quick_feedback_flags_quick_feedback_id_quick_feedbacks_id_fk": {
+          "name": "quick_feedbacks_quick_feedback_flags_quick_feedback_id_quick_feedbacks_id_fk",
+          "tableFrom": "quick_feedbacks_quick_feedback_flags",
+          "tableTo": "quick_feedbacks",
+          "columnsFrom": [
+            "quick_feedback_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "quick_feedbacks_quick_feedback_flags_flag_id_review_flags_id_fk": {
+          "name": "quick_feedbacks_quick_feedback_flags_flag_id_review_flags_id_fk",
+          "tableFrom": "quick_feedbacks_quick_feedback_flags",
+          "tableTo": "review_flags",
+          "columnsFrom": [
+            "flag_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "quick_feedbacks_quick_feedback_flags_quick_feedback_id_flag_id_pk": {
+          "name": "quick_feedbacks_quick_feedback_flags_quick_feedback_id_flag_id_pk",
+          "columns": [
+            "quick_feedback_id",
+            "flag_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.ranking_benchmark_quality": {
+      "name": "ranking_benchmark_quality",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "ranking_benchmark_quality_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "computation_id": {
+          "name": "computation_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prompt_set_id": {
+          "name": "prompt_set_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quality_score": {
+          "name": "quality_score",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "ranking_benchmark_quality_computation_id_ranking_computations_id_fk": {
+          "name": "ranking_benchmark_quality_computation_id_ranking_computations_id_fk",
+          "tableFrom": "ranking_benchmark_quality",
+          "tableTo": "ranking_computations",
+          "columnsFrom": [
+            "computation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "ranking_benchmark_quality_prompt_set_id_prompt_sets_id_fk": {
+          "name": "ranking_benchmark_quality_prompt_set_id_prompt_sets_id_fk",
+          "tableFrom": "ranking_benchmark_quality",
+          "tableTo": "prompt_sets",
+          "columnsFrom": [
+            "prompt_set_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "ranking_benchmark_quality_computation_id_prompt_set_id_unique": {
+          "name": "ranking_benchmark_quality_computation_id_prompt_set_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "computation_id",
+            "prompt_set_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.ranking_computations": {
+      "name": "ranking_computations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "ranking_computations_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "parameters": {
+          "name": "parameters",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "computed_at": {
+          "name": "computed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.ranking_contributor_score": {
+      "name": "ranking_contributor_score",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "ranking_contributor_score_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "computation_id": {
+          "name": "computation_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "score": {
+          "name": "score",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prompt_count": {
+          "name": "prompt_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "aligned_review_count": {
+          "name": "aligned_review_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "comment_count": {
+          "name": "comment_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "ranking_contributor_score_computation_id_ranking_computations_id_fk": {
+          "name": "ranking_contributor_score_computation_id_ranking_computations_id_fk",
+          "tableFrom": "ranking_contributor_score",
+          "tableTo": "ranking_computations",
+          "columnsFrom": [
+            "computation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "ranking_contributor_score_user_id_users_id_fk": {
+          "name": "ranking_contributor_score_user_id_users_id_fk",
+          "tableFrom": "ranking_contributor_score",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "ranking_contributor_score_computation_id_user_id_unique": {
+          "name": "ranking_contributor_score_computation_id_user_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "computation_id",
+            "user_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.ranking_model_elo": {
+      "name": "ranking_model_elo",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "ranking_model_elo_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "computation_id": {
+          "name": "computation_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_model_id": {
+          "name": "provider_model_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "elo_score": {
+          "name": "elo_score",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1500
+        },
+        "win_count": {
+          "name": "win_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "loss_count": {
+          "name": "loss_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "match_count": {
+          "name": "match_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "ranking_model_elo_computation_id_ranking_computations_id_fk": {
+          "name": "ranking_model_elo_computation_id_ranking_computations_id_fk",
+          "tableFrom": "ranking_model_elo",
+          "tableTo": "ranking_computations",
+          "columnsFrom": [
+            "computation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "ranking_model_elo_provider_model_id_provider_models_id_fk": {
+          "name": "ranking_model_elo_provider_model_id_provider_models_id_fk",
+          "tableFrom": "ranking_model_elo",
+          "tableTo": "provider_models",
+          "columnsFrom": [
+            "provider_model_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "ranking_model_elo_computation_id_provider_model_id_unique": {
+          "name": "ranking_model_elo_computation_id_provider_model_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "computation_id",
+            "provider_model_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.ranking_model_performance": {
+      "name": "ranking_model_performance",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "ranking_model_performance_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "computation_id": {
+          "name": "computation_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_model_id": {
+          "name": "provider_model_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "score": {
+          "name": "score",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prompts_tested_count": {
+          "name": "prompts_tested_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "ranking_model_performance_computation_id_ranking_computations_id_fk": {
+          "name": "ranking_model_performance_computation_id_ranking_computations_id_fk",
+          "tableFrom": "ranking_model_performance",
+          "tableTo": "ranking_computations",
+          "columnsFrom": [
+            "computation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "ranking_model_performance_provider_model_id_provider_models_id_fk": {
+          "name": "ranking_model_performance_provider_model_id_provider_models_id_fk",
+          "tableFrom": "ranking_model_performance",
+          "tableTo": "provider_models",
+          "columnsFrom": [
+            "provider_model_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "ranking_model_performance_computation_id_provider_model_id_unique": {
+          "name": "ranking_model_performance_computation_id_provider_model_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "computation_id",
+            "provider_model_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.ranking_prompt_quality": {
+      "name": "ranking_prompt_quality",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "ranking_prompt_quality_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "computation_id": {
+          "name": "computation_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prompt_id": {
+          "name": "prompt_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quality_score": {
+          "name": "quality_score",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "review_count": {
+          "name": "review_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "ranking_prompt_quality_computation_id_ranking_computations_id_fk": {
+          "name": "ranking_prompt_quality_computation_id_ranking_computations_id_fk",
+          "tableFrom": "ranking_prompt_quality",
+          "tableTo": "ranking_computations",
+          "columnsFrom": [
+            "computation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "ranking_prompt_quality_prompt_id_prompts_id_fk": {
+          "name": "ranking_prompt_quality_prompt_id_prompts_id_fk",
+          "tableFrom": "ranking_prompt_quality",
+          "tableTo": "prompts",
+          "columnsFrom": [
+            "prompt_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "ranking_prompt_quality_computation_id_prompt_id_unique": {
+          "name": "ranking_prompt_quality_computation_id_prompt_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "computation_id",
+            "prompt_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.ranking_reviewer_trust": {
+      "name": "ranking_reviewer_trust",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "ranking_reviewer_trust_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "computation_id": {
+          "name": "computation_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "trust_score": {
+          "name": "trust_score",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "ranking_reviewer_trust_computation_id_ranking_computations_id_fk": {
+          "name": "ranking_reviewer_trust_computation_id_ranking_computations_id_fk",
+          "tableFrom": "ranking_reviewer_trust",
+          "tableTo": "ranking_computations",
+          "columnsFrom": [
+            "computation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "ranking_reviewer_trust_user_id_users_id_fk": {
+          "name": "ranking_reviewer_trust_user_id_users_id_fk",
+          "tableFrom": "ranking_reviewer_trust",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "ranking_reviewer_trust_computation_id_user_id_unique": {
+          "name": "ranking_reviewer_trust_computation_id_user_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "computation_id",
+            "user_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.raw_data_registrations": {
+      "name": "raw_data_registrations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "raw_data_registrations_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "cid": {
+          "name": "cid",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sha256": {
+          "name": "sha256",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "raw_data": {
+          "name": "raw_data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "public_key": {
+          "name": "public_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "uploader_id": {
+          "name": "uploader_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "public": {
+          "name": "public",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "raw_data_registrations_cid_sha256_unique": {
+          "name": "raw_data_registrations_cid_sha256_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "cid",
+            "sha256"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.response_comments": {
+      "name": "response_comments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "response_comments_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "response_id": {
+          "name": "response_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "parent_comment_id": {
+          "name": "parent_comment_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "response_comments_user_id_users_id_fk": {
+          "name": "response_comments_user_id_users_id_fk",
+          "tableFrom": "response_comments",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "response_comments_response_id_responses_id_fk": {
+          "name": "response_comments_response_id_responses_id_fk",
+          "tableFrom": "response_comments",
+          "tableTo": "responses",
+          "columnsFrom": [
+            "response_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "response_comments_parent_comment_id_response_comments_id_fk": {
+          "name": "response_comments_parent_comment_id_response_comments_id_fk",
+          "tableFrom": "response_comments",
+          "tableTo": "response_comments",
+          "columnsFrom": [
+            "parent_comment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.responses": {
+      "name": "responses",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "run_id": {
+          "name": "run_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "model_id": {
+          "name": "model_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "data": {
+          "name": "data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cid": {
+          "name": "cid",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sha256": {
+          "name": "sha256",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "input_tokens_used": {
+          "name": "input_tokens_used",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "output_tokens_used": {
+          "name": "output_tokens_used",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "input_cost": {
+          "name": "input_cost",
+          "type": "numeric(14, 10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "output_cost": {
+          "name": "output_cost",
+          "type": "numeric(14, 10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hash_sha256_registration": {
+          "name": "hash_sha256_registration",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "hash_cid_registration": {
+          "name": "hash_cid_registration",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "uploader_id": {
+          "name": "uploader_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prompt_id": {
+          "name": "prompt_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "finished_at": {
+          "name": "finished_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_revealed": {
+          "name": "is_revealed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "responses_prompt_id_index": {
+          "name": "responses_prompt_id_index",
+          "columns": [
+            {
+              "expression": "prompt_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "responses_model_id_index": {
+          "name": "responses_model_id_index",
+          "columns": [
+            {
+              "expression": "model_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "responses_run_id_index": {
+          "name": "responses_run_id_index",
+          "columns": [
+            {
+              "expression": "run_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "responses_model_id_provider_models_id_fk": {
+          "name": "responses_model_id_provider_models_id_fk",
+          "tableFrom": "responses",
+          "tableTo": "provider_models",
+          "columnsFrom": [
+            "model_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "cascade"
+        },
+        "responses_prompt_id_prompts_id_fk": {
+          "name": "responses_prompt_id_prompts_id_fk",
+          "tableFrom": "responses",
+          "tableTo": "prompts",
+          "columnsFrom": [
+            "prompt_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.score_comments": {
+      "name": "score_comments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "score_comments_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "score_id": {
+          "name": "score_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "parent_comment_id": {
+          "name": "parent_comment_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "score_comments_user_id_users_id_fk": {
+          "name": "score_comments_user_id_users_id_fk",
+          "tableFrom": "score_comments",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "score_comments_score_id_scores_id_fk": {
+          "name": "score_comments_score_id_scores_id_fk",
+          "tableFrom": "score_comments",
+          "tableTo": "scores",
+          "columnsFrom": [
+            "score_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "score_comments_parent_comment_id_score_comments_id_fk": {
+          "name": "score_comments_parent_comment_id_score_comments_id_fk",
+          "tableFrom": "score_comments",
+          "tableTo": "score_comments",
+          "columnsFrom": [
+            "parent_comment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.scores": {
+      "name": "scores",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "score": {
+          "name": "score",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prompt_hash_sha256_registration": {
+          "name": "prompt_hash_sha256_registration",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prompt_hash_cid_registration": {
+          "name": "prompt_hash_cid_registration",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "response_hash_sha256_registration": {
+          "name": "response_hash_sha256_registration",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "response_hash_cid_registration": {
+          "name": "response_hash_cid_registration",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "hash_sha256_registration": {
+          "name": "hash_sha256_registration",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "hash_cid_registration": {
+          "name": "hash_cid_registration",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "uploader_id": {
+          "name": "uploader_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prompt_id": {
+          "name": "prompt_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "response_id": {
+          "name": "response_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "explanation": {
+          "name": "explanation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scoring_method": {
+          "name": "scoring_method",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "scorer_user_id": {
+          "name": "scorer_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scorer_model_id": {
+          "name": "scorer_model_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "input_tokens_used": {
+          "name": "input_tokens_used",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "output_tokens_used": {
+          "name": "output_tokens_used",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "input_cost": {
+          "name": "input_cost",
+          "type": "numeric(14, 10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "output_cost": {
+          "name": "output_cost",
+          "type": "numeric(14, 10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "scores_prompt_id_index": {
+          "name": "scores_prompt_id_index",
+          "columns": [
+            {
+              "expression": "prompt_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "scores_response_id_index": {
+          "name": "scores_response_id_index",
+          "columns": [
+            {
+              "expression": "response_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "scores_scorer_model_id_provider_models_id_fk": {
+          "name": "scores_scorer_model_id_provider_models_id_fk",
+          "tableFrom": "scores",
+          "tableTo": "provider_models",
+          "columnsFrom": [
+            "scorer_model_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.supporting_document_prompt_sets": {
+      "name": "supporting_document_prompt_sets",
+      "schema": "",
+      "columns": {
+        "document_id": {
+          "name": "document_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prompt_set_id": {
+          "name": "prompt_set_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "supporting_document_prompt_sets_document_id_supporting_documents_id_fk": {
+          "name": "supporting_document_prompt_sets_document_id_supporting_documents_id_fk",
+          "tableFrom": "supporting_document_prompt_sets",
+          "tableTo": "supporting_documents",
+          "columnsFrom": [
+            "document_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "supporting_document_prompt_sets_prompt_set_id_prompt_sets_id_fk": {
+          "name": "supporting_document_prompt_sets_prompt_set_id_prompt_sets_id_fk",
+          "tableFrom": "supporting_document_prompt_sets",
+          "tableTo": "prompt_sets",
+          "columnsFrom": [
+            "prompt_set_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "supporting_document_prompt_sets_document_id_prompt_set_id_pk": {
+          "name": "supporting_document_prompt_sets_document_id_prompt_set_id_pk",
+          "columns": [
+            "document_id",
+            "prompt_set_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.supporting_documents": {
+      "name": "supporting_documents",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "supporting_documents_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cid": {
+          "name": "cid",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sha256": {
+          "name": "sha256",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "uploader_id": {
+          "name": "uploader_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_public": {
+          "name": "is_public",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "supporting_documents_uploader_id_users_id_fk": {
+          "name": "supporting_documents_uploader_id_users_id_fk",
+          "tableFrom": "supporting_documents",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "uploader_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "supporting_documents_cid_unique": {
+          "name": "supporting_documents_cid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "cid"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.system_prompt_labels": {
+      "name": "system_prompt_labels",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "system_prompt_labels_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "prompt_id": {
+          "name": "prompt_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "assigned_at": {
+          "name": "assigned_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "system_prompt_labels_prompt_id_system_prompts_id_fk": {
+          "name": "system_prompt_labels_prompt_id_system_prompts_id_fk",
+          "tableFrom": "system_prompt_labels",
+          "tableTo": "system_prompts",
+          "columnsFrom": [
+            "prompt_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "system_prompt_labels_prompt_id_version_system_prompt_versions_prompt_id_version_fk": {
+          "name": "system_prompt_labels_prompt_id_version_system_prompt_versions_prompt_id_version_fk",
+          "tableFrom": "system_prompt_labels",
+          "tableTo": "system_prompt_versions",
+          "columnsFrom": [
+            "prompt_id",
+            "version"
+          ],
+          "columnsTo": [
+            "prompt_id",
+            "version"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "unique_prompt_label": {
+          "name": "unique_prompt_label",
+          "nullsNotDistinct": false,
+          "columns": [
+            "prompt_id",
+            "label"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.system_prompt_versions": {
+      "name": "system_prompt_versions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "system_prompt_versions_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "prompt_id": {
+          "name": "prompt_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prompt": {
+          "name": "prompt",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "config": {
+          "name": "config",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sha256_hash": {
+          "name": "sha256_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_system_prompt_versions_sha256": {
+          "name": "idx_system_prompt_versions_sha256",
+          "columns": [
+            {
+              "expression": "sha256_hash",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "system_prompt_versions_prompt_id_system_prompts_id_fk": {
+          "name": "system_prompt_versions_prompt_id_system_prompts_id_fk",
+          "tableFrom": "system_prompt_versions",
+          "tableTo": "system_prompts",
+          "columnsFrom": [
+            "prompt_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "system_prompt_versions_sha256_hash_unique": {
+          "name": "system_prompt_versions_sha256_hash_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "sha256_hash"
+          ]
+        },
+        "unique_prompt_version": {
+          "name": "unique_prompt_version",
+          "nullsNotDistinct": false,
+          "columns": [
+            "prompt_id",
+            "version"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.system_prompts": {
+      "name": "system_prompts",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "system_prompts_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tags": {
+          "name": "tags",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "system_prompts_name_unique": {
+          "name": "system_prompts_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.test_result_reviews_review_flags": {
+      "name": "test_result_reviews_review_flags",
+      "schema": "",
+      "columns": {
+        "test_result_review_id": {
+          "name": "test_result_review_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "flag_id": {
+          "name": "flag_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "test_result_reviews_review_flags_test_result_review_id_test_result_reviews_id_fk": {
+          "name": "test_result_reviews_review_flags_test_result_review_id_test_result_reviews_id_fk",
+          "tableFrom": "test_result_reviews_review_flags",
+          "tableTo": "test_result_reviews",
+          "columnsFrom": [
+            "test_result_review_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "test_result_reviews_review_flags_flag_id_review_flags_id_fk": {
+          "name": "test_result_reviews_review_flags_flag_id_review_flags_id_fk",
+          "tableFrom": "test_result_reviews_review_flags",
+          "tableTo": "review_flags",
+          "columnsFrom": [
+            "flag_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "test_result_reviews_review_flags_test_result_review_id_flag_id_pk": {
+          "name": "test_result_reviews_review_flags_test_result_review_id_flag_id_pk",
+          "columns": [
+            "test_result_review_id",
+            "flag_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.test_result_reviews": {
+      "name": "test_result_reviews",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "test_result_reviews_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "opinion": {
+          "name": "opinion",
+          "type": "varchar(8)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "comment": {
+          "name": "comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "test_result_id": {
+          "name": "test_result_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "property": {
+          "name": "property",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "test_result_reviews_user_id_users_id_fk": {
+          "name": "test_result_reviews_user_id_users_id_fk",
+          "tableFrom": "test_result_reviews",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "test_result_reviews_test_result_id_test_results_id_fk": {
+          "name": "test_result_reviews_test_result_id_test_results_id_fk",
+          "tableFrom": "test_result_reviews",
+          "tableTo": "test_results",
+          "columnsFrom": [
+            "test_result_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "id_user_id_test_result_id_property_unique": {
+          "name": "id_user_id_test_result_id_property_unique",
+          "nullsNotDistinct": true,
+          "columns": [
+            "user_id",
+            "test_result_id",
+            "property"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.test_results": {
+      "name": "test_results",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "test_results_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "score": {
+          "name": "score",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "evaluation_id": {
+          "name": "evaluation_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "finished_at": {
+          "name": "finished_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'{}'::jsonb"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "result": {
+          "name": "result",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "test_name": {
+          "name": "test_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "raw": {
+          "name": "raw",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "model_id": {
+          "name": "model_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "task_id": {
+          "name": "task_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "response": {
+          "name": "response",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cid": {
+          "name": "cid",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sha256": {
+          "name": "sha256",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "prompt_id": {
+          "name": "prompt_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "test_results_prompt_id_index": {
+          "name": "test_results_prompt_id_index",
+          "columns": [
+            {
+              "expression": "prompt_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "test_results_evaluation_id_evaluations_id_fk": {
+          "name": "test_results_evaluation_id_evaluations_id_fk",
+          "tableFrom": "test_results",
+          "tableTo": "evaluations",
+          "columnsFrom": [
+            "evaluation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "test_results_model_id_provider_models_id_fk": {
+          "name": "test_results_model_id_provider_models_id_fk",
+          "tableFrom": "test_results",
+          "tableTo": "provider_models",
+          "columnsFrom": [
+            "model_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "cascade"
+        },
+        "test_results_prompt_id_prompts_id_fk": {
+          "name": "test_results_prompt_id_prompts_id_fk",
+          "tableFrom": "test_results",
+          "tableTo": "prompts",
+          "columnsFrom": [
+            "prompt_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.user_profile": {
+      "name": "user_profile",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "user_profile_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "github": {
+          "name": "github",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "website": {
+          "name": "website",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bluesky": {
+          "name": "bluesky",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mastodon": {
+          "name": "mastodon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "twitter": {
+          "name": "twitter",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "invited_by": {
+          "name": "invited_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'{}'::jsonb"
+        },
+        "referral_code": {
+          "name": "referral_code",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "encode(extensions.gen_random_bytes(16), 'hex')"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_profile_user_id_users_id_fk": {
+          "name": "user_profile_user_id_users_id_fk",
+          "tableFrom": "user_profile",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "user_profile_invited_by_users_id_fk": {
+          "name": "user_profile_invited_by_users_id_fk",
+          "tableFrom": "user_profile",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "invited_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "user_profile_referral_code_unique": {
+          "name": "user_profile_referral_code_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "referral_code"
+          ]
+        },
+        "user_id_unique": {
+          "name": "user_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "user_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.user_role_on_prompt_set": {
+      "name": "user_role_on_prompt_set",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prompt_set_id": {
+          "name": "prompt_set_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_role_on_prompt_set_user_id_users_id_fk": {
+          "name": "user_role_on_prompt_set_user_id_users_id_fk",
+          "tableFrom": "user_role_on_prompt_set",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "user_role_on_prompt_set_prompt_set_id_prompt_sets_id_fk": {
+          "name": "user_role_on_prompt_set_prompt_set_id_prompt_sets_id_fk",
+          "tableFrom": "user_role_on_prompt_set",
+          "tableTo": "prompt_sets",
+          "columnsFrom": [
+            "prompt_set_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "user_role_on_prompt_set_user_id_prompt_set_id_pk": {
+          "name": "user_role_on_prompt_set_user_id_prompt_set_id_pk",
+          "columns": [
+            "user_id",
+            "prompt_set_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {
+    "public.v_current_benchmark_quality": {
+      "columns": {
+        "prompt_set_id": {
+          "name": "prompt_set_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quality_score": {
+          "name": "quality_score",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "computed_at": {
+          "name": "computed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "definition": "select \"ranking_benchmark_quality\".\"prompt_set_id\", \"ranking_benchmark_quality\".\"quality_score\", \"ranking_computations\".\"computed_at\" from \"ranking_benchmark_quality\" inner join \"ranking_computations\" on \"ranking_benchmark_quality\".\"computation_id\" = \"ranking_computations\".\"id\" where \"ranking_benchmark_quality\".\"computation_id\" = (SELECT \"latest\".\"id\" FROM (select \"id\" from \"ranking_computations\" order by \"ranking_computations\".\"computed_at\" DESC limit 1) \"latest\")",
+      "name": "v_current_benchmark_quality",
+      "schema": "public",
+      "isExisting": false,
+      "materialized": false
+    },
+    "public.v_current_contributor_score": {
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "score": {
+          "name": "score",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prompt_count": {
+          "name": "prompt_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "aligned_review_count": {
+          "name": "aligned_review_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "comment_count": {
+          "name": "comment_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "computed_at": {
+          "name": "computed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "definition": "select \"ranking_contributor_score\".\"user_id\", \"ranking_contributor_score\".\"score\", \"ranking_contributor_score\".\"prompt_count\", \"ranking_contributor_score\".\"aligned_review_count\", \"ranking_contributor_score\".\"comment_count\", \"ranking_computations\".\"computed_at\", \"user_profile\".\"display_name\", \n        CASE \n          WHEN \"auth\".\"users\".\"email\" IS NOT NULL THEN\n            CONCAT(\n              '***@',\n              SUBSTRING(\"auth\".\"users\".\"email\" FROM POSITION('@' IN \"auth\".\"users\".\"email\") + 1)\n            )\n          ELSE NULL\n        END\n       as \"email\" from \"ranking_contributor_score\" inner join \"ranking_computations\" on \"ranking_contributor_score\".\"computation_id\" = \"ranking_computations\".\"id\" left join \"auth\".\"users\" on \"auth\".\"users\".\"id\" = \"ranking_contributor_score\".\"user_id\" left join \"user_profile\" on \"user_profile\".\"user_id\" = \"ranking_contributor_score\".\"user_id\" where \"ranking_contributor_score\".\"computation_id\" = (SELECT \"latest\".\"id\" FROM (select \"id\" from \"ranking_computations\" order by \"ranking_computations\".\"computed_at\" DESC limit 1) \"latest\")",
+      "name": "v_current_contributor_score",
+      "schema": "public",
+      "isExisting": false,
+      "materialized": false
+    },
+    "public.v_current_model_elo": {
+      "columns": {
+        "provider_model_id": {
+          "name": "provider_model_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "model_id": {
+          "name": "model_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "elo_score": {
+          "name": "elo_score",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1500
+        },
+        "win_count": {
+          "name": "win_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "loss_count": {
+          "name": "loss_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "match_count": {
+          "name": "match_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "computed_at": {
+          "name": "computed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "definition": "select \"ranking_model_elo\".\"provider_model_id\", \"provider_models\".\"model_id\", \"ranking_model_elo\".\"elo_score\", \"ranking_model_elo\".\"win_count\", \"ranking_model_elo\".\"loss_count\", \"ranking_model_elo\".\"match_count\", \"ranking_computations\".\"computed_at\" from \"ranking_model_elo\" inner join \"ranking_computations\" on \"ranking_model_elo\".\"computation_id\" = \"ranking_computations\".\"id\" inner join \"provider_models\" on \"ranking_model_elo\".\"provider_model_id\" = \"provider_models\".\"id\"",
+      "name": "v_current_model_elo",
+      "schema": "public",
+      "isExisting": false,
+      "materialized": false
+    },
+    "public.v_current_model_performance": {
+      "columns": {
+        "provider_model_id": {
+          "name": "provider_model_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "model_id": {
+          "name": "model_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "score": {
+          "name": "score",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prompts_tested_count": {
+          "name": "prompts_tested_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "computed_at": {
+          "name": "computed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "definition": "select \"ranking_model_performance\".\"provider_model_id\", \"provider_models\".\"model_id\", \"ranking_model_performance\".\"score\", \"ranking_model_performance\".\"prompts_tested_count\", \"ranking_computations\".\"computed_at\" from \"ranking_model_performance\" inner join \"ranking_computations\" on \"ranking_model_performance\".\"computation_id\" = \"ranking_computations\".\"id\" inner join \"provider_models\" on \"ranking_model_performance\".\"provider_model_id\" = \"provider_models\".\"id\" where \"ranking_model_performance\".\"computation_id\" = (SELECT \"latest\".\"id\" FROM (select \"id\" from \"ranking_computations\" order by \"ranking_computations\".\"computed_at\" DESC limit 1) \"latest\")",
+      "name": "v_current_model_performance",
+      "schema": "public",
+      "isExisting": false,
+      "materialized": false
+    },
+    "public.v_current_prompt_quality": {
+      "columns": {
+        "prompt_id": {
+          "name": "prompt_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quality_score": {
+          "name": "quality_score",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "review_count": {
+          "name": "review_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "computed_at": {
+          "name": "computed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "definition": "select \"ranking_prompt_quality\".\"prompt_id\", \"ranking_prompt_quality\".\"quality_score\", \"ranking_prompt_quality\".\"review_count\", \"ranking_computations\".\"computed_at\" from \"ranking_prompt_quality\" inner join \"ranking_computations\" on \"ranking_prompt_quality\".\"computation_id\" = \"ranking_computations\".\"id\" where \"ranking_prompt_quality\".\"computation_id\" = (SELECT \"latest\".\"id\" FROM (select \"id\" from \"ranking_computations\" order by \"ranking_computations\".\"computed_at\" DESC limit 1) \"latest\")",
+      "name": "v_current_prompt_quality",
+      "schema": "public",
+      "isExisting": false,
+      "materialized": false
+    },
+    "public.v_current_reviewer_trust": {
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "trust_score": {
+          "name": "trust_score",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "computed_at": {
+          "name": "computed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "definition": "select \"ranking_reviewer_trust\".\"user_id\", \"ranking_reviewer_trust\".\"trust_score\", \"ranking_computations\".\"computed_at\", \"user_profile\".\"display_name\", \n        CASE \n          WHEN \"auth\".\"users\".\"email\" IS NOT NULL THEN\n            CONCAT(\n              '***@',\n              SUBSTRING(\"auth\".\"users\".\"email\" FROM POSITION('@' IN \"auth\".\"users\".\"email\") + 1)\n            )\n          ELSE NULL\n        END\n       as \"email\" from \"ranking_reviewer_trust\" inner join \"ranking_computations\" on \"ranking_reviewer_trust\".\"computation_id\" = \"ranking_computations\".\"id\" left join \"auth\".\"users\" on \"auth\".\"users\".\"id\" = \"ranking_reviewer_trust\".\"user_id\" left join \"user_profile\" on \"user_profile\".\"user_id\" = \"ranking_reviewer_trust\".\"user_id\" where \"ranking_reviewer_trust\".\"computation_id\" = (SELECT \"latest\".\"id\" FROM (select \"id\" from \"ranking_computations\" order by \"ranking_computations\".\"computed_at\" DESC limit 1) \"latest\")",
+      "name": "v_current_reviewer_trust",
+      "schema": "public",
+      "isExisting": false,
+      "materialized": false
+    },
+    "public.v_leaderboard": {
+      "columns": {
+        "prompt_set_id": {
+          "name": "prompt_set_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "definition": "select \n    CASE\n      WHEN \"provider_models\".\"name\" IS NOT NULL THEN \"provider_models\".\"name\"\n      ELSE \"provider_models\".\"provider\"\n    END\n   as \"model\", \n    CASE\n      WHEN \"evaluations\".\"prompt_set_id\" IS NOT NULL THEN \"prompt_sets\".\"title\"\n      ELSE \"evaluations\".\"protocol_name\"\n    END\n   as \"context\", \n    CASE\n      WHEN \"evaluations\".\"prompt_set_id\" IS NULL THEN AVG(\"evaluations\".\"score\")\n      ELSE NULL\n    END\n   as \"avg_score\", \n    CASE\n      WHEN \"evaluations\".\"prompt_set_id\" IS NULL THEN NULL\n      ELSE SUM(\"test_results\".\"score\") / COUNT(\"test_results\".\"id\")\n    END\n   as \"accuracy\", \n    COUNT(DISTINCT \"evaluations\".\"id\")\n   as \"total_evaluations\", \n    MAX(\"evaluations\".\"finished_at\")\n   as \"recent_evaluation\", \n    CASE\n      WHEN \"evaluations\".\"prompt_set_id\" IS NOT NULL\n      THEN COUNT(DISTINCT \"prompts\".\"id\")\n      ELSE NULL\n    END\n   as \"unique_prompts\", \n    COUNT(\"test_results\".\"id\")\n   as \"total_tests_performed\", \n    CASE\n      WHEN \"evaluations\".\"prompt_set_id\" IS NULL THEN \"evaluations\".\"protocol_address\"\n      ELSE NULL\n    END\n   as \"source_protocol_address\", \"evaluations\".\"prompt_set_id\", \"prompts\".\"type\" as \"prompt_type\" from \"test_results\" inner join \"evaluations\" on \"test_results\".\"evaluation_id\" = \"evaluations\".\"id\" left join \"prompt_sets\" on \"evaluations\".\"prompt_set_id\" = \"prompt_sets\".\"id\" left join \"prompts\" on \"test_results\".\"prompt_id\" = \"prompts\".\"id\" left join \"provider_models\" on \"test_results\".\"model_id\" = \"provider_models\".\"id\" group by \"model\", \"context\", \"prompts\".\"type\", \"evaluations\".\"prompt_set_id\", \"source_protocol_address\" having (\n        (\n          CASE WHEN \"evaluations\".\"prompt_set_id\" IS NULL\n            THEN AVG(\"evaluations\".\"score\")\n            ELSE NULL\n          END\n        ) > 0\n       or \n        (\n          CASE WHEN \"evaluations\".\"prompt_set_id\" IS NULL\n            THEN NULL\n            ELSE SUM(\"test_results\".\"score\") / COUNT(\"test_results\".\"id\")\n          END\n        ) > 0\n      )",
+      "name": "v_leaderboard",
+      "schema": "public",
+      "isExisting": false,
+      "materialized": false
+    },
+    "public.v_model_leaderboard_per_prompt_set": {
+      "columns": {
+        "prompt_set_id": {
+          "name": "prompt_set_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "model_id": {
+          "name": "model_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "definition": "select \"prompt_set_prompts\".\"prompt_set_id\", \"v_model_scores_per_prompt\".\"model_id\", avg(\"v_model_scores_per_prompt\".\"score\") as \"avg_score\", avg(\"response_time\") as \"avg_response_time\", count(distinct \"v_model_scores_per_prompt\".\"prompt_id\") as \"total_prompts_tested\", sum(\"v_model_scores_per_prompt\".\"score\") as \"total_score\", count(\"v_model_scores_per_prompt\".\"id\") as \"total_score_count\" from \"v_model_scores_per_prompt\" inner join \"prompt_set_prompts\" on (\"prompt_set_prompts\".\"prompt_id\" = \"v_model_scores_per_prompt\".\"prompt_id\" and \"prompt_set_prompts\".\"status\" = 'included') group by \"prompt_set_prompts\".\"prompt_set_id\", \"v_model_scores_per_prompt\".\"model_id\"",
+      "name": "v_model_leaderboard_per_prompt_set",
+      "schema": "public",
+      "isExisting": false,
+      "materialized": false
+    },
+    "public.v_model_scores_per_prompt": {
+      "columns": {
+        "prompt_id": {
+          "name": "prompt_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "score": {
+          "name": "score",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "model_id": {
+          "name": "model_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "definition": "(select \"scores\".\"prompt_id\", \"scores\".\"id\", \"scores\".\"score\", \"provider_models\".\"model_id\", \n      EXTRACT (EPOCH FROM (\"responses\".\"finished_at\" - \"responses\".\"started_at\"))\n     as \"response_time\", false as \"associated_with_known_model\" from \"prompts\" inner join \"scores\" on \"scores\".\"prompt_id\" = \"prompts\".\"id\" inner join \"responses\" on \"responses\".\"id\" = \"scores\".\"response_id\" inner join \"provider_models\" on (\"provider_models\".\"id\" = \"responses\".\"model_id\" and \"provider_models\".\"known_model_id\" is null)) union (select \"scores\".\"prompt_id\", \"scores\".\"id\", \"scores\".\"score\", \"known_models\".\"name\", \n      EXTRACT (EPOCH FROM (\"responses\".\"finished_at\" - \"responses\".\"started_at\"))\n     as \"response_time\", true from \"prompts\" inner join \"scores\" on \"scores\".\"prompt_id\" = \"prompts\".\"id\" inner join \"responses\" on \"responses\".\"id\" = \"scores\".\"response_id\" inner join \"provider_models\" on \"provider_models\".\"id\" = \"responses\".\"model_id\" inner join \"known_models\" on \"known_models\".\"id\" = \"provider_models\".\"known_model_id\")",
+      "name": "v_model_scores_per_prompt",
+      "schema": "public",
+      "isExisting": false,
+      "materialized": false
+    },
+    "public.v_overall_score_per_prompt_set": {
+      "columns": {
+        "prompt_set_id": {
+          "name": "prompt_set_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "definition": "select \"prompt_set_prompts\".\"prompt_set_id\", count(\"scores\".\"id\") as \"total_score_count\", sum(\"scores\".\"score\") as \"total_score\", avg(\"scores\".\"score\") as \"avg_score\" from \"prompt_set_prompts\" left join \"scores\" on \"scores\".\"prompt_id\" = \"prompt_set_prompts\".\"prompt_id\" where \"prompt_set_prompts\".\"status\" = 'included' group by \"prompt_set_prompts\".\"prompt_set_id\"",
+      "name": "v_overall_score_per_prompt_set",
+      "schema": "public",
+      "isExisting": false,
+      "materialized": false
+    },
+    "public.v_prompt_set_stats": {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "v_prompt_set_stats_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        }
+      },
+      "definition": "select \"prompt_sets\".\"id\", \n        COUNT(DISTINCT \"prompt_set_prompts\".\"prompt_id\")\n        FILTER (WHERE \"prompt_set_prompts\".\"status\" = 'included')\n       as \"included_prompt_count\", \n        COUNT(DISTINCT \"prompt_set_prompts\".\"prompt_id\")\n        FILTER (WHERE \"prompt_set_prompts\".\"status\" = 'excluded')\n       as \"excluded_prompt_count\", \"total_score_count\", \"avg_score\", \n        COALESCE(count(distinct \"all_contributors\".\"uploader_id\"), 0)\n       as \"total_contributors\" from \"prompt_sets\" left join \"prompt_set_prompts\" on \"prompt_set_prompts\".\"prompt_set_id\" = \"prompt_sets\".\"id\" left join (((select \"uploader_id\", \"prompt_set_id\" from \"v_upload_contributors_per_prompt_set\") union (select \"user_id\", \"prompt_set_id\" from \"v_review_contributors_per_prompt_set\")) union (select \"user_id\", \"prompt_set_id\" from \"user_role_on_prompt_set\")) \"all_contributors\" on \"all_contributors\".\"prompt_set_id\" = \"prompt_sets\".\"id\" left join \"v_overall_score_per_prompt_set\" on \"v_overall_score_per_prompt_set\".\"prompt_set_id\" = \"prompt_sets\".\"id\" group by \"prompt_sets\".\"id\", \"total_score_count\", \"avg_score\"",
+      "name": "v_prompt_set_stats",
+      "schema": "public",
+      "isExisting": false,
+      "materialized": false
+    },
+    "public.v_quick_feedbacks": {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "v_quick_feedbacks_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "prompt_id": {
+          "name": "prompt_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "response_id": {
+          "name": "response_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "score_id": {
+          "name": "score_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "opinion": {
+          "name": "opinion",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "definition": "select \"quick_feedbacks\".\"id\", \"quick_feedbacks\".\"created_at\", \"quick_feedbacks\".\"prompt_id\", \"quick_feedbacks\".\"response_id\", \"quick_feedbacks\".\"score_id\", \"quick_feedbacks\".\"opinion\", \"quick_feedbacks\".\"user_id\", coalesce(jsonb_agg(jsonb_build_object('id',\"review_flags\".\"id\",'flag',\"review_flags\".\"flag\",'opinion',\"review_flags\".\"opinion\")) filter (where \"review_flags\".\"flag\" is not null),'[]'::jsonb) as \"flags\" from \"quick_feedbacks\" left join \"quick_feedbacks_quick_feedback_flags\" on \"quick_feedbacks_quick_feedback_flags\".\"quick_feedback_id\" = \"quick_feedbacks\".\"id\" left join \"review_flags\" on \"review_flags\".\"id\" = \"quick_feedbacks_quick_feedback_flags\".\"flag_id\" group by \"quick_feedbacks\".\"id\", \"quick_feedbacks\".\"user_id\"",
+      "name": "v_quick_feedbacks",
+      "schema": "public",
+      "isExisting": false,
+      "materialized": false
+    },
+    "public.v_review_contributors_per_prompt_set": {
+      "columns": {
+        "prompt_set_id": {
+          "name": "prompt_set_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "definition": "select \"prompt_set_id\", \"user_id\", \"contribution_type\" from (((select \"prompt_set_prompts\".\"prompt_set_id\", \"quick_feedbacks\".\"user_id\", 'prompt' as \"contribution_type\" from \"prompt_set_prompts\" left join \"prompts\" on \"prompts\".\"id\" = \"prompt_set_prompts\".\"prompt_id\" inner join \"quick_feedbacks\" on \"quick_feedbacks\".\"prompt_id\" = \"prompts\".\"id\" where \"prompt_set_prompts\".\"status\" = 'included') union (select \"prompt_set_prompts\".\"prompt_set_id\", \"quick_feedbacks\".\"user_id\", 'response' as \"contribution_type\" from \"prompt_set_prompts\" left join \"responses\" on \"responses\".\"id\" = \"prompt_set_prompts\".\"prompt_id\" inner join \"quick_feedbacks\" on \"quick_feedbacks\".\"response_id\" = \"responses\".\"id\" where \"prompt_set_prompts\".\"status\" = 'included')) union (select \"prompt_set_prompts\".\"prompt_set_id\", \"quick_feedbacks\".\"user_id\", 'score' as \"contribution_type\" from \"prompt_set_prompts\" left join \"scores\" on \"scores\".\"id\" = \"prompt_set_prompts\".\"prompt_id\" inner join \"quick_feedbacks\" on \"quick_feedbacks\".\"score_id\" = \"scores\".\"id\" where \"prompt_set_prompts\".\"status\" = 'included')) \"query\" group by \"query\".\"user_id\", \"query\".\"prompt_set_id\", \"contribution_type\"",
+      "name": "v_review_contributors_per_prompt_set",
+      "schema": "public",
+      "isExisting": false,
+      "materialized": false
+    },
+    "public.v_upload_contributors_per_prompt_set": {
+      "columns": {
+        "uploader_id": {
+          "name": "uploader_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "definition": "select \"id\" as \"prompt_set_id\", \"uploader_id\", \"collaboration_type\" from (((select \"prompt_sets\".\"id\", \"prompts\".\"uploader_id\", 'prompt' as \"collaboration_type\" from \"prompt_sets\" inner join \"prompt_set_prompts\" on (\"prompt_set_prompts\".\"prompt_set_id\" = \"prompt_sets\".\"id\" and \"prompt_set_prompts\".\"status\" = 'included') inner join \"prompts\" on \"prompts\".\"id\" = \"prompt_set_prompts\".\"prompt_id\") union (select \"prompt_sets\".\"id\", \"responses\".\"uploader_id\", 'response' as \"collaboration_type\" from \"prompt_sets\" inner join \"prompt_set_prompts\" on (\"prompt_set_prompts\".\"prompt_set_id\" = \"prompt_sets\".\"id\" and \"prompt_set_prompts\".\"status\" = 'included') inner join \"responses\" on \"responses\".\"id\" = \"prompt_set_prompts\".\"prompt_id\")) union (select \"prompt_sets\".\"id\", \"scores\".\"uploader_id\", 'score' as \"collaboration_type\" from \"prompt_sets\" inner join \"prompt_set_prompts\" on (\"prompt_set_prompts\".\"prompt_set_id\" = \"prompt_sets\".\"id\" and \"prompt_set_prompts\".\"status\" = 'included') inner join \"scores\" on \"scores\".\"id\" = \"prompt_set_prompts\".\"prompt_id\")) \"query\" group by \"query\".\"uploader_id\", \"query\".\"id\", \"collaboration_type\"",
+      "name": "v_upload_contributors_per_prompt_set",
+      "schema": "public",
+      "isExisting": false,
+      "materialized": false
+    },
+    "public.v_user_notification_subscriptions": {
+      "columns": {
+        "prompt_id": {
+          "name": "prompt_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "definition": "((select \"prompt_id\", \"user_id\", 'commented' as \"reason\" from \"prompt_comments\") union (select \"prompt_id\", \"user_id\", 'gave_quick_feedback' as \"reason\" from \"quick_feedbacks\" where \"quick_feedbacks\".\"prompt_id\" is not null)) union (select \"id\" as \"prompt_id\", \"uploader_id\", 'owns' as \"reason\" from \"prompts\")",
+      "name": "v_user_notification_subscriptions",
+      "schema": "public",
+      "isExisting": false,
+      "materialized": false
+    },
+    "public.v_user_stats": {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        }
+      },
+      "definition": "with \"sq_prompt_quick_feedbacks\" as (select \"quick_feedbacks\".\"user_id\", \n          COALESCE(COUNT(DISTINCT \"prompt_sets\".\"id\"), 0)\n         as \"prompt_set_feedback_count\", \n          COUNT(DISTINCT \"quick_feedbacks\".\"id\")\n          FILTER (WHERE \"quick_feedbacks\".\"prompt_id\" IS NOT NULL)\n         as \"prompt_quick_feedback_count\" from \"quick_feedbacks\" left join \"prompt_set_prompts\" on \"prompt_set_prompts\".\"prompt_id\" = \"quick_feedbacks\".\"prompt_id\" left join \"prompt_sets\" on \"prompt_set_prompts\".\"prompt_set_id\" = \"prompt_sets\".\"id\" group by \"quick_feedbacks\".\"user_id\"), \"sq_contributed_prompts\" as (select \"hash_registrations\".\"uploader_id\", COALESCE(COUNT(DISTINCT \"prompts\".\"id\"), 0) as \"uploaded_prompt_count\", \n          COUNT(\"prompts\".\"id\")\n          FILTER (WHERE \"prompts\".\"metadata\"->>'generated-via' = 'peerbench-webapp')\n         as \"generated_prompt_count\", \n          COUNT(DISTINCT \"prompts\".\"id\")\n          FILTER (WHERE \"prompt_set_prompts\".\"status\" = 'included')\n         as \"verified_prompt_count\" from \"prompts\" inner join \"hash_registrations\" on (\"hash_registrations\".\"cid\" = \"prompts\".\"hash_cid_registration\" and \"hash_registrations\".\"sha256\" = \"prompts\".\"hash_sha256_registration\") left join \"prompt_set_prompts\" on \"prompt_set_prompts\".\"prompt_id\" = \"prompts\".\"id\" group by \"hash_registrations\".\"uploader_id\"), \"sq_avg_prompt_quick_feedback_consensus\" as (select \"quick_feedbacks\".\"user_id\", \n            COALESCE(\n              (COUNT(*) FILTER (\n                WHERE\n                  \"qf\".\"prompt_id\" = \"quick_feedbacks\".\"prompt_id\" AND\n                  \"qf\".\"opinion\" = \"quick_feedbacks\".\"opinion\"\n              ))::numeric(5, 2)\n              /\n              NULLIF(\n                (COUNT(*) FILTER (\n                  WHERE \"qf\".\"prompt_id\" = \"quick_feedbacks\".\"prompt_id\"\n                )),\n                0\n              ),\n              0\n            )\n           as \"avg_consensus\" from \"quick_feedbacks\" left join \"quick_feedbacks\" \"qf\" on \"qf\".\"user_id\" <> \"quick_feedbacks\".\"user_id\" group by \"quick_feedbacks\".\"user_id\"), \"sq_avg_score_created_prompt_sets\" as (select COALESCE(AVG(\"scores\".\"score\"), 0) as \"avg_score_of_created_prompt_sets\", \"prompt_sets\".\"owner_id\" from \"prompt_sets\" left join \"prompt_set_prompts\" on \"prompt_set_prompts\".\"prompt_set_id\" = \"prompt_sets\".\"id\" left join \"scores\" on \"scores\".\"prompt_id\" = \"prompt_set_prompts\".\"prompt_id\" group by \"prompt_sets\".\"owner_id\"), \"sq_avg_score_co_authored_prompt_sets\" as (select COALESCE(AVG(\"scores\".\"score\"), 0) as \"avg_score_of_co_authored_prompt_sets\", \"user_role_on_prompt_set\".\"user_id\" from \"prompt_sets\" left join \"prompt_set_prompts\" on \"prompt_set_prompts\".\"prompt_set_id\" = \"prompt_sets\".\"id\" left join \"user_role_on_prompt_set\" on \"user_role_on_prompt_set\".\"prompt_set_id\" = \"prompt_sets\".\"id\" left join \"scores\" on \"scores\".\"prompt_id\" = \"prompt_set_prompts\".\"prompt_id\" group by \"user_role_on_prompt_set\".\"user_id\"), \"sq_prompt_comments\" as (((select \"id\", \"user_id\" from \"prompt_comments\") union all (select \"id\", \"user_id\" from \"response_comments\")) union all (select \"id\", \"user_id\" from \"score_comments\")) select \"auth\".\"users\".\"id\", COALESCE(COUNT(DISTINCT \"prompt_sets\".\"id\"), 0) as \"created_prompt_set_count\", COALESCE(COUNT(DISTINCT \"sq_prompt_comments\".\"id\"), 0) as \"total_comment_count\", \"prompt_quick_feedback_count\", \"prompt_set_feedback_count\", COALESCE(COUNT(DISTINCT \"user_role_on_prompt_set\".\"prompt_set_id\"), 0) as \"co_created_prompt_set_count\", \"uploaded_prompt_count\", \"generated_prompt_count\", \"verified_prompt_count\", \"avg_consensus\", \"avg_score_of_created_prompt_sets\", \"avg_score_of_co_authored_prompt_sets\", COALESCE(COUNT(DISTINCT \"user_profile\".\"user_id\"), 0) as \"referred_users_count\" from \"auth\".\"users\" left join \"user_profile\" on \"user_profile\".\"invited_by\" = \"auth\".\"users\".\"id\" left join \"prompt_sets\" on \"prompt_sets\".\"owner_id\" = \"auth\".\"users\".\"id\" left join \"user_role_on_prompt_set\" on \"user_role_on_prompt_set\".\"user_id\" = \"auth\".\"users\".\"id\" left join \"sq_prompt_quick_feedbacks\" on \"sq_prompt_quick_feedbacks\".\"user_id\" = \"auth\".\"users\".\"id\" left join \"sq_contributed_prompts\" on \"sq_contributed_prompts\".\"uploader_id\" = \"auth\".\"users\".\"id\" left join \"sq_avg_prompt_quick_feedback_consensus\" on \"sq_avg_prompt_quick_feedback_consensus\".\"user_id\" = \"auth\".\"users\".\"id\" left join \"sq_avg_score_created_prompt_sets\" on \"sq_avg_score_created_prompt_sets\".\"owner_id\" = \"auth\".\"users\".\"id\" left join \"sq_avg_score_co_authored_prompt_sets\" on \"sq_avg_score_co_authored_prompt_sets\".\"user_id\" = \"auth\".\"users\".\"id\" left join \"sq_prompt_comments\" on \"sq_prompt_comments\".\"user_id\" = \"auth\".\"users\".\"id\" group by \"auth\".\"users\".\"id\", \"prompt_quick_feedback_count\", \"prompt_set_feedback_count\", \"uploaded_prompt_count\", \"generated_prompt_count\", \"verified_prompt_count\", \"avg_consensus\", \"avg_score_of_created_prompt_sets\", \"avg_score_of_co_authored_prompt_sets\"",
+      "name": "v_user_stats",
+      "schema": "public",
+      "isExisting": false,
+      "materialized": false
+    },
+    "public.v_users": {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_sign_in_at": {
+          "name": "last_sign_in_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "country": {
+          "name": "country",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "referral_code": {
+          "name": "referral_code",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "encode(extensions.gen_random_bytes(16), 'hex')"
+        },
+        "github": {
+          "name": "github",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "website": {
+          "name": "website",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bluesky": {
+          "name": "bluesky",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mastodon": {
+          "name": "mastodon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "twitter": {
+          "name": "twitter",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "definition": "select \"auth\".\"users\".\"id\", \"auth\".\"users\".\"email\", \"auth\".\"users\".\"last_sign_in_at\", \"user_profile\".\"display_name\", \"orgs\".\"name\", \"orgs\".\"country\", \"user_profile\".\"referral_code\", \"orgs\".\"id\" as \"org_id\", \"user_profile\".\"github\", \"user_profile\".\"website\", \"user_profile\".\"bluesky\", \"user_profile\".\"mastodon\", \"user_profile\".\"twitter\", \"user_profile\".\"created_at\", \"user_profile\".\"updated_at\" from \"auth\".\"users\" inner join \"user_profile\" on \"user_profile\".\"user_id\" = \"auth\".\"users\".\"id\" left join \"org_to_people\" on \"org_to_people\".\"user_id\" = \"auth\".\"users\".\"id\" left join \"orgs\" on \"orgs\".\"id\" = \"org_to_people\".\"org_id\"",
+      "name": "v_users",
+      "schema": "public",
+      "isExisting": false,
+      "materialized": false
+    }
+  },
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
