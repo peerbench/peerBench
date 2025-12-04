@@ -1151,12 +1151,17 @@ export const rankingModelPerformanceTable = pgTable(
         onUpdate: "cascade",
       })
       .notNull(),
-    model: text().notNull(),
+    providerModelId: integer("provider_model_id")
+      .references(() => providerModelsTable.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      })
+      .notNull(),
     score: real().notNull(),
     promptsTestedCount: integer("prompts_tested_count").notNull().default(0),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (table) => [unique().on(table.computationId, table.model)]
+  (table) => [unique().on(table.computationId, table.providerModelId)]
 );
 export type DbRankingModelPerformance =
   typeof rankingModelPerformanceTable.$inferSelect;
@@ -1173,14 +1178,19 @@ export const rankingModelEloTable = pgTable(
         onUpdate: "cascade",
       })
       .notNull(),
-    model: text().notNull(),
+    providerModelId: integer("provider_model_id")
+      .references(() => providerModelsTable.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      })
+      .notNull(),
     eloScore: real("elo_score").notNull().default(1500),
     winCount: integer("win_count").notNull().default(0),
     lossCount: integer("loss_count").notNull().default(0),
     matchCount: integer("match_count").notNull().default(0),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (table) => [unique().on(table.computationId, table.model)]
+  (table) => [unique().on(table.computationId, table.providerModelId)]
 );
 export type DbRankingModelElo = typeof rankingModelEloTable.$inferSelect;
 export type DbRankingModelEloInsert = typeof rankingModelEloTable.$inferInsert;
@@ -2351,7 +2361,8 @@ export const currentModelPerformanceView = pgView(
 
   return qb
     .select({
-      model: rankingModelPerformanceTable.model,
+      providerModelId: rankingModelPerformanceTable.providerModelId,
+      model: providerModelsTable.modelId,
       score: rankingModelPerformanceTable.score,
       promptsTestedCount: rankingModelPerformanceTable.promptsTestedCount,
       computedAt: rankingComputationsTable.computedAt,
@@ -2363,6 +2374,10 @@ export const currentModelPerformanceView = pgView(
         rankingModelPerformanceTable.computationId,
         rankingComputationsTable.id
       )
+    )
+    .innerJoin(
+      providerModelsTable,
+      eq(rankingModelPerformanceTable.providerModelId, providerModelsTable.id)
     )
     .where(
       eq(
@@ -2382,7 +2397,8 @@ export const currentModelEloView = pgView("v_current_model_elo").as((qb) => {
 
   return qb
     .select({
-      model: rankingModelEloTable.model,
+      providerModelId: rankingModelEloTable.providerModelId,
+      model: providerModelsTable.modelId,
       eloScore: rankingModelEloTable.eloScore,
       winCount: rankingModelEloTable.winCount,
       lossCount: rankingModelEloTable.lossCount,
@@ -2393,6 +2409,10 @@ export const currentModelEloView = pgView("v_current_model_elo").as((qb) => {
     .innerJoin(
       rankingComputationsTable,
       eq(rankingModelEloTable.computationId, rankingComputationsTable.id)
+    )
+    .innerJoin(
+      providerModelsTable,
+      eq(rankingModelEloTable.providerModelId, providerModelsTable.id)
     )
     .where(
       eq(

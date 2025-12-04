@@ -230,11 +230,11 @@ BEGIN
   -- STEP 4: COMPUTE MODEL PERFORMANCE
   -- ============================================
   
-  INSERT INTO ranking_model_performance (computation_id, model, score, prompts_tested_count)
+  INSERT INTO ranking_model_performance (computation_id, provider_model_id, score, prompts_tested_count)
   WITH model_prompt_scores AS (
     -- Aggregate multiple responses per model-prompt pair
     SELECT 
-      pm.model_id AS model,
+      pm.id AS provider_model_id,
       r.prompt_id,
       AVG(s.score) AS avg_score,
       rpq.quality_score,
@@ -246,11 +246,11 @@ BEGIN
       ON rpq.prompt_id = r.prompt_id 
       AND rpq.computation_id = v_computation_id
     WHERE rpq.quality_score >= p_quality_threshold_prompt -- Only quality prompts
-    GROUP BY pm.model_id, r.prompt_id, rpq.quality_score, rpq.review_count
+    GROUP BY pm.id, r.prompt_id, rpq.quality_score, rpq.review_count
   ),
   model_scores AS (
     SELECT 
-      model,
+      provider_model_id,
       prompt_id,
       avg_score AS response_score,
       quality_score * (1 + LN(5.0 * review_count) - LN(5.0)) AS prompt_weight
@@ -258,11 +258,11 @@ BEGIN
   )
   SELECT 
     v_computation_id,
-    model,
+    provider_model_id,
     SUM(response_score * prompt_weight) / NULLIF(SUM(prompt_weight), 0) AS score,
     COUNT(DISTINCT prompt_id) AS prompts_tested_count
   FROM model_scores
-  GROUP BY model
+  GROUP BY provider_model_id
   HAVING COUNT(*) >= p_min_prompts_for_model_ranking;
 
   -- ============================================
