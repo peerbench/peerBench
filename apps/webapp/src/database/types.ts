@@ -75,7 +75,7 @@ export type ApiKeyProvider =
 
 export const NotificationTypes = {
   promptComment: "prompt_comment",
-  promptQuickFeedback: "prompt_quick_feedback",
+  promptQuickFeedback: "prompt_qf",
 } as const;
 export type NotificationType =
   (typeof NotificationTypes)[keyof typeof NotificationTypes];
