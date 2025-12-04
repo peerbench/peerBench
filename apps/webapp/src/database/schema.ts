@@ -2388,13 +2388,6 @@ export const currentModelPerformanceView = pgView(
 });
 
 export const currentModelEloView = pgView("v_current_model_elo").as((qb) => {
-  const latestComputation = qb
-    .select({ id: rankingComputationsTable.id })
-    .from(rankingComputationsTable)
-    .orderBy(sql`${rankingComputationsTable.computedAt} DESC`)
-    .limit(1)
-    .as("latest");
-
   return qb
     .select({
       providerModelId: rankingModelEloTable.providerModelId,
@@ -2413,12 +2406,6 @@ export const currentModelEloView = pgView("v_current_model_elo").as((qb) => {
     .innerJoin(
       providerModelsTable,
       eq(rankingModelEloTable.providerModelId, providerModelsTable.id)
-    )
-    .where(
-      eq(
-        rankingModelEloTable.computationId,
-        sql`(SELECT ${latestComputation.id} FROM ${latestComputation})`
-      )
     );
 });
 

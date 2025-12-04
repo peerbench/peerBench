@@ -9,13 +9,11 @@ CREATE OR REPLACE FUNCTION compute_rankings(
   p_percentile_trust_for_reviewers REAL DEFAULT 0.5,
   p_quality_threshold_prompt REAL DEFAULT 0.5,
   p_reviews_for_quality_prompt INTEGER DEFAULT 1,
-  p_min_prompts_for_model_ranking INTEGER DEFAULT 25,
-  p_elo_iterations INTEGER DEFAULT 10
+  p_min_prompts_for_model_ranking INTEGER DEFAULT 25
 ) RETURNS INTEGER AS $$
 DECLARE
   v_computation_id INTEGER;
   v_trust_threshold REAL;
-  v_qualified_review_threshold REAL := 0.0; -- Will be computed as 50th percentile
   v_total_prompts_in_consensus INTEGER;
 BEGIN
   -- Create new computation record
@@ -29,8 +27,7 @@ BEGIN
     'trustPercentile', p_percentile_trust_for_reviewers,
     'qualityThreshold', p_quality_threshold_prompt,
     'reviewsForQualityPrompt', p_reviews_for_quality_prompt,
-    'minPromptsForModelRanking', p_min_prompts_for_model_ranking,
-    'eloIterations', p_elo_iterations
+    'minPromptsForModelRanking', p_min_prompts_for_model_ranking
   ))
   RETURNING id INTO v_computation_id;
 
@@ -376,15 +373,7 @@ Parameters:
 - p_quality_threshold_prompt: Minimum quality score for a prompt to be considered "quality" (default 0.5)
 - p_reviews_for_quality_prompt: Minimum reviews needed to calculate prompt quality score
 - p_min_prompts_for_model_ranking: Minimum prompts a model must be tested on to appear in rankings
-- p_elo_iterations: Number of iterations for ELO convergence (default 10)
 Trust update formula: new_trust = old_trust + alpha * (alignment_rate - old_trust)
   where alpha = review_count / (review_count + k)
-ELO ranking (Step 4B):
-- Pairwise comparison on quality prompts (quality_score >= p_quality_threshold_prompt)
-- Match: two models scored on the same prompt
-- Win condition: higher score wins, ties ignored
-- ELO formula: R_new = R_old + K * (S - E), K=32
-- Expected score: E = 1 / (1 + 10^((R_opponent - R_self)/400))
-- p_elo_iterations iterations for convergence
 All parameters are stored as JSON in the ranking_computations table for version tracking.
 Returns: computation_id of the newly created ranking computation';
