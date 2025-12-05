@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePageContext } from "../context";
 import { useMemo, useState } from "react";
 import {
@@ -23,6 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   LucideEye,
+  LucideLoader2,
   LucideLock,
   LucideThumbsUp,
   LucideUpload,
@@ -340,6 +341,10 @@ export function UploadDownloadButtons() {
 
   return (
     <Card>
+      <CardHeader>
+        <CardTitle>Save</CardTitle>
+      </CardHeader>
+
       <CardContent className="p-4">
         <div className="flex gap-4">
           <div className="flex-1/2 space-y-3">
@@ -403,11 +408,22 @@ export function UploadDownloadButtons() {
                   <Button
                     onClick={handleUploadButtonClick}
                     disabled={Boolean(uploadBlockerMessage)}
-                    variant="outline"
-                    className="w-full"
+                    variant="default"
+                    className="w-full bg-black hover:bg-gray-800 text-white"
                   >
-                    <LucideUpload className="mr-2 h-4 w-4" />
-                    {ctx.isUploading ? "Uploading..." : `Upload`}
+                    {ctx.isUploading ? (
+                      <>
+                        <LucideLoader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : ctx.lastUploadedPromptId !== null ? (
+                      "Saved"
+                    ) : (
+                      <>
+                        <LucideUpload className="mr-2 h-4 w-4" />
+                        Save
+                      </>
+                    )}
                   </Button>
                 </div>
               </TooltipTrigger>
@@ -424,7 +440,7 @@ export function UploadDownloadButtons() {
           </div>
 
           <div className="flex flex-col flex-1/2">
-            <p className="flex-1 items-center flex justify-center text-sm text-gray-600">
+            <p className="flex-1 items-center flex justify-center text-sm text-gray-600 mb-3">
               Download the raw data of the Prompt, Responses and Scores (if
               there are). You can use this file to store your data manually or
               later to reveal your Prompt/Responses if you have uploaded them as
@@ -440,6 +456,7 @@ export function UploadDownloadButtons() {
                     content={prepareDownloadFile}
                     mimeType="application/json"
                     disabled={Boolean(downloadBlockerMessage)}
+                    variant="outline"
                   />
                 </div>
               </TooltipTrigger>

@@ -43,7 +43,7 @@ export default function UploadResults() {
 
   const handleUpload = async () => {
     setIsUploading(true);
-    const loadingToast = toast.loading("Uploading...");
+    const loadingToast = toast.loading("Saving...");
 
     try {
       // Upload Prompts only if the user uploaded a file
@@ -341,7 +341,7 @@ export default function UploadResults() {
                     {isUploading ? (
                       <>
                         <LucideLoader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Uploading...
+                        Saving...
                       </>
                     ) : ctx.isResultsUploaded ? (
                       "Uploaded"

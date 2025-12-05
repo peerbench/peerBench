@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -56,7 +55,7 @@ export function MessageModal({
             {icon || <InfoIcon className="h-5 w-5 text-muted-foreground" />}
             <DialogTitle>{title}</DialogTitle>
           </div>
-          <DialogDescription className="pt-2">{message}</DialogDescription>
+          <div className="text-muted-foreground text-sm pt-2">{message}</div>
         </DialogHeader>
         <DialogFooter>
           <Button onClick={handleClose} variant="default">
