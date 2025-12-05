@@ -2388,24 +2388,39 @@ export const currentModelPerformanceView = pgView(
 });
 
 export const currentModelEloView = pgView("v_current_model_elo").as((qb) => {
-  return qb
-    .select({
+  // Use a subquery to get the latest ELO entry per model (by created_at)
+  const latestEloPerModel = qb
+    .selectDistinctOn([rankingModelEloTable.providerModelId], {
+      id: rankingModelEloTable.id,
       providerModelId: rankingModelEloTable.providerModelId,
-      model: providerModelsTable.modelId,
       eloScore: rankingModelEloTable.eloScore,
       winCount: rankingModelEloTable.winCount,
       lossCount: rankingModelEloTable.lossCount,
       matchCount: rankingModelEloTable.matchCount,
-      computedAt: rankingComputationsTable.computedAt,
+      computationId: rankingModelEloTable.computationId,
+      createdAt: rankingModelEloTable.createdAt,
     })
     .from(rankingModelEloTable)
-    .innerJoin(
-      rankingComputationsTable,
-      eq(rankingModelEloTable.computationId, rankingComputationsTable.id)
+    .orderBy(
+      rankingModelEloTable.providerModelId,
+      sql`${rankingModelEloTable.createdAt} DESC`
     )
+    .as("latest_elo");
+
+  return qb
+    .select({
+      providerModelId: latestEloPerModel.providerModelId,
+      model: providerModelsTable.modelId,
+      eloScore: latestEloPerModel.eloScore,
+      winCount: latestEloPerModel.winCount,
+      lossCount: latestEloPerModel.lossCount,
+      matchCount: latestEloPerModel.matchCount,
+      computedAt: latestEloPerModel.createdAt,
+    })
+    .from(latestEloPerModel)
     .innerJoin(
       providerModelsTable,
-      eq(rankingModelEloTable.providerModelId, providerModelsTable.id)
+      eq(latestEloPerModel.providerModelId, providerModelsTable.id)
     );
 });
 

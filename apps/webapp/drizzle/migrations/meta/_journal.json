@@ -680,6 +680,13 @@
       "when": 1764863710299,
       "tag": "0096_bizarre_raza",
       "breakpoints": true
+    },
+    {
+      "idx": 97,
+      "version": "7",
+      "when": 1764927120061,
+      "tag": "0097_closed_scalphunter",
+      "breakpoints": true
     }
   ]
 }
