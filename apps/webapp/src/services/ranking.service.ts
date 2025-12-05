@@ -17,7 +17,7 @@ import {
   rankingPromptQualityTable,
 } from "@/database/schema";
 import { PromptStatuses } from "@/database/types";
-import { eq, desc, sql, inArray } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 
 const DEFAULT_ELO = 1500;
 const K_FACTOR = 1;
@@ -464,7 +464,6 @@ export class RankingService {
   ): Promise<{ updated: number; inserted: number }> {
     console.log(`[RANKING:saveEloStates] Saving ${eloStates.size} ELO states to computation ${computationId} using UPSERT`);
     
-    let updated = 0;
     let inserted = 0;
 
     const now = new Date();
@@ -472,7 +471,7 @@ export class RankingService {
 
     for (const [, state] of eloStates) {
       // Use ON CONFLICT DO UPDATE for upsert behavior
-      const result = await db
+      await db
         .insert(rankingModelEloTable)
         .values({
           computationId,
@@ -492,26 +491,13 @@ export class RankingService {
             matchCount: state.matchCount,
             createdAt: now,
           },
-        })
-        .returning({ id: rankingModelEloTable.id });
+        });
       
-      // We can't easily distinguish insert vs update with onConflictDoUpdate
-      // but we can count total operations
-      if (result.length > 0) {
-        // Check if this was an existing record
-        const existingCheck = await db
-          .select({ count: sql<number>`COUNT(*)` })
-          .from(rankingModelEloTable)
-          .where(eq(rankingModelEloTable.id, result[0]!.id));
-        
-        // Since we always get a result, we'll track based on whether the state existed before
-        inserted++;
-      }
+      inserted++;
       
       // Log progress every 100 models
-      const total = updated + inserted;
-      if (total % 100 === 0) {
-        console.log(`[RANKING:saveEloStates] Progress: ${total}/${eloStates.size}`);
+      if (inserted % 100 === 0) {
+        console.log(`[RANKING:saveEloStates] Progress: ${inserted}/${eloStates.size}`);
       }
     }
 
