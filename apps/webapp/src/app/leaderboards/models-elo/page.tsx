@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
   Trophy,
   Swords,
@@ -9,15 +9,12 @@ import {
   ChevronRight,
   TrendingUp,
   TrendingDown,
-  RefreshCw,
-  Loader2,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { ExperimentalNotice } from "../components/experimental-notice";
-import { useAuth } from "@/components/providers/auth";
-import { toast } from "react-toastify";
+import { ComputeRankingsButton } from "../components/compute-rankings-button";
 
 interface ModelEloRanking {
   model: string;
@@ -28,34 +25,10 @@ interface ModelEloRanking {
   computedAt: string;
 }
 
-interface ComputeEloResponse {
-  success: boolean;
-  matchesProcessed?: number;
-  modelsUpdated?: number;
-  newModelsAdded?: number;
-  computationId?: number;
-  elapsedMs?: number;
-  error?: string;
-}
-
-/**
- * Check if user is authorized to compute ELO (forest-ai.org or admin@peerbench.ai)
- */
-function isAuthorizedToCompute(email: string | undefined): boolean {
-  if (!email) return false;
-  return (
-    email.includes("forest-ai.org") || email.includes("admin@peerbench.ai")
-  );
-}
-
 export default function ModelsEloLeaderboardPage() {
   const [page, setPage] = useState(1);
   const limit = 10;
   const offset = (page - 1) * limit;
-  const queryClient = useQueryClient();
-  const user = useAuth();
-
-  const isAuthorized = isAuthorizedToCompute(user?.email ?? undefined);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["rankings", "models-elo", page, limit, offset],
@@ -65,32 +38,6 @@ export default function ModelsEloLeaderboardPage() {
       );
       if (!response.ok) throw new Error("Failed to fetch model ELO rankings");
       return response.json();
-    },
-  });
-
-  const computeEloMutation = useMutation({
-    mutationFn: async (): Promise<ComputeEloResponse> => {
-      const response = await fetch("/api/v2/rankings/compute-elo", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error ?? "Failed to compute ELO");
-      }
-      return data;
-    },
-    onSuccess: (data) => {
-      toast.success(
-        `ELO computed successfully! ${data.matchesProcessed} matches processed, ${data.modelsUpdated} models updated, ${data.newModelsAdded} new models added.`
-      );
-      // Invalidate and refetch the rankings
-      queryClient.invalidateQueries({ queryKey: ["rankings", "models-elo"] });
-    },
-    onError: (error: Error) => {
-      toast.error(`Failed to compute ELO: ${error.message}`);
     },
   });
 
@@ -108,26 +55,7 @@ export default function ModelsEloLeaderboardPage() {
               Model ELO Leaderboard
             </h1>
           </div>
-          {isAuthorized && (
-            <Button
-              onClick={() => computeEloMutation.mutate()}
-              disabled={computeEloMutation.isPending}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              {computeEloMutation.isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Computing...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="h-4 w-4" />
-                  Compute ELO
-                </>
-              )}
-            </Button>
-          )}
+          <ComputeRankingsButton />
         </div>
         <p className="text-gray-600 dark:text-gray-400">
           Head-to-head rankings based on pairwise comparisons on quality prompts

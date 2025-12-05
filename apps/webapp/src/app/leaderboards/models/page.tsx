@@ -5,6 +5,8 @@ import { Trophy, Bot, Activity, Clock, ChevronLeft, ChevronRight } from "lucide-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { ExperimentalNotice } from "../components/experimental-notice";
+import { ComputeRankingsButton } from "../components/compute-rankings-button";
 
 interface ModelRanking {
   model: string;
@@ -34,11 +36,14 @@ export default function ModelsLeaderboardPage() {
   return (
     <main className="flex flex-col items-center justify-center mx-auto px-4 py-8 max-w-7xl">
       <div className="w-full mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <Bot className="h-8 w-8 text-black dark:text-white" />
-          <h1 className="text-3xl font-bold text-black dark:text-white">
-            Model Performance Leaderboard
-          </h1>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-3">
+            <Bot className="h-8 w-8 text-black dark:text-white" />
+            <h1 className="text-3xl font-bold text-black dark:text-white">
+              Model Performance Leaderboard
+            </h1>
+          </div>
+          <ComputeRankingsButton />
         </div>
         <p className="text-gray-600 dark:text-gray-400">
           Rankings based on performance on quality-reviewed prompts
@@ -50,6 +55,8 @@ export default function ModelsLeaderboardPage() {
           </p>
         )}
       </div>
+
+      <ExperimentalNotice />
 
       {error && (
         <div className="w-full p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">

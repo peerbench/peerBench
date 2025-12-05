@@ -687,6 +687,13 @@
       "when": 1764927120061,
       "tag": "0097_closed_scalphunter",
       "breakpoints": true
+    },
+    {
+      "idx": 98,
+      "version": "7",
+      "when": 1764955273234,
+      "tag": "0098_lethal_terrax",
+      "breakpoints": true
     }
   ]
 }

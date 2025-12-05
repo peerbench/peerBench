@@ -43,6 +43,7 @@ import {
   count,
   countDistinct,
   eq,
+  gte,
   isNotNull,
   isNull,
   ne,
@@ -2418,6 +2419,7 @@ export const currentModelEloView = pgView("v_current_model_elo").as((qb) => {
       computedAt: latestEloPerModel.createdAt,
     })
     .from(latestEloPerModel)
+    .where(and(gte(latestEloPerModel.matchCount, 50), ne(providerModelsTable.modelId, 'mistralai/mistral-tiny')))
     .innerJoin(
       providerModelsTable,
       eq(latestEloPerModel.providerModelId, providerModelsTable.id)

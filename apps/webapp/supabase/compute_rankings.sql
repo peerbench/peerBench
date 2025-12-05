@@ -37,8 +37,7 @@ BEGIN
   
   -- Check if this is first run (no previous computations exist)
   IF NOT EXISTS (
-    SELECT 1 FROM ranking_computations 
-    WHERE id != v_computation_id
+    SELECT 1 FROM ranking_reviewer_trust 
     LIMIT 1
   ) THEN
     -- FIRST RUN: Initialize trust based on verified org affiliation and account age
