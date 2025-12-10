@@ -47,7 +47,10 @@ export function Notifications() {
 
   const handleNotificationClick = (notification: APINotificationItem) => {
     setOpen(false);
-    if (notification.type === NotificationTypes.promptComment) {
+    if (
+      notification.type === NotificationTypes.promptComment ||
+      notification.type === NotificationTypes.promptQuickFeedback
+    ) {
       router.push(`/prompts/${notification.metadata.promptId}`);
     }
   };
