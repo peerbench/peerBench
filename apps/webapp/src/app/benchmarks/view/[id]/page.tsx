@@ -187,15 +187,13 @@ export default async function Page({
             <CardTitle>Model Leaderboard</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="border-t">
-              <Suspense fallback={<ModelLeaderboardSkeleton />}>
-                <Leaderboard
-                  promptSetId={promptSetId}
-                  totalPromptCount={promptSet.totalPromptsCount || 0}
-                  userId={user?.id}
-                />
-              </Suspense>
-            </div>
+            <Suspense fallback={<ModelLeaderboardSkeleton />}>
+              <Leaderboard
+                promptSetId={promptSetId}
+                totalPromptCount={promptSet.totalPromptsCount || 0}
+                userId={user?.id}
+              />
+            </Suspense>
           </CardContent>
         </Card>
         <Card>

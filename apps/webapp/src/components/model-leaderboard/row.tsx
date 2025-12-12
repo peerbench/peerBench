@@ -50,7 +50,7 @@ export function ModelLeaderboardRow({
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>
-                    This model tested fewer than 70% of Prompts (
+                    This model tested fewer than 70% of prompts (
                     {promptCountThreshold.toFixed(0)} required)
                   </p>
                 </TooltipContent>

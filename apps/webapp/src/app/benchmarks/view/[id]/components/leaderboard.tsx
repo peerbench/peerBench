@@ -1,8 +1,7 @@
 import { NULL_UUID } from "@/lib/constants";
-import { ModelLeaderboard } from "@/components/model-leaderboard";
 import { LeaderboardService } from "@/services/leaderboard.service";
-import { ModelLeaderboardRow } from "@/components/model-leaderboard/row";
 import { PromptSetService } from "@/services/promptset.service";
+import { LeaderboardClient } from "./leaderboard-client";
 
 export interface LeaderboardProps {
   promptSetId: number;
@@ -27,16 +26,10 @@ export async function Leaderboard({
   ]);
 
   return (
-    <ModelLeaderboard>
-      {leaderboardData.map((item, index) => (
-        <ModelLeaderboardRow
-          key={item.model}
-          index={index}
-          promptCountThreshold={totalPromptCount * 0.7}
-          showThresholdWarning={hasRole}
-          {...item}
-        />
-      ))}
-    </ModelLeaderboard>
+    <LeaderboardClient
+      leaderboardData={leaderboardData}
+      totalPromptCount={totalPromptCount}
+      showThresholdWarning={hasRole}
+    />
   );
 }
