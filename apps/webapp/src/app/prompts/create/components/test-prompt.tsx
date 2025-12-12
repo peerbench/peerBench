@@ -212,6 +212,7 @@ export default function TestPrompt() {
                                 type: "string",
                               },
                             },
+                            required: ["answer"],
                           },
                         },
                       }

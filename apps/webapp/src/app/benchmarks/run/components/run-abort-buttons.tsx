@@ -200,6 +200,7 @@ export default function RunAbortButtons() {
                                     type: "string",
                                   },
                                 },
+                                required: ["answer"],
                               },
                             },
                           }
