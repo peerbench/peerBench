@@ -77,14 +77,20 @@ The scorer extracts the answer from the last matching pattern (if multiple match
     // Try to parse the response as the expected JSON object
     const json = parseResponseAsJSON<{ answer: string }>(data!);
     if (json !== undefined) {
+      // Model may include additional characters in the `answer` field.
+      const extractedAnswer =
+        json.answer !== undefined
+          ? // Only get the first letter as the answer key.
+            this.getFirstLetter(json.answer)
+          : undefined;
+
       // Check if the parsed JSON object represents the correct answer
       if (
-        json.answer !== undefined &&
-        json.answer.trim().toUpperCase() ===
-          prompt.answerKey?.trim().toUpperCase()
+        extractedAnswer !== undefined &&
+        extractedAnswer === prompt.answerKey?.trim().toUpperCase()
       ) {
         return {
-          extractedAnswer: json.answer.toUpperCase(),
+          extractedAnswer,
           score: 1,
         };
       }
@@ -92,7 +98,9 @@ The scorer extracts the answer from the last matching pattern (if multiple match
       // Response parsed as JSON but does not represent the correct answer
       return {
         extractedAnswer:
-          json.answer === undefined ? null : String(json.answer).toUpperCase(),
+          json.answer === undefined
+            ? null
+            : (extractedAnswer ?? String(json.answer)),
         score: 0,
       };
     }
@@ -203,6 +211,11 @@ The scorer extracts the answer from the last matching pattern (if multiple match
         return match[pattern.answerGroupIndex];
       }
     }
+  }
+
+  private getFirstLetter(text: string): string | undefined {
+    const match = text.match(/[A-Za-z]/);
+    return match ? match[0].toUpperCase() : undefined;
   }
 
   private escapeRegex(str: string): string {
