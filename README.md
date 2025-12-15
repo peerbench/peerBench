@@ -6,11 +6,11 @@ short_description: A proctored, community-governed AI benchmarking platform that
 
 # PeerBench
 
-![NPM Version](https://img.shields.io/npm/v/peerbench?color=green)
-![Website](https://img.shields.io/website?url=https%3A%2F%2Fpeerbench.ai&label=peerbench.ai&color=blue)
-![Whitepaper](https://img.shields.io/badge/arxiv_paper-red?link=https%3A%2F%2Farxiv.org%2Fabs%2F2510.07575)
-![License](https://img.shields.io/badge/license-MIT-blue) 
-![Chat](https://img.shields.io/badge/chat-discord-7289da)
+<a href="https://www.npmjs.com/package/peerbench">![NPM Version](https://img.shields.io/npm/v/peerbench?color=green)</a>
+<a href="https://peerbench.ai">![Website](https://img.shields.io/website?url=https%3A%2F%2Fpeerbench.ai&label=peerbench.ai&color=blue)</a>
+<a href="https://arxiv.org/abs/2510.07575">![Whitepaper](https://img.shields.io/badge/arxiv_paper-red?link=https%3A%2F%2Farxiv.org%2Fabs%2F2510.07575)</a>
+![License](https://img.shields.io/badge/license-MIT-blue)
+<a href="https://discord.gg/dwnyEzZnFr">![Chat](https://img.shields.io/badge/chat-discord-7289da)</a>
 
 > **Tamper-proof AI evaluation: secret tests, sealed execution, and community-verified scores.**
 
@@ -41,12 +41,12 @@ PeerBench is a **proctored, live evaluation platform** where AI models are teste
 
 Get involved with PeerBench — whether you're a researcher, developer, or AI enthusiast:
 
-| Resource | Link | Description |
-|----------|------|-------------|
-| 🌐 **Web App** | [peerbench.ai](https://peerbench.ai) | Submit prompts, review tests, and explore leaderboards |
-| 💻 **GitHub** | [github.com/peerbench/peerBench](https://github.com/peerbench/peerBench) | Source code, issues, and discussions |
-| 💬 **Discord** | [Join our Discord](https://discord.gg/kMa6vqHXZH) | Chat with the community, ask questions, get support |
-| 📖 **Onboarding Guide** | [Getting Started](https://docs.google.com/document/d/1Wj7o3pAjqMSYy9pHeRXzvm24H3ByYgz7HRxjV67nnQM/edit?usp=sharing) | Step-by-step instructions for new contributors |
+| Resource                | Link                                                                                                                | Description                                            |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| 🌐 **Web App**          | [peerbench.ai](https://peerbench.ai)                                                                                | Submit prompts, review tests, and explore leaderboards |
+| 💻 **GitHub**           | [github.com/peerbench/peerBench](https://github.com/peerbench/peerBench)                                            | Source code, issues, and discussions                   |
+| 💬 **Discord**          | [Join our Discord](https://discord.gg/kMa6vqHXZH)                                                                   | Chat with the community, ask questions, get support    |
+| 📖 **Onboarding Guide** | [Getting Started](https://docs.google.com/document/d/1Wj7o3pAjqMSYy9pHeRXzvm24H3ByYgz7HRxjV67nnQM/edit?usp=sharing) | Step-by-step instructions for new contributors         |
 
 ---
 
@@ -70,14 +70,14 @@ For **researchers**, PeerBench provides contamination-resistant benchmarks that 
 
 **Actors and Data Flow:**
 
-| Actor | Role |
-|-------|------|
-| **Contributors** | Submit test items, scoring functions, and commitment hashes |
-| **Coordination Server** | Orchestrates evaluation rounds, manages the reservoir, publishes signed scores |
-| **Live Reservoir** | Holds active secret test items (size `k`); oldest/lowest-weight items are retired and published |
-| **Reviewers** | Rate test quality; earn reputation through consensus correlation |
-| **Model Endpoints** | AI models under evaluation |
-| **Public Leaderboard** | Displays aggregated, peer-validated rankings with full audit trails |
+| Actor                   | Role                                                                                            |
+| ----------------------- | ----------------------------------------------------------------------------------------------- |
+| **Contributors**        | Submit test items, scoring functions, and commitment hashes                                     |
+| **Coordination Server** | Orchestrates evaluation rounds, manages the reservoir, publishes signed scores                  |
+| **Live Reservoir**      | Holds active secret test items (size `k`); oldest/lowest-weight items are retired and published |
+| **Reviewers**           | Rate test quality; earn reputation through consensus correlation                                |
+| **Model Endpoints**     | AI models under evaluation                                                                      |
+| **Public Leaderboard**  | Displays aggregated, peer-validated rankings with full audit trails                             |
 
 The workflow proceeds: Contributors → Commitment → Review → Reservoir → Sealed Execution → Scoring → Leaderboard. Retired tests become public, enabling longitudinal contamination audits.
 
@@ -97,30 +97,34 @@ The workflow proceeds: Contributors → Commitment → Review → Reservoir → 
 
 ### Leaderboards Maintained
 
-| Leaderboard | Purpose |
-|-------------|---------|
+| Leaderboard                 | Purpose                                                            |
+| --------------------------- | ------------------------------------------------------------------ |
 | **Contributor Leaderboard** | Ranks test creators by cumulative quality and verification bonuses |
-| **Reviewer Leaderboard** | Ranks validators by consensus alignment on quality assessments |
-| **Model Leaderboard** | Ranks AI models by reputation-weighted evaluation scores |
+| **Reviewer Leaderboard**    | Ranks validators by consensus alignment on quality assessments     |
+| **Model Leaderboard**       | Ranks AI models by reputation-weighted evaluation scores           |
 
 ### Scoring Formulas
 
 **Contributor Score** — cumulative test quality plus verification bonuses:
+
 ```
 ContributorScore(c) = Σ quality(T_i^(c)) + bonuses
 ```
 
 **Reviewer Score** — Pearson correlation between individual ratings and consensus:
+
 ```
 ReviewerScore(r) = Pearson({q(i)_r}, {q(i)})
 ```
 
 **Model Score** — reputation-weighted average of per-test scores:
+
 ```
 ModelScore(m) = (Σ_i w(T_i) × s_i(m)) / (Σ_i w(T_i))
 ```
 
 **Test Weight** — combines peer-reviewed quality and contributor reputation:
+
 ```
 w(T) = max{0, 0.7 × quality(T) + 0.3 × min(2, ρ_c / 100)}
 ```
@@ -161,9 +165,9 @@ Your contributions build reputation and directly improve the quality of AI evalu
 
 PeerBench supports two evaluation scheduling paradigms with distinct trade-offs:
 
-- **Immediate Scoring**: Models are evaluated on-demand as tests become available. *Pros*: Fast feedback loop, continuous ranking updates. *Cons*: Scores across time windows are not directly comparable; higher contamination risk if tests are reused.
+- **Immediate Scoring**: Models are evaluated on-demand as tests become available. _Pros_: Fast feedback loop, continuous ranking updates. _Cons_: Scores across time windows are not directly comparable; higher contamination risk if tests are reused.
 
-- **Synchronized Cohort Evaluation**: All models in a cohort are evaluated against the same test batch in a fixed window. *Pros*: Fair head-to-head comparison, reduced contamination surface. *Cons*: Slower iteration, requires coordination overhead.
+- **Synchronized Cohort Evaluation**: All models in a cohort are evaluated against the same test batch in a fixed window. _Pros_: Fair head-to-head comparison, reduced contamination surface. _Cons_: Slower iteration, requires coordination overhead.
 
 - **Recommended Hybrid Approach**: A portion of the reservoir (e.g., 70%) is reserved for synchronized quarterly cohorts, while 30% supports immediate scoring for rapid iteration. This balances fairness with agility and provides both comparable cohort rankings and continuous progress signals.
 
@@ -187,4 +191,3 @@ To enable quality review without compromising test secrecy, reviewers receive: (
 ---
 
 <sub>© 2025 PeerBench.ai & Contributors. Licensed under MIT.</sub>
-
