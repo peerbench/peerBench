@@ -119,7 +119,7 @@ Your judgement must be in the format and criteria specified below:
       scoreUUID: uuidv7(),
       prompt: response.prompt,
       method: ScoringMethods.ai,
-      scorerAIProvider: provider.identifier,
+      scorerAIProvider: provider.getIdentifier(),
       scorerAIModelSlug: parsedOptions.model,
       scorerAIInputTokensUsed: judge.inputTokensUsed,
       scorerAIOutputTokensUsed: judge.outputTokensUsed,

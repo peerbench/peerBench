@@ -1,5 +1,4 @@
 import { AbstractProvider } from "@/providers/abstract/abstract-provider";
-import { MaybePromise } from "@/types";
 import { ForwardError } from "@/errors/provider";
 import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import OpenAI, { APIError } from "openai";
@@ -53,45 +52,20 @@ export abstract class BaseLLMProvider extends AbstractProvider<string, string> {
   }
 
   /**
-   * Fetch all supported models from the provider
-   * @returns Array of model information
+   * Fetch all supported models from the provider.
+   * @returns Array of models supported by the provider
    */
-  async getSupportedModels(): Promise<ModelInfo[]> {
-    try {
-      const response = await this.client.models.list();
-      const models = response.data;
-      const parsedModels = await Promise.all(
-        models.map(async (model) => {
-          const parsed = await this.parseModelInfo(model);
+  async getModels(): Promise<LLMModel[]> {
+    const response = await this.client.models.list();
+    const models = response.data;
 
-          if (!parsed) {
-            return;
-          }
-
-          return {
-            ...parsed,
-            metadata: {
-              // These fields might not be available in all models
-              contextWindow: (model as any).context_window,
-              maxTokens: (model as any).max_tokens,
-              pricing: (model as any).pricing
-                ? {
-                    input: (model as any).pricing.input,
-                    output: (model as any).pricing.output,
-                  }
-                : undefined,
-            },
-          };
-        })
-      );
-
-      // Filter out the models that are not mapped correctly and returned as undefined from parsing method
-      return parsedModels.filter((model) => model !== undefined);
-    } catch (error) {
-      throw new Error(
-        `Failed to fetch supported models: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
-    }
+    return models.map((m) => ({
+      slug: m.id,
+      owner: m.owned_by,
+      releaseDate: new Date(m.created),
+      contextWindow: (m as any).context_window,
+      // OpenAI SDK client doesn't expose more information about a model.
+    }));
   }
 
   async forward(
@@ -195,15 +169,6 @@ export abstract class BaseLLMProvider extends AbstractProvider<string, string> {
     );
   }
 
-  /**
-   * Parses the given model ID that includes the model name, owner, and sub-provider (if any).
-   * @param id Model ID that has the format `<sub provider name if any>/<model owner>/<model name>`
-   * @deprecated
-   */
-  abstract parseModelInfo(
-    modelOrId: OpenAI.Models.Model | string
-  ): MaybePromise<ModelInfo | undefined>;
-
   private prepareMessages(
     input: string | ChatCompletionMessageParam[],
     systemPrompt?: string
@@ -243,6 +208,23 @@ export type ForwardResponse = {
 
   outputTokensUsed?: number;
   outputCost?: string;
+};
+
+/**
+ * An LLM model supported by the provider.
+ */
+export type LLMModel = {
+  /**
+   * Piece of string that is being used in the forward requests to identify the model.
+   */
+  slug: string;
+  owner?: string;
+  perMillionTokenInputCost?: string;
+  perMillionTokenOutputCost?: string;
+  releaseDate?: string | Date;
+  contextWindow?: number;
+  description?: string;
+  metadata?: Record<string, unknown>;
 };
 
 export type BaseLLMProviderOptions = {
@@ -294,151 +276,3 @@ export type BaseLLMProviderForwardOptions = {
     | ResponseFormatJSONSchema
     | ResponseFormatJSONObject;
 };
-
-/**
- * Parsed information about the model.
- */
-export type ModelInfo = {
-  /**
-   * Original ID of the model that can be used in the requests
-   */
-  id: string;
-
-  /**
-   * Unified name of the model
-   */
-  name: LargeLanguageModelType;
-
-  /**
-   * Unified owner of the model
-   */
-  owner: LargeLanguageModelOwnerType;
-
-  /**
-   * Provider name of the model
-   * TODO: This field might be redundant
-   */
-  provider: string;
-
-  /**
-   * The entity that responsible for hosting the model
-   */
-  host?: string;
-
-  /**
-   * The tier of the model (e.g free, max)
-   */
-  tier?: string;
-
-  /**
-   * Additional metadata (warning: not might be available always)
-   */
-  metadata?: Record<string, unknown>;
-};
-
-/**
- * Known LLM owners
- */
-export const LargeLanguageModelOwner = {
-  Meta: "meta",
-  OpenAI: "openai",
-  Deepseek: "deepseek",
-  Qwen: "qwen",
-  Google: "google",
-  XAI: "x-ai",
-  Anthropic: "anthropic",
-  Mistral: "mistral",
-} as const;
-
-export type LargeLanguageModelOwnerType =
-  (typeof LargeLanguageModelOwner)[keyof typeof LargeLanguageModelOwner];
-
-/**
- * Known models of Meta
- */
-export const MetaModels = {
-  Llama_4_Maverick: "llama-4-maverick",
-  Llama_4_Scout: "llama-4-scout",
-  Llama_3_3_70b_Instruct: "llama-3.3-70b-instruct",
-  Llama_3_1_8b_Instruct: "llama-3.1-8b-instruct",
-  Llama_3_1_70b_Instruct: "llama-3.1-70b-instruct",
-} as const;
-
-/**
- * Known models of Qwen
- */
-export const QwenModels = {
-  QwQ_32b: "qwq-32b",
-} as const;
-
-/**
- * Known models of DeepSeek
- */
-export const DeepSeekModels = {
-  V3: "deepseek-v3",
-  V3_0324: "deepseek-v3-0324",
-} as const;
-
-/**
- * Known models of XAI
- */
-export const XAIModels = {
-  Grok3_Beta: "grok-3-beta",
-  Grok4: "grok-4",
-} as const;
-
-/**
- * Known models of Google
- */
-export const GoogleModels = {
-  Gemini_2_0_Flash: "gemini-2.0-flash",
-  Gemini_2_0_Flash_Lite: "gemini-2.0-flash-lite",
-  Gemini_2_5_Flash_Lite: "gemini-2.5-flash-lite",
-  Gemini_2_5_Pro: "gemini-2.5-pro",
-} as const;
-
-/**
- * Known models of Anthropic
- */
-export const AnthropicModels = {
-  Claude_3_7_Sonnet: "claude-3.7-sonnet",
-  Claude_Sonnet_4_5: "claude-sonnet-4.5",
-} as const;
-
-/**
- * Known models of OpenAI
- */
-export const OpenAIModels = {
-  ChatGPT_4o: "chatgpt-4o-latest",
-  GPT_4o: "gpt-4o",
-  GPT_4o_Mini: "gpt-4o-mini",
-  GPT_5: "gpt-5",
-} as const;
-
-export const MistralModels = {
-  Ministral_8B: "ministral-8b",
-} as const;
-
-/**
- * Known models of all providers
- */
-export const LargeLanguageModel = {
-  [LargeLanguageModelOwner.Meta]: MetaModels,
-  [LargeLanguageModelOwner.Deepseek]: DeepSeekModels,
-  [LargeLanguageModelOwner.Qwen]: QwenModels,
-  [LargeLanguageModelOwner.Google]: GoogleModels,
-  [LargeLanguageModelOwner.XAI]: XAIModels,
-  [LargeLanguageModelOwner.OpenAI]: OpenAIModels,
-  [LargeLanguageModelOwner.Anthropic]: AnthropicModels,
-  [LargeLanguageModelOwner.Mistral]: MistralModels,
-} as const;
-
-export type LargeLanguageModelType =
-  | (typeof MetaModels)[keyof typeof MetaModels]
-  | (typeof DeepSeekModels)[keyof typeof DeepSeekModels]
-  | (typeof QwenModels)[keyof typeof QwenModels]
-  | (typeof GoogleModels)[keyof typeof GoogleModels]
-  | (typeof XAIModels)[keyof typeof XAIModels]
-  | (typeof AnthropicModels)[keyof typeof AnthropicModels]
-  | (typeof OpenAIModels)[keyof typeof OpenAIModels]
-  | (typeof MistralModels)[keyof typeof MistralModels];

@@ -43,8 +43,7 @@ export const useOpenRouterProvider = () => {
   }, [apiKey]);
 
   return useLLMProvider({
-    // TODO: We should be able to get the identifier without instantiating the provider
-    identifier: new OpenRouterProvider({ apiKey: "" }).identifier,
+    identifier: OpenRouterProvider.identifier,
     label: "OpenRouter",
     instantiate,
   });

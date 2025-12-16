@@ -2,14 +2,13 @@
  * Abstract class for Providers.
  *
  * A Provider is the entity that is responsible for forwarding the given inputs
- * to the underlying infrastructure (e.g LLM, API, image generation model) and
- * collecting its response as a byte array.
+ * to the target entity (LLM, API, ML model etc.) and collecting its output.
  */
 export abstract class AbstractProvider<TInput, TOutput> {
   /**
    * Unique identifier of the Provider.
    */
-  abstract readonly identifier: string;
+  static readonly identifier: string = "abstract";
 
   /**
    * Forwards the given input to the Provider and returns the response.
@@ -33,6 +32,14 @@ export abstract class AbstractProvider<TInput, TOutput> {
     input: TInput,
     options?: any
   ): Promise<ProviderResponse<TOutput>>;
+
+  /**
+   * Returns the unique identifier of the Provider.
+   */
+  getIdentifier(): string | undefined {
+    // Static identifier or instance identifier
+    return (this.constructor as any)?.identifier || (this as any)?.identifier;
+  }
 }
 
 /**
@@ -40,12 +47,12 @@ export abstract class AbstractProvider<TInput, TOutput> {
  */
 export type ProviderResponse<TData = Uint8Array> = {
   /**
-   * The date and time when the response was started.
+   * The time that was the request sent to the target entity.
    */
   startedAt: Date;
 
   /**
-   * The date and time when the response was completed.
+   * The time that was the response received from the target entity.
    */
   completedAt: Date;
 
