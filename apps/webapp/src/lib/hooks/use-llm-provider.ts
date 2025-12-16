@@ -3,8 +3,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export type LLMProviderModel = {
   modelId: string;
-  perMillionTokenInputCost: string;
-  perMillionTokenOutputCost: string;
+  perMillionTokenInputCost?: string;
+  perMillionTokenOutputCost?: string;
 };
 
 export type LLMProvider = {
