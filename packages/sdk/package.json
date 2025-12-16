@@ -40,6 +40,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@google/genai": "^1.33.0",
     "@inquirer/prompts": "^7.4.1",
     "@supabase/supabase-js": "^2.56.0",
     "@types/sbd": "^1.0.5",
