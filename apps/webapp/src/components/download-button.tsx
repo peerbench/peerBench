@@ -47,9 +47,12 @@ export function DownloadButton({
   ...buttonProps
 }: DownloadButtonProps) {
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isPreparing, setIsPreparing] = useState(false);
 
   const handleDownload = async () => {
+    setIsPreparing(true);
     const { data: contentToDownload, filename } = await content();
+    setIsPreparing(false);
 
     setIsDownloading(true);
     onDownloadStart?.();
@@ -86,11 +89,16 @@ export function DownloadButton({
   return (
     <Button
       onClick={handleDownload}
-      disabled={disabled || isDownloading || !content}
+      disabled={disabled || isDownloading || isPreparing || !content}
       {...buttonProps}
     >
       <LucideDownload className="w-4 h-4" />
-      {children || isDownloading ? "Downloading..." : "Download"}
+      {children ||
+        (isPreparing
+          ? "Preparing..."
+          : isDownloading
+            ? "Downloading..."
+            : "Download")}
     </Button>
   );
 }

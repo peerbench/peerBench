@@ -387,9 +387,7 @@ export default function UploadResults() {
                     onDownloadError={(error) => {
                       toast.error(`Download failed: ${errorMessage(error)}`);
                     }}
-                  >
-                    Download Data
-                  </DownloadButton>
+                  />
                 </div>
               </TooltipTrigger>
               <TooltipContent>
