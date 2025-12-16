@@ -52,6 +52,13 @@ import { promptFiltersSchema } from "@/validation/api/prompt-filters";
 import { z } from "zod";
 import { PromptService } from "./prompt.service";
 import { promptSetFiltersSchema } from "@/validation/prompt-set-filters";
+import { quickFeedbacksView } from "@/database/schema";
+import { QuickFeedbackOpinions } from "@/database/types";
+import {
+  getPromptFeedbackStatus,
+  initPromptFeedbackStatusCounts,
+  type PromptFeedbackStatusCounts,
+} from "@/lib/prompt-feedback-status";
 
 export class PromptSetService {
   /**
@@ -393,7 +400,60 @@ export class PromptSetService {
         tx,
       });
 
-      return result.data[0];
+      const promptSet = result.data[0];
+      if (!promptSet) return undefined;
+
+      // Compute quick-feedback status breakdown counts for included prompts in this benchmark.
+      // We intentionally compute status using the shared TS helper (single source of truth).
+      const promptFeedbackRows = await tx
+        .select({
+          promptId: promptSetPrompts.promptId,
+          positiveQuickFeedbackCount: sql<number>`
+            COUNT(DISTINCT ${quickFeedbacksView.id})
+            FILTER (WHERE ${eq(
+              quickFeedbacksView.opinion,
+              QuickFeedbackOpinions.positive
+            )})
+          `
+            .mapWith(Number)
+            .as("positive_quick_feedback_count"),
+          negativeQuickFeedbackCount: sql<number>`
+            COUNT(DISTINCT ${quickFeedbacksView.id})
+            FILTER (WHERE ${eq(
+              quickFeedbacksView.opinion,
+              QuickFeedbackOpinions.negative
+            )})
+          `
+            .mapWith(Number)
+            .as("negative_quick_feedback_count"),
+        })
+        .from(promptSetPrompts)
+        .leftJoin(
+          quickFeedbacksView,
+          eq(quickFeedbacksView.promptId, promptSetPrompts.promptId)
+        )
+        .where(
+          and(
+            eq(promptSetPrompts.promptSetId, promptSet.id),
+            eq(promptSetPrompts.status, PromptStatuses.included)
+          )
+        )
+        .groupBy(promptSetPrompts.promptId);
+
+      const promptFeedbackStatusCounts: PromptFeedbackStatusCounts =
+        initPromptFeedbackStatusCounts();
+      for (const row of promptFeedbackRows) {
+        const status = getPromptFeedbackStatus({
+          positiveQuickFeedbackCount: row.positiveQuickFeedbackCount,
+          negativeQuickFeedbackCount: row.negativeQuickFeedbackCount,
+        });
+        promptFeedbackStatusCounts[status] += 1;
+      }
+
+      return {
+        ...promptSet,
+        promptFeedbackStatusCounts,
+      };
     }, options?.tx);
   }
 

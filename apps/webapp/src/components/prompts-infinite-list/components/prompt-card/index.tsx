@@ -31,6 +31,10 @@ import { MaybePromise } from "peerbench";
 import { usePromptSearchFiltersContext } from "@/components/prompt-search-filters/context";
 import IncludedByPromptSetLink from "@/components/included-by-prompt-set-link";
 import { MarkdownTruncatedText } from "@/components/markdown-truncated-text";
+import {
+  getPromptFeedbackStatus,
+  PROMPT_FEEDBACK_STATUS_UI,
+} from "@/lib/prompt-feedback-status";
 
 export type PromptCardProps = APIPromptItem & {
   tags?: string[];
@@ -45,6 +49,8 @@ export function PromptCard({
   fullPrompt,
   isRevealed,
   includedInPromptSets,
+  positiveQuickFeedbackCount,
+  negativeQuickFeedbackCount,
   tags = [],
   responseAndScoreStats = [],
   className,
@@ -80,6 +86,14 @@ export function PromptCard({
     () => isExcludingPrompt || isReIncludingPrompt,
     [isExcludingPrompt, isReIncludingPrompt]
   );
+
+  const feedbackStatus = useMemo(() => {
+    return getPromptFeedbackStatus({
+      positiveQuickFeedbackCount,
+      negativeQuickFeedbackCount,
+    });
+  }, [positiveQuickFeedbackCount, negativeQuickFeedbackCount]);
+  const feedbackStatusUI = PROMPT_FEEDBACK_STATUS_UI[feedbackStatus];
 
   const handleOnExcludePromptClick = async () => {
     if (isWorking) return;
@@ -175,6 +189,12 @@ export function PromptCard({
               )}
             </h3>
             <div className="flex items-center gap-2">
+              <Badge
+                variant="outline"
+                className={cn("text-xs font-medium px-2 py-1", feedbackStatusUI.className)}
+              >
+                {feedbackStatusUI.label}
+              </Badge>
               {last48HCommentCount > 0 && (
                 <Tooltip>
                   <TooltipTrigger asChild>
