@@ -180,6 +180,7 @@ export default async function Page({
           totalPromptCount={promptSet.totalPromptsCount}
           totalScoreCount={promptSet.totalScoreCount}
           totalContributors={promptSet.totalContributors}
+          promptFeedbackStatusCounts={promptSet.promptFeedbackStatusCounts}
         />
 
         <Card className="overflow-hidden">

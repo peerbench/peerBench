@@ -17,6 +17,10 @@ import { capitalize } from "@/utils/capitalize";
 import type { GetPromptsReturnItem } from "@/services/prompt.service";
 import { FeedbackButtons } from "./feedback-buttons";
 import { PromptComments } from "@/components/prompt-comments";
+import {
+  getPromptFeedbackStatus,
+  PROMPT_FEEDBACK_STATUS_UI,
+} from "@/lib/prompt-feedback-status";
 
 export interface PromptInfoProps {
   prompt: GetPromptsReturnItem;
@@ -117,35 +121,16 @@ export default function PromptInfo({ prompt, tags, userId }: PromptInfoProps) {
             <div className="text-sm font-medium text-gray-700">Status</div>
             <div className="flex items-center">
               {(() => {
-                const positiveCount = prompt.positiveQuickFeedbackCount || 0;
-                const negativeCount = prompt.negativeQuickFeedbackCount || 0;
-
-                // Verified: 2+ positive AND 0 negative
-                if (positiveCount >= 2 && negativeCount === 0) {
-                  return (
-                    <div className="text-lg font-semibold text-green-600 flex items-center gap-1">
-                      Verified prompt
-                      <span>✓</span>
-                    </div>
-                  );
-                }
-                // Mixed: has both positive AND negative feedback
-                else if (positiveCount > 0 && negativeCount > 0) {
-                  return (
-                    <div className="text-lg font-medium text-orange-600">
-                      Mixed feedback
-                    </div>
-                  );
-                }
-                // Unverified: everything else (0 feedback, only 1 positive, only negative, etc)
-                else {
-                  return (
-                    <div className="text-lg font-medium text-gray-600 flex items-center gap-2">
-                      Unverified, needs feedback
-                      <span className="text-2xl">→</span>
-                    </div>
-                  );
-                }
+                const status = getPromptFeedbackStatus({
+                  positiveQuickFeedbackCount: prompt.positiveQuickFeedbackCount,
+                  negativeQuickFeedbackCount: prompt.negativeQuickFeedbackCount,
+                });
+                const ui = PROMPT_FEEDBACK_STATUS_UI[status];
+                return (
+                  <div className={`text-lg font-semibold ${ui.className}`}>
+                    {ui.label}
+                  </div>
+                );
               })()}
             </div>
           </div>

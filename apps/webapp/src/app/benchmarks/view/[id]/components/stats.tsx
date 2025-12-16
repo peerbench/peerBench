@@ -1,11 +1,23 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { LucideFileText, LucideBarChart3, LucideUser } from "lucide-react";
+import {
+  LucideFileText,
+  LucideBarChart3,
+  LucideUser,
+  LucideInfo,
+} from "lucide-react";
+import type { PromptFeedbackStatusCounts } from "@/lib/prompt-feedback-status";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export interface StatsProps {
   totalPromptCount: number;
   totalScoreCount: number;
   totalContributors: number;
   overallAvgScore: number;
+  promptFeedbackStatusCounts?: PromptFeedbackStatusCounts;
 }
 
 export function Stats({
@@ -13,6 +25,7 @@ export function Stats({
   totalScoreCount,
   totalContributors,
   overallAvgScore,
+  promptFeedbackStatusCounts,
 }: StatsProps) {
   return (
     <div className="grid grid-cols-4 gap-4">
@@ -26,9 +39,62 @@ export function Stats({
               <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
                 {totalPromptCount}
               </p>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                Total Prompts
-              </p>
+              <div className="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-1">
+                <span>Total Prompts</span>
+                {promptFeedbackStatusCounts && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        className="inline-flex items-center justify-center text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                        aria-label="Prompt status breakdown"
+                      >
+                        <LucideInfo className="h-4 w-4" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <div className="text-xs leading-5 space-y-1 min-w-[220px] text-slate-50">
+                        <div className="flex justify-between gap-3">
+                          <span className="inline-flex items-center gap-2">
+                            <span className="h-2 w-2 rounded-full bg-green-500" />
+                            Verified: Positive
+                          </span>
+                          <span className="font-semibold">
+                            {promptFeedbackStatusCounts.verified_positive}
+                          </span>
+                        </div>
+                        <div className="flex justify-between gap-3">
+                          <span className="inline-flex items-center gap-2">
+                            <span className="h-2 w-2 rounded-full bg-red-500" />
+                            Verified: Negative
+                          </span>
+                          <span className="font-semibold">
+                            {promptFeedbackStatusCounts.verified_negative}
+                          </span>
+                        </div>
+                        <div className="flex justify-between gap-3">
+                          <span className="inline-flex items-center gap-2">
+                            <span className="h-2 w-2 rounded-full bg-orange-500" />
+                            Verified: Mixed
+                          </span>
+                          <span className="font-semibold">
+                            {promptFeedbackStatusCounts.verified_mixed}
+                          </span>
+                        </div>
+                        <div className="flex justify-between gap-3">
+                          <span className="inline-flex items-center gap-2">
+                            <span className="h-2 w-2 rounded-full bg-slate-300" />
+                            Unverified
+                          </span>
+                          <span className="font-semibold">
+                            {promptFeedbackStatusCounts.unverified}
+                          </span>
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
             </div>
           </div>
         </CardContent>
