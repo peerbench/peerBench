@@ -47,7 +47,7 @@
     "lucide-react": "^0.503.0",
     "luxon": "^3.6.1",
     "motion": "^12.23.12",
-    "next": "15.3.6",
+    "next": "^15.3.8",
     "nuqs": "^2.8.1",
     "path-to-regexp": "^8.3.0",
     "peerbench": "*",
