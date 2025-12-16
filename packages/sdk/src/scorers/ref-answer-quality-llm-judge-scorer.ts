@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { AbstractScorer } from "./abstract/abstract-scorer";
 import { PromptResponse, PromptScoreSchema, ScoringMethods } from "@/types";
-import { BaseLLMProvider, OpenRouterProvider } from "@/providers";
+import { AbstractLLMProvider, OpenRouterProvider } from "@/providers";
 import { parseResponseAsJSON } from "@/utils/llm";
 import { formatString } from "@/utils";
 import { debugLog } from "@/utils/debug";
@@ -17,7 +17,7 @@ export class RefAnswerQualityLLMJudgeScorer extends AbstractScorer {
   optionsSchema = z
     .object({
       openRouterApiKey: z.string().optional(),
-      provider: z.instanceof(BaseLLMProvider).optional(),
+      provider: z.instanceof(AbstractLLMProvider).optional(),
       model: z.string(),
       prompt: z.string().default(`
 Evaluate the quality of the following [response] to [question] based on the [correctAnswer] OR [correctAnswerKey] (if the question was a multiple choice question) below.
@@ -125,7 +125,7 @@ Your evaluation must be in the format and criteria specified below:
       scoreUUID: uuidv7(),
       prompt: response.prompt,
       method: ScoringMethods.ai,
-      scorerAIProvider: provider.identifier,
+      scorerAIProvider: provider.getIdentifier(),
       scorerAIModelSlug: parsedOptions.model,
       scorerAIInputTokensUsed: judge.inputTokensUsed,
       scorerAIOutputTokensUsed: judge.outputTokensUsed,

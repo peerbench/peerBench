@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { AbstractGenerator } from "@/generators/abstract/abstract-generator";
 import { parseResponseAsJSON } from "@/utils/llm";
-import { BaseLLMProvider, OpenRouterProvider } from "@/providers";
+import { AbstractLLMProvider, OpenRouterProvider } from "@/providers";
 import { PromptTypes } from "@/types";
 import { debugLog } from "@/utils/debug";
 import { formatString, preparePrompt } from "@/utils";
@@ -30,7 +30,7 @@ export class MCQGenerator extends AbstractGenerator {
         /**
          * The Provider that is going to be used to generate the Prompts.
          */
-        provider: z.instanceof(BaseLLMProvider).optional(),
+        provider: z.instanceof(AbstractLLMProvider).optional(),
 
         /**
          * The model that is going to be used to generate the prompts
@@ -153,7 +153,7 @@ Your output strictly forced to be a JSON object which applies the following sche
 
   private async generateFromInput(
     input: any,
-    provider: BaseLLMProvider,
+    provider: AbstractLLMProvider,
     options: z.infer<this["optionsSchema"]>,
     systemPrompt: string
   ) {

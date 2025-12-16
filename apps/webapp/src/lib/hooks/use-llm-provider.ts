@@ -1,4 +1,4 @@
-import { BaseLLMProvider, MaybePromise } from "peerbench";
+import { AbstractLLMProvider, MaybePromise } from "peerbench";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export type LLMProviderModel = {
@@ -11,15 +11,15 @@ export type LLMProvider = {
   identifier: string;
   label: string;
   models: LLMProviderModel[];
-  implementation?: BaseLLMProvider;
+  implementation?: AbstractLLMProvider;
   isLoading?: boolean;
   error?: string;
 };
 
 export type LLMProviderInstantiateFunction = () => MaybePromise<
-  | BaseLLMProvider
+  | AbstractLLMProvider
   | undefined
-  | [BaseLLMProvider | undefined, LLMProviderModel[] | undefined]
+  | [AbstractLLMProvider | undefined, LLMProviderModel[] | undefined]
 >;
 
 export function useLLMProvider(params: {
@@ -37,7 +37,7 @@ export function useLLMProvider(params: {
   );
   const [error, setError] = useState<string | undefined>();
   const [isInstantiating, setIsInstantiating] = useState(false);
-  const providerRef = useRef<BaseLLMProvider | undefined>(undefined);
+  const providerRef = useRef<AbstractLLMProvider | undefined>(undefined);
 
   const init = useCallback(async () => {
     setIsInstantiating(true);
@@ -52,7 +52,7 @@ export function useLLMProvider(params: {
         return;
       }
 
-      let provider: BaseLLMProvider | undefined;
+      let provider: AbstractLLMProvider | undefined;
 
       if (Array.isArray(providerInitInfo)) {
         provider = providerInitInfo[0];

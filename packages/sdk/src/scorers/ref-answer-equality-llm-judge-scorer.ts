@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { AbstractScorer } from "./abstract/abstract-scorer";
 import { PromptResponse, PromptScoreSchema, ScoringMethods } from "@/types";
-import { BaseLLMProvider, OpenRouterProvider } from "@/providers";
+import { AbstractLLMProvider, OpenRouterProvider } from "@/providers";
 import { parseResponseAsJSON } from "@/utils/llm";
 import { formatString } from "@/utils";
 import { debugLog } from "@/utils/debug";
@@ -17,7 +17,7 @@ export class RefAnswerEqualityLLMJudgeScorer extends AbstractScorer {
   optionsSchema = z
     .object({
       openRouterApiKey: z.string().optional(),
-      provider: z.instanceof(BaseLLMProvider).optional(),
+      provider: z.instanceof(AbstractLLMProvider).optional(),
       model: z.string(),
       prompt: z.string().default(`
 Judge whether the following [response] to [question] is correct or not based on the precise and unambiguous [correctAnswer] OR [correctAnswerKey] (if the question was a multiple choice question) below.

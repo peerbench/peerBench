@@ -10,7 +10,7 @@ import { parseResponseAsJSON } from "@/utils/llm";
 import { cryptoRandom } from "./helpers/crypto-random";
 import { OpenRouterProvider } from "@/providers";
 import { PromptTypes } from "@/types";
-import { BaseLLMProvider } from "@/providers/llm/base-llm-provider";
+import { AbstractLLMProvider } from "@/providers/abstract/abstract-llm-provider";
 
 export class TRPGenerator extends AbstractGenerator {
   identifier = "trp";
@@ -116,7 +116,7 @@ export class TRPGenerator extends AbstractGenerator {
 
   private async doNER(params: {
     text: string;
-    provider: BaseLLMProvider;
+    provider: AbstractLLMProvider;
     model: string;
     systemPrompt: string;
   }) {

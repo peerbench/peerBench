@@ -1,21 +1,20 @@
-import { AbstractProvider } from "@/providers/abstract/abstract-provider";
 import { ForwardError } from "@/errors/provider";
 import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
-import OpenAI, { APIError } from "openai";
 import { PEERBENCH_ERROR_CODES } from "@/errors/codes";
-import {
-  ResponseFormatJSONSchema,
-  ResponseFormatJSONObject,
-  ResponseFormatText,
-} from "openai/resources/shared";
 import { RateLimiter } from "@/utils";
+import {
+  AbstractLLMProvider,
+  ForwardResponse,
+  LLMModel,
+  LLMProviderForwardOptions,
+} from "../abstract/abstract-llm-provider";
+import OpenAI, { APIError } from "openai";
 
 /**
- * Base class for LLM based Providers. It uses OpenAI's API client to forward the
- * inputs to the underlying LLM and returns the response as a string. Also implements
+ * Base class for OpenAI API compatible LLM Providers. Also implements
  * rate limiting and timeout features for parallel execution.
  */
-export abstract class BaseLLMProvider extends AbstractProvider<string, string> {
+export abstract class BaseLLMProvider extends AbstractLLMProvider {
   rateLimiter: RateLimiter;
   timeout: number;
   client: OpenAI;
@@ -77,7 +76,7 @@ export abstract class BaseLLMProvider extends AbstractProvider<string, string> {
       responseFormat,
       abortSignal,
       rateLimiter,
-    }: BaseLLMProviderForwardOptions
+    }: LLMProviderForwardOptions
   ): Promise<ForwardResponse> {
     let retryCount = this.maxRetries;
     while (retryCount > 0) {
@@ -198,35 +197,6 @@ export abstract class BaseLLMProvider extends AbstractProvider<string, string> {
   }
 }
 
-export type ForwardResponse = {
-  data: string;
-  startedAt: Date;
-  completedAt: Date;
-
-  inputTokensUsed?: number;
-  inputCost?: string;
-
-  outputTokensUsed?: number;
-  outputCost?: string;
-};
-
-/**
- * An LLM model supported by the provider.
- */
-export type LLMModel = {
-  /**
-   * Piece of string that is being used in the forward requests to identify the model.
-   */
-  slug: string;
-  owner?: string;
-  perMillionTokenInputCost?: string;
-  perMillionTokenOutputCost?: string;
-  releaseDate?: string | Date;
-  contextWindow?: number;
-  description?: string;
-  metadata?: Record<string, unknown>;
-};
-
 export type BaseLLMProviderOptions = {
   /**
    * Rate limiter that is going to be used while forwarding the prompt to the model
@@ -262,17 +232,4 @@ export type BaseLLMProviderOptions = {
    * Rate limit time window for the provider
    */
   rateLimitTimeWindow?: number;
-};
-
-export type BaseLLMProviderForwardOptions = {
-  rateLimiter?: RateLimiter;
-
-  model: string;
-  system?: string;
-  abortSignal?: AbortSignal;
-  temperature?: number;
-  responseFormat?:
-    | ResponseFormatText
-    | ResponseFormatJSONSchema
-    | ResponseFormatJSONObject;
 };

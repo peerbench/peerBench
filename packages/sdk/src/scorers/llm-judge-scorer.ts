@@ -8,7 +8,7 @@ import {
   PromptTypes,
   ScoringMethods,
 } from "@/types";
-import { BaseLLMProvider, OpenRouterProvider } from "@/providers";
+import { AbstractLLMProvider, OpenRouterProvider } from "@/providers";
 import { debugLog } from "@/utils/debug";
 import { ChatCompletionMessageParam } from "openai/resources/chat";
 import { v7 as uuidv7 } from "uuid";
@@ -23,7 +23,7 @@ export class LLMJudgeScorer extends AbstractScorer {
   optionsSchema = z
     .object({
       openRouterApiKey: z.string().optional(),
-      provider: z.instanceof(BaseLLMProvider).optional(),
+      provider: z.instanceof(AbstractLLMProvider).optional(),
       rateLimiter: z.instanceof(RateLimiter).optional(),
       model: z.string().default("openai/gpt-4o-mini"),
       mode: z.enum(["pointwise", "pairwise"]).default("pointwise"),
@@ -97,7 +97,7 @@ export class LLMJudgeScorer extends AbstractScorer {
   private async scorePointwise(
     response: PromptResponse,
     options: z.infer<typeof this.optionsSchema>,
-    provider: BaseLLMProvider
+    provider: AbstractLLMProvider
   ): Promise<PromptScore | undefined> {
     let task = response.prompt.fullPrompt;
 
@@ -246,7 +246,7 @@ export class LLMJudgeScorer extends AbstractScorer {
   private async scorePairwise(
     response: PromptResponse,
     options: z.infer<typeof this.optionsSchema>,
-    provider: BaseLLMProvider
+    provider: AbstractLLMProvider
   ): Promise<PromptScore | undefined> {
     if (
       !options.responseB ||

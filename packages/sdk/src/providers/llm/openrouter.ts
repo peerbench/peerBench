@@ -1,12 +1,14 @@
 import {
   BaseLLMProvider,
-  BaseLLMProviderForwardOptions,
   BaseLLMProviderOptions,
-  ForwardResponse,
 } from "@/providers/llm/base-llm-provider";
 import { ChatCompletionMessageParam } from "openai/resources/chat";
 import axios from "axios";
 import Decimal from "decimal.js";
+import {
+  ForwardResponse,
+  LLMProviderForwardOptions,
+} from "../abstract/abstract-llm-provider";
 
 const baseURL = "https://openrouter.ai/api/v1";
 const MODELS_CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours
@@ -126,7 +128,7 @@ export class OpenRouterProvider extends BaseLLMProvider {
 
   async forward(
     input: string | ChatCompletionMessageParam[],
-    options: BaseLLMProviderForwardOptions
+    options: LLMProviderForwardOptions
   ): Promise<ForwardResponse> {
     // Extend `forward()` method to include cost information
 

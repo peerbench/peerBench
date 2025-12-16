@@ -1,4 +1,4 @@
-import { ForwardResponse } from "@/providers";
+import { ForwardResponse } from "@/providers/abstract/abstract-llm-provider";
 import {
   Prompt,
   PromptResponseSchema,
