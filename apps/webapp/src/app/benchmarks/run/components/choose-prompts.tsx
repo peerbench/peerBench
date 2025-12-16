@@ -412,7 +412,7 @@ export default function ChoosePrompts() {
               htmlFor="include-scored-prompts"
               className="hover:cursor-pointer"
             >
-              Reuse the Prompts that have already been scored
+              Reuse the prompts that have already been scored
             </Label>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -420,9 +420,8 @@ export default function ChoosePrompts() {
               </TooltipTrigger>
               <TooltipContent>
                 <p>
-                  If enabled, then the Prompts that have already <br /> been
-                  scored by the selected models will be scored again and <br />
-                  included in the results.
+                  If enabled, prompts that have already been scored by the
+                  selected models will be re-scored again.
                 </p>
               </TooltipContent>
             </Tooltip>
