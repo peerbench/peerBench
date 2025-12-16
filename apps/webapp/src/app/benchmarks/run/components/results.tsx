@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { usePageContext } from "../context";
+import { useCallback, useMemo } from "react";
+import { ResultInfo, usePageContext } from "../context";
 import {
   Tooltip,
   TooltipContent,
@@ -40,6 +40,14 @@ export default function Results() {
         new Decimal(0)
       ),
     [ctx.resultInfos]
+  );
+  const sumProcessedPrompts = useCallback(
+    (resultInfo: ResultInfo) =>
+      resultInfo.correctAnswers +
+      resultInfo.wrongAnswers +
+      resultInfo.unknownAnswers +
+      resultInfo.skippedPrompts,
+    []
   );
 
   return (
@@ -136,10 +144,42 @@ export default function Results() {
                       <span>Results</span>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>
-                        Breakdown of correct (✓), wrong (✗), and unknown (?)
-                        answers
-                      </p>
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center space-x-2">
+                          <span>
+                            Correct <span className="text-green-600">(✓)</span>:
+                          </span>{" "}
+                          <span>
+                            Answered as correct according to the prompt
+                            definition.
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span>
+                            Wrong <span className="text-red-600">(✗)</span>:
+                          </span>{" "}
+                          <span>
+                            Answered as wrong according to the prompt
+                            definition.
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span>
+                            Skipped{" "}
+                            <span className="text-yellow-600">(⏭)</span>:
+                          </span>{" "}
+                          <span>
+                            Prompt was already tested by the model and not
+                            tested again.
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span>Unknown (?):</span>{" "}
+                          <span>
+                            Unable to score the answer given by the model.
+                          </span>
+                        </div>
+                      </div>
                     </TooltipContent>
                   </Tooltip>
                 </TableHead>
@@ -169,22 +209,22 @@ export default function Results() {
                       <TooltipTrigger asChild>
                         <div className="flex items-center space-x-2">
                           {ctx.isRunning &&
-                          result.responsesReceived <
+                          sumProcessedPrompts(result) <
                             ctx.promptsToBeTested.length ? (
                             <LucideLoader2 className="animate-spin h-4 w-4 text-yellow-500" />
-                          ) : result.responsesReceived ===
+                          ) : sumProcessedPrompts(result) ===
                             ctx.promptsToBeTested.length ? (
                             <LucideCheckCircle className="h-4 w-4 text-green-500" />
                           ) : null}
                           <span>
-                            {result.responsesReceived} /{" "}
+                            {sumProcessedPrompts(result)} /{" "}
                             {ctx.promptsToBeTested.length}
                           </span>
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>
-                          {result.responsesReceived} out of{" "}
+                          {sumProcessedPrompts(result)} out of{" "}
                           {ctx.promptsToBeTested.length} prompts processed
                         </p>
                       </TooltipContent>
@@ -209,7 +249,10 @@ export default function Results() {
                       <TooltipTrigger asChild>
                         <span>
                           {(
-                            (result.totalScore / ctx.promptsToBeTested.length) *
+                            (result.totalScore /
+                              // In the beginning the processed prompt count will be 0 and divide operation will result in NaN
+                              // Use 1 as the denominator in this situation to avoid NaN
+                              (sumProcessedPrompts(result) || 1)) *
                             100
                           ).toFixed(2)}
                           %
@@ -221,7 +264,7 @@ export default function Results() {
                     </Tooltip>
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-sm text-gray-500">
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <div className="flex items-center space-x-1">
@@ -233,6 +276,7 @@ export default function Results() {
                           <p>{result.correctAnswers} (correct)</p>
                         </TooltipContent>
                       </Tooltip>
+                      <span className="text-gray-500">/</span>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <div className="flex items-center space-x-1">
@@ -244,6 +288,7 @@ export default function Results() {
                           <p>{result.wrongAnswers} (wrong)</p>
                         </TooltipContent>
                       </Tooltip>
+                      <span className="text-gray-500">/</span>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <div className="flex items-center space-x-1">
@@ -253,6 +298,18 @@ export default function Results() {
                         </TooltipTrigger>
                         <TooltipContent>
                           <p>{result.unknownAnswers} (unknown)</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <span className="text-gray-500">/</span>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center space-x-1">
+                            <span className="text-gray-600">⏭</span>
+                            <span>{result.skippedPrompts}</span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{result.skippedPrompts} (skipped)</p>
                         </TooltipContent>
                       </Tooltip>
                     </div>

@@ -127,6 +127,7 @@ export default function RunAbortButtons() {
         correctAnswers: 0,
         wrongAnswers: 0,
         unknownAnswers: 0,
+        skippedPrompts: 0,
         totalLatency: 0,
         responsesReceived: 0,
         totalScore: 0,
@@ -165,6 +166,10 @@ export default function RunAbortButtons() {
               ) {
                 ctx.logsHandler.current?.warning(
                   `Prompt "${promptBeginning}..." already tested by model ${provider.identifier}/${modelId}, skipping...`
+                );
+                ctx.incrementSkippedPromptCount(
+                  modelId,
+                  selectedModel.provider
                 );
                 return;
               }

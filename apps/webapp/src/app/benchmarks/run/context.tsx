@@ -45,6 +45,7 @@ export type ResultInfo = {
   correctAnswers: number;
   wrongAnswers: number;
   unknownAnswers: number;
+  skippedPrompts: number;
 
   totalScore: number;
   totalLatency: number;
@@ -125,6 +126,8 @@ export type PageContextType = {
 
   submitHumanScore: (resultIndex: number, score: number) => void;
 
+  incrementSkippedPromptCount: (modelSlug: string, provider: string) => void;
+
   areAllResponsesScored: boolean;
   setAreAllResponsesScored: Dispatch<SetStateAction<boolean>>;
 
@@ -182,6 +185,20 @@ export function PageContextProvider({ children }: { children: ReactNode }) {
 
   const isInputDisabled = () => {
     return isRunning || isUploading;
+  };
+
+  const incrementSkippedPromptCount = (modelSlug: string, provider: string) => {
+    setResultInfos((prev) =>
+      prev.map<ResultInfo>((resultInfo) =>
+        resultInfo.model.modelId === modelSlug &&
+        resultInfo.model.provider === provider
+          ? {
+              ...resultInfo,
+              skippedPrompts: resultInfo.skippedPrompts + 1,
+            }
+          : resultInfo
+      )
+    );
   };
 
   const addResult = (result: Result) => {
@@ -369,6 +386,8 @@ export function PageContextProvider({ children }: { children: ReactNode }) {
         finishedAt,
 
         logsHandler,
+
+        incrementSkippedPromptCount,
       }}
     >
       {children}
