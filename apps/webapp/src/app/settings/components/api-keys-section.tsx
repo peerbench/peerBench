@@ -4,10 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, useCallback } from "react";
-import { OpenRouterProvider, GoogleLLMProvider } from "peerbench";
+import {
+  OpenRouterProvider,
+  GoogleLLMProvider,
+  OpenAILLMProvider,
+} from "peerbench";
 import { toast } from "react-toastify";
 import { useSettingOpenRouterKey } from "@/lib/hooks/settings/use-setting-openrouter-key";
 import { useSettingGoogleKey } from "@/lib/hooks/settings/use-setting-google-key";
+import { useSettingOpenAIKey } from "@/lib/hooks/settings/use-setting-openai-key";
 import Image from "next/image";
 import { useOpenRouterServerKey } from "@/lib/react-query/use-openrouter-server-key";
 
@@ -21,6 +26,10 @@ export function ApiKeysSection() {
   const [geminiApiKey, setGeminiApiKey] = useSettingGoogleKey();
   const [geminiApiKeyInput, setGeminiApiKeyInput] = useState("");
   const [isCheckingGemini, setIsCheckingGemini] = useState(false);
+
+  const [openAIApiKey, setOpenAIApiKey] = useSettingOpenAIKey();
+  const [openAIApiKeyInput, setOpenAIApiKeyInput] = useState("");
+  const [isCheckingOpenAI, setIsCheckingOpenAI] = useState(false);
 
   const checkServerKey = useCallback(async () => {
     if (openRouterServerKey === undefined) {
@@ -58,7 +67,11 @@ export function ApiKeysSection() {
       setGeminiApiKey(geminiApiKeyInput);
       setGeminiApiKeyInput("");
     }
-    if (openRouterApiKeyInput || geminiApiKeyInput) {
+    if (openAIApiKeyInput) {
+      setOpenAIApiKey(openAIApiKeyInput);
+      setOpenAIApiKeyInput("");
+    }
+    if (openRouterApiKeyInput || geminiApiKeyInput || openAIApiKeyInput) {
       toast.success("Done");
     }
   };
@@ -82,6 +95,21 @@ export function ApiKeysSection() {
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     setGeminiApiKeyInput(e.target.value);
+  };
+
+  const handleCheckOpenAIKey = async () => {
+    setIsCheckingOpenAI(true);
+    await new OpenAILLMProvider({ apiKey: openAIApiKeyInput ?? "" })
+      .getModels()
+      .then(() => toast.success("API key is valid"))
+      .catch(() => toast.error("Invalid API key"))
+      .finally(() => setIsCheckingOpenAI(false));
+  };
+
+  const handleOpenAIApiKeyInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setOpenAIApiKeyInput(e.target.value);
   };
 
   // Check for server-side API key
@@ -223,6 +251,50 @@ export function ApiKeysSection() {
                   disabled={isCheckingGemini}
                 >
                   {isCheckingGemini ? "Checking..." : "Check"}
+                </Button>
+              </div>
+            </div>
+
+            {/* OpenAI API Key */}
+            <div>
+              <label
+                htmlFor="openAIApiKey"
+                className="block text-sm font-medium mb-2"
+              >
+                <span className="flex items-center gap-2">
+                  <Image
+                    src="/openai.svg"
+                    alt="OpenAI"
+                    width={24}
+                    height={24}
+                  />
+                  OpenAI API Key
+                </span>
+              </label>
+              {openAIApiKey && (
+                <p className="text-sm font-bold text-green-500 my-2">
+                  Current active key is ending with ...
+                  {openAIApiKey.slice(-6)}
+                </p>
+              )}
+              <div className="flex items-center gap-2">
+                <Input
+                  id="openAIApiKey"
+                  value={openAIApiKeyInput}
+                  onChange={handleOpenAIApiKeyInputChange}
+                  placeholder="Enter your new OpenAI API key"
+                  className="flex-1"
+                  autoComplete="off"
+                  data-form-type="other"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCheckOpenAIKey}
+                  disabled={isCheckingOpenAI}
+                >
+                  {isCheckingOpenAI ? "Checking..." : "Check"}
                 </Button>
               </div>
             </div>
