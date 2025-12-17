@@ -194,7 +194,9 @@ export default function SharedComparePage() {
                     )}
                   </span>
                   <Badge variant="secondary" className="text-xs font-normal">
-                    {matchData.modelA.name || matchData.modelA.modelId}
+                    {matchData.modelA.name && matchData.modelA.name !== "unknown"
+                      ? matchData.modelA.name
+                      : matchData.modelA.modelId}
                     {matchData.modelA.elo &&
                       ` (ELO: ${Math.round(matchData.modelA.elo)})`}
                   </Badge>
@@ -214,7 +216,7 @@ export default function SharedComparePage() {
                 >
                   {matchData.responseA ? (
                     <MarkdownText className="text-sm">
-                      {matchData.responseA.response}
+                      {matchData.responseA.data}
                     </MarkdownText>
                   ) : (
                     <div className="text-sm text-gray-500 italic">
@@ -241,7 +243,9 @@ export default function SharedComparePage() {
                   </span>
                   {matchData.modelB && (
                     <Badge variant="secondary" className="text-xs font-normal">
-                      {matchData.modelB.name || matchData.modelB.modelId}
+                      {matchData.modelB.name && matchData.modelB.name !== "unknown"
+                        ? matchData.modelB.name
+                        : matchData.modelB.modelId}
                       {matchData.modelB.elo &&
                         ` (ELO: ${Math.round(matchData.modelB.elo)})`}
                     </Badge>
@@ -262,7 +266,7 @@ export default function SharedComparePage() {
                 >
                   {matchData.responseB ? (
                     <MarkdownText className="text-sm">
-                      {matchData.responseB.response}
+                      {matchData.responseB.data}
                     </MarkdownText>
                   ) : (
                     <div className="text-sm text-gray-500 italic">
