@@ -1,0 +1,57 @@
+FROM node:22-alpine AS base
+
+FROM base AS deps
+WORKDIR /repo
+
+RUN mkdir -p apps/webapp
+RUN mkdir -p packages/sdk
+
+# Download the dependencies
+COPY package.json package-lock.json ./
+COPY apps/webapp/package.json ./apps/webapp/package.json
+COPY packages/sdk/package.json ./packages/sdk/package.json
+
+RUN npm ci
+
+# Build the webapp
+FROM base AS builder
+WORKDIR /repo
+
+# RUN echo "DEBUG" && export && exit 1
+
+RUN mkdir -p apps/webapp
+RUN mkdir -p packages/sdk
+COPY --from=deps /repo/node_modules               ./node_modules
+COPY --from=deps /repo/apps/webapp/node_modules   ./apps/webapp/node_modules
+COPY --from=deps /repo/packages/sdk/node_modules  ./packages/sdk/node_modules
+COPY . .
+
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+
+# Expose the environment variables from the passed .env file to the build process
+# TODO: Think of using "dotenvx" to load variables from the secret instead of using POSIX `set -a`/`set +a` commands.
+RUN --mount=type=secret,id=env \
+  set -a && \ 
+  . /run/secrets/env && \
+  set +a && \
+  npm run build
+
+RUN mv ./apps/webapp/public       ./apps/webapp/.next/standalone/apps/webapp/public
+RUN mv ./apps/webapp/.next/static ./apps/webapp/.next/standalone/apps/webapp/.next/static
+
+# Extract the compiled webapp
+FROM base AS runner
+WORKDIR /app
+COPY --from=builder /repo/apps/webapp/.next/standalone .
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Create and use a non-root user
+RUN addgroup --system --gid 1000 node
+RUN adduser --system --uid 1000 node
+USER node
+
+EXPOSE 3000
+CMD ["node", "apps/webapp/server.js"]

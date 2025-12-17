@@ -8,3 +8,5 @@ packages/sdk/dist
 apps/cli/dist
 .git
 .env*
+**/.env*
+assets
