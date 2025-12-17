@@ -14,16 +14,6 @@
     "dev": {
       "cache": false,
       "persistent": true
-    },
-
-    "webapp#build": {
-      "dependsOn": ["^peerbench#build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**"]
-    },
-    "peerbench#build": {
-      "inputs": ["$TURBO_DEFAULT$"],
-      "outputs": ["dist/**"]
     }
   }
 }
