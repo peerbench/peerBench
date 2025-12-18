@@ -6,7 +6,7 @@ substitutions:
   # Artifact Registry repository name
   _AR_REPO_NAME: peerbench-webapp
 
-  # Image name
+  # Image/Service name
   _SERVICE_NAME: webapp
 
   # Environment and secret file to be used
