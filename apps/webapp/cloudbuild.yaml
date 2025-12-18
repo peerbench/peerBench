@@ -22,8 +22,8 @@ availableSecrets:
 options:
   logging: CLOUD_LOGGING_ONLY
 
-images:
-  - "$_AR_HOSTNAME.pkg.dev/$PROJECT_ID/$_AR_REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"
+# images:
+#   - "$_AR_HOSTNAME-docker.pkg.dev/$PROJECT_ID/$_AR_REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"
 
 steps:
   # Write env secret to a tmp file
@@ -39,7 +39,7 @@ steps:
     args:
       - "build"
       - "-t"
-      - "$_AR_HOSTNAME.pkg.dev/$PROJECT_ID/$_AR_REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"
+      - "$_AR_HOSTNAME-docker.pkg.dev/$PROJECT_ID/$_AR_REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"
       - "-f"
       - "Dockerfile.webapp"
       - "--secret"
@@ -50,4 +50,4 @@ steps:
   - name: "gcr.io/cloud-builders/docker"
     args:
       - "push"
-      - "$_AR_HOSTNAME.pkg.dev/$PROJECT_ID/$_AR_REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"
+      - "$_AR_HOSTNAME-docker.pkg.dev/$PROJECT_ID/$_AR_REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"
