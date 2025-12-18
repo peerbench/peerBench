@@ -30,7 +30,7 @@ steps:
   - name: "ubuntu"
     secretEnv: ["ENV_FILE"]
     script: |
-      echo "$$ENV_FILE" > /workspace/.env
+      echo "$ENV_FILE" > /workspace/.env
 
   # Build the container image
   - name: "gcr.io/cloud-builders/docker"
