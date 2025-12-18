@@ -12,7 +12,7 @@ steps:
   - name: "ubuntu"
     secretEnv: ["ENV_FILE"]
     script: |
-      set -euo pipefail
+      set -e
       umask 077 # R/W only for the owner
       printf '%s' "$ENV_FILE" > /workspace/.env
 
