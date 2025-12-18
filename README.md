@@ -4,7 +4,7 @@ version: 0.1.0
 short_description: A proctored, community-governed AI benchmarking platform that eliminates test-set contamination through secret tests, sealed execution, and reputation-weighted validation.
 ---
 
-# PeerBench
+# PeerBench 
 
 <a href="https://www.npmjs.com/package/peerbench">![NPM Version](https://img.shields.io/npm/v/peerbench?color=green)</a>
 <a href="https://peerbench.ai">![Website](https://img.shields.io/website?url=https%3A%2F%2Fpeerbench.ai&label=peerbench.ai&color=blue)</a>
