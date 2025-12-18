@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 # Copy .env file to the working directory if it is mounted to the secrets folder
 if [ -f /secrets/.env ]; then
