@@ -1,18 +1,3 @@
-# Default values for the substitutions
-substitutions:
-  # Artifact Registry region
-  _AR_HOSTNAME: europe-west3
-
-  # Artifact Registry repository name
-  _AR_REPO_NAME: peerbench-webapp
-
-  # Image/Service name
-  _SERVICE_NAME: webapp
-
-  # Environment and secret file to be used
-  _ENV: dev
-  _ENV_SECRET_NAME: "peerbench-webapp-development"
-
 # Get the env file from the secrets api
 availableSecrets:
   secretManager:
@@ -22,15 +7,14 @@ availableSecrets:
 options:
   logging: CLOUD_LOGGING_ONLY
 
-# images:
-#   - "$_AR_HOSTNAME-docker.pkg.dev/$PROJECT_ID/$_AR_REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"
-
 steps:
   # Write env secret to a tmp file
   - name: "ubuntu"
     secretEnv: ["ENV_FILE"]
     script: |
-      echo "$ENV_FILE" > /workspace/.env
+      set -euo pipefail
+      umask 077 # R/W only for the owner
+      printf '%s' "$ENV_FILE" > /workspace/.env
 
   # Build the container image
   - name: "gcr.io/cloud-builders/docker"
@@ -38,16 +22,28 @@ steps:
       - "DOCKER_BUILDKIT=1"
     args:
       - "build"
-      - "-t"
-      - "$_AR_HOSTNAME-docker.pkg.dev/$PROJECT_ID/$_AR_REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"
       - "-f"
       - "Dockerfile.webapp"
       - "--secret"
       - "id=env,src=/workspace/.env"
+      - "-t"
+      - "$_AR_HOSTNAME-docker.pkg.dev/$PROJECT_ID/$_AR_REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"
       - "."
 
   # Push container to the Artifact Registry
   - name: "gcr.io/cloud-builders/docker"
     args:
       - "push"
-      - "$_AR_HOSTNAME-docker.pkg.dev/$PROJECT_ID/$_AR_REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"
+      - "--all-tags"
+      - "$_AR_HOSTNAME-docker.pkg.dev/$PROJECT_ID/$_AR_REPO_NAME/$_SERVICE_NAME"
+
+  # Deploy to Cloud Run
+  - name: "gcr.io/cloud-builders/gcloud"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        gcloud run deploy "$_SERVICE_NAME" \
+          --image "$_AR_HOSTNAME-docker.pkg.dev/$PROJECT_ID/$_AR_REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA" \
+          --region "$_REGION" \
+          --platform "managed"
