@@ -37,6 +37,7 @@ steps:
     env:
       - "DOCKER_BUILDKIT=1"
     args:
+      - "build"
       - "-t"
       - "$_AR_HOSTNAME.pkg.dev/$PROJECT_ID/$_AR_REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"
       - "-f"
