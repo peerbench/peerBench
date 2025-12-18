@@ -30,7 +30,7 @@ steps:
   - name: "ubuntu"
     secretEnv: ["ENV_FILE"]
     script: |
-      echo "$$ENV_FILE" > /tmp/.env
+      echo "$$ENV_FILE" > /workspace/.env
 
   # Build the container image
   - name: "gcr.io/cloud-builders/docker"
@@ -43,7 +43,7 @@ steps:
       - "-f"
       - "Dockerfile.webapp"
       - "--secret"
-      - "id=env,src=/tmp/.env"
+      - "id=env,src=/workspace/.env"
       - "."
 
   # Push container to the Artifact Registry
