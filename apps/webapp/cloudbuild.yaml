@@ -1,0 +1,49 @@
+# Default values for the substitutions
+substitutions:
+  # Artifact Registry region
+  _AR_HOSTNAME: europe-west3
+
+  # Artifact Registry repository name
+  _AR_REPO_NAME: peerbench-webapp
+
+  # Image name
+  _SERVICE_NAME: webapp
+
+  # Environment and secret file to be used
+  _ENV: dev
+  _ENV_SECRET_NAME: "peerbench-webapp-development"
+
+# Get the env file from the secrets api
+availableSecrets:
+  secretManager:
+    - versionName: projects/$PROJECT_ID/secrets/$_ENV_SECRET_NAME/versions/latest
+      env: "ENV_FILE"
+
+images:
+  - "$_AR_HOSTNAME.pkg.dev/$PROJECT_ID/$_AR_REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"
+
+steps:
+  # Write env secret to a tmp file
+  - name: "ubuntu"
+    secretEnv: ["ENV_FILE"]
+    script: |
+      echo "$$ENV_FILE" > /tmp/.env
+
+  # Build the container image
+  - name: "gcr.io/cloud-builders/docker"
+    env:
+      - "DOCKER_BUILDKIT=1"
+    args:
+      - "-t"
+      - "$_AR_HOSTNAME.pkg.dev/$PROJECT_ID/$_AR_REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"
+      - "-f"
+      - "Dockerfile.webapp"
+      - "--secret"
+      - "id=env,src=/tmp/.env"
+      - "."
+
+  # Push container to the Artifact Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "push"
+      - "$_AR_HOSTNAME.pkg.dev/$PROJECT_ID/$_AR_REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"
