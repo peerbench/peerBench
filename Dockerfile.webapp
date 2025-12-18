@@ -42,9 +42,13 @@ RUN mv ./apps/webapp/.next/static ./apps/webapp/.next/standalone/apps/webapp/.ne
 
 # Extract the compiled webapp
 FROM base AS runner
+WORKDIR /app
+
+COPY apps/webapp/scripts/entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
+
 USER node
 
-WORKDIR /app
 COPY --from=builder /repo/apps/webapp/.next/standalone .
 
 ENV NODE_ENV=production
@@ -53,8 +57,6 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # https://github.com/vercel/next.js/issues/54133
 ENV HOSTNAME=0.0.0.0
 
-COPY apps/webapp/scripts/entrypoint.sh ./entrypoint.sh
-RUN chmod +x ./entrypoint.sh
 
 EXPOSE 3000
 CMD ["./entrypoint.sh"]
