@@ -49,8 +49,8 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Create and use a non-root user
-RUN addgroup --system --gid 1000 node
-RUN adduser --system --uid 1000 node
+RUN addgroup --system --gid 1001 node
+RUN adduser --system --uid 1001 node
 USER node
 
 EXPOSE 3000
