@@ -37,6 +37,7 @@ import { MessageModal } from "@/components/modals/message-modal";
 import { useAuth } from "@/components/providers/auth";
 import Link from "next/link";
 import { DownloadButton } from "@/components/download-button";
+import { useSettingExtra } from "../../../../lib/hooks/settings/use-setting-extra";
 
 const UPLOAD_COUNT_KEY = "peerbench_prompt_upload_count";
 
@@ -48,6 +49,8 @@ export function UploadDownloadButtons() {
   const user = useAuth();
   const [showReviewReminder, setShowReviewReminder] = useState(false);
   const [uploadOption, setUploadOption] = useState<UploadOption>("all");
+
+  const [extraEnabled] = useSettingExtra();
 
   const uploadBlockerMessage = useMemo(() => {
     if (ctx.lastUploadedPromptId !== null) {
@@ -347,60 +350,64 @@ export function UploadDownloadButtons() {
 
       <CardContent className="p-4">
         <div className="flex gap-4">
-          <div className="flex-1/2 space-y-3">
-            <RadioGroup
-              value={uploadOption}
-              onValueChange={(value) => setUploadOption(value as UploadOption)}
-              disabled={ctx.isUploading || Boolean(uploadBlockerMessage)}
-            >
-              <div className="flex flex-1/2 items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                <RadioGroupItem value="all" id="upload-all" />
-                <Label htmlFor="upload-all" className="flex-1 cursor-pointer">
-                  <div className="flex space-x-2">
-                    <div className="space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <LucideEye className="text-blue-500 w-4 h-4" />
-                        <div className="font-medium text-lg text-gray-600">
-                          Revealed
+          <div className="flex-1/2 space-y-3 my-auto">
+            {extraEnabled && (
+              <RadioGroup
+                value={uploadOption}
+                onValueChange={(value) =>
+                  setUploadOption(value as UploadOption)
+                }
+                disabled={ctx.isUploading || Boolean(uploadBlockerMessage)}
+              >
+                <div className="flex flex-1/2 items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                  <RadioGroupItem value="all" id="upload-all" />
+                  <Label htmlFor="upload-all" className="flex-1 cursor-pointer">
+                    <div className="flex space-x-2">
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <LucideEye className="text-blue-500 w-4 h-4" />
+                          <div className="font-medium text-lg text-gray-600">
+                            Revealed
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          The Prompt, Responses and Scores (if there are) will
+                          be uploaded with their data. The users who has access
+                          to the chosen Benchmark will be able to see them.
                         </div>
                       </div>
-                      <div className="text-sm text-gray-500">
-                        The Prompt, Responses and Scores (if there are) will be
-                        uploaded with their data. The users who has access to
-                        the chosen Benchmark will be able to see them.
-                      </div>
                     </div>
-                  </div>
-                </Label>
-              </div>
+                  </Label>
+                </div>
 
-              <div className="flex flex-1/2 items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                <RadioGroupItem value="hidden" id="upload-hidden" />
-                <Label
-                  htmlFor="upload-hidden"
-                  className="flex-1 cursor-pointer"
-                >
-                  <div className="flex space-x-2">
-                    <div className="space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <LucideLock className="text-red-500 w-4 h-4" />
-                        <div className="font-medium text-lg text-gray-600">
-                          Hidden
+                <div className="flex flex-1/2 items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                  <RadioGroupItem value="hidden" id="upload-hidden" />
+                  <Label
+                    htmlFor="upload-hidden"
+                    className="flex-1 cursor-pointer"
+                  >
+                    <div className="flex space-x-2">
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <LucideLock className="text-red-500 w-4 h-4" />
+                          <div className="font-medium text-lg text-gray-600">
+                            Hidden
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          The Prompt, Responses and Scores (if there are) will
+                          be uploaded without their data. They will be
+                          associated with the chosen Benchmark. The Scores will
+                          be visible by the users who has access to the
+                          Benchmark but contents of the Responses and the full
+                          Prompt data will not be visible.
                         </div>
                       </div>
-                      <div className="text-sm text-gray-500">
-                        The Prompt, Responses and Scores (if there are) will be
-                        uploaded without their data. They will be associated
-                        with the chosen Benchmark. The Scores will be visible by
-                        the users who has access to the Benchmark but contents
-                        of the Responses and the full Prompt data will not be
-                        visible.
-                      </div>
                     </div>
-                  </div>
-                </Label>
-              </div>
-            </RadioGroup>
+                  </Label>
+                </div>
+              </RadioGroup>
+            )}
 
             <Tooltip open={!Boolean(uploadBlockerMessage) ? false : undefined}>
               <TooltipTrigger asChild>
