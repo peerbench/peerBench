@@ -50,5 +50,8 @@ COPY --from=builder /repo/apps/webapp/.next/standalone .
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# https://github.com/vercel/next.js/issues/54133
+ENV HOSTNAME=0.0.0.0
+
 EXPOSE 3000
 CMD ["node", "apps/webapp/server.js"]
