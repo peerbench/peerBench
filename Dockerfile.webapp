@@ -42,16 +42,13 @@ RUN mv ./apps/webapp/.next/static ./apps/webapp/.next/standalone/apps/webapp/.ne
 
 # Extract the compiled webapp
 FROM base AS runner
+USER node
+
 WORKDIR /app
 COPY --from=builder /repo/apps/webapp/.next/standalone .
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-
-# Create and use a non-root user
-RUN addgroup --system --gid 1001 node
-RUN adduser --system --uid 1001 node
-USER node
 
 EXPOSE 3000
 CMD ["node", "apps/webapp/server.js"]
