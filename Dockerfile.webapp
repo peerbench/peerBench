@@ -17,8 +17,6 @@ RUN npm ci
 FROM base AS builder
 WORKDIR /repo
 
-# RUN echo "DEBUG" && export && exit 1
-
 RUN mkdir -p apps/webapp
 RUN mkdir -p packages/sdk
 COPY --from=deps /repo/node_modules               ./node_modules
@@ -28,9 +26,11 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+# https://github.com/vercel/next.js/issues/54133
+ENV HOSTNAME=0.0.0.0
 
-# Expose the environment variables from the passed .env file to the build process
-# TODO: Think of using "dotenvx" to load variables from the secret instead of using POSIX `set -a`/`set +a` commands.
+# Expose the environment variables from the .env file and build the webapp
+# TODO: Think of using "dotenvx" to load variables instead of using "sourcing the file (`.`)" approach
 RUN --mount=type=secret,id=env \
   set -a && \ 
   . /run/secrets/env && \
@@ -40,23 +40,25 @@ RUN --mount=type=secret,id=env \
 RUN mv ./apps/webapp/public       ./apps/webapp/.next/standalone/apps/webapp/public
 RUN mv ./apps/webapp/.next/static ./apps/webapp/.next/standalone/apps/webapp/.next/static
 
-# Extract the compiled webapp
 FROM base AS runner
 WORKDIR /app
 
-COPY apps/webapp/scripts/entrypoint.sh ./entrypoint.sh
-RUN chmod +x ./entrypoint.sh
+# Install dotenvx
+RUN apk add curl
+RUN curl -sfS https://dotenvx.sh/install.sh | sh
 
-USER node
-
+# Copy the built webapp
 COPY --from=builder /repo/apps/webapp/.next/standalone .
 
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
+# Use a non-root user (node is already defined in the base image)
+USER node
 
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
 # https://github.com/vercel/next.js/issues/54133
 ENV HOSTNAME=0.0.0.0
 
-
 EXPOSE 3000
-CMD ["./entrypoint.sh"]
+
+# Load .env file using "dotenvx" if there is a file mount at /secrets/.env
+CMD ["dotenvx", "run", "-f", "/secrets/.env", "-q", "--ignore", "MISSING_ENV_FILE", "--", "node", "apps/webapp/server.js"]
