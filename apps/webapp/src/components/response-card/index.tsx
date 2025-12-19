@@ -5,6 +5,7 @@ import {
   LucideCheckCircle,
   LucideXCircle,
   LucideHash,
+  LucideFileText,
 } from "lucide-react";
 import { DateTime } from "luxon";
 import { capitalize } from "@/utils/capitalize";
@@ -16,6 +17,12 @@ import { Comments } from "./comments";
 import { Button } from "../ui/button";
 import { MetadataAccordion } from "../metadata-accordion";
 import { QuickFeedbackButtons } from "../quick-feedback-buttons";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "../ui/accordion";
 
 export interface ResponseCardProps {
   responseId?: string;
@@ -28,7 +35,7 @@ export interface ResponseCardProps {
   score?: number;
   avgScore?: number;
   children?: React.ReactNode;
-
+  systemPrompt?: string | null;
   onScoreDetailsClick?: () => void;
 }
 
@@ -43,6 +50,7 @@ function ResponseCard({
   children,
   responseId,
   isRevealed,
+  systemPrompt,
   onScoreDetailsClick,
 }: ResponseCardProps) {
   return (
@@ -123,6 +131,23 @@ function ResponseCard({
           <div className="text-gray-600 italic p-3 border rounded-lg bg-gray-50 border-gray-200">
             Response is not revealed yet
           </div>
+        )}
+        {systemPrompt && systemPrompt.trim() !== "" && (
+          <Accordion type="single" collapsible>
+            <AccordionItem value="system-prompt">
+              <AccordionTrigger className="pl-4 pt-4 pb-4 text-sm font-medium">
+                <div className="flex items-center gap-2">
+                  <LucideFileText size={16} />
+                  System Prompt
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="p-5 bg-card-content-container">
+                <pre className="whitespace-pre-wrap text-sm text-gray-700 font-mono">
+                  {systemPrompt}
+                </pre>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         )}
         {findComponent(children, Comments)}
         {metadata && Object.keys(metadata).length > 0 && (
