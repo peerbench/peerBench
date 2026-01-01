@@ -246,6 +246,7 @@ export default function PromptResponses({
                   avgScore={
                     response.totalScoreCount > 0 ? response.avgScore : undefined
                   }
+                  systemPrompt={(response.metadata as { systemPrompt?: string })?.systemPrompt ?? null}
                   onScoreDetailsClick={
                     response.totalScoreCount > 0
                       ? () => handleScoreDetailsClick(response)
