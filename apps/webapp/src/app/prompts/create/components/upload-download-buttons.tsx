@@ -37,7 +37,7 @@ import { MessageModal } from "@/components/modals/message-modal";
 import { useAuth } from "@/components/providers/auth";
 import Link from "next/link";
 import { DownloadButton } from "@/components/download-button";
-import { useSettingExtra } from "../../../../lib/hooks/settings/use-setting-extra";
+import { useSettingExtra } from "@/lib/hooks/settings/use-setting-extra";
 
 const UPLOAD_COUNT_KEY = "peerbench_prompt_upload_count";
 
@@ -351,7 +351,7 @@ export function UploadDownloadButtons() {
       <CardContent className="p-4">
         <div className="flex gap-4">
           <div className="flex-1/2 space-y-3 my-auto">
-            {extraEnabled && (
+            {extraEnabled ? (
               <RadioGroup
                 value={uploadOption}
                 onValueChange={(value) =>
@@ -407,6 +407,20 @@ export function UploadDownloadButtons() {
                   </Label>
                 </div>
               </RadioGroup>
+            ) : (
+              <>
+                <p className="text-sm text-gray-600 mb-1">
+                  The default option selected is{" "}
+                  <span className="font-medium">Revealed</span>. When revealed,
+                  the Prompts, Responses, and Scores (if available) are uploaded
+                  with the data and are visible to all users who have access to
+                  the selected Benchmark.
+                </p>
+                <p className="text-sm text-gray-600 mb-3">
+                  To change this, Enable Extras in{" "}
+                  <span className="font-medium">Settings</span>.
+                </p>
+              </>
             )}
 
             <Tooltip open={!Boolean(uploadBlockerMessage) ? false : undefined}>
