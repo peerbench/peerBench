@@ -11,7 +11,7 @@ export const BaseLLMChatResponseSchemaV1 = defineResponseSchema({
     data: z.string(),
     modelSlug: z.string(),
     provider: z.string(),
-    systemPromptId: IdSchema,
+    systemPromptId: IdSchema.optional(),
 
     inputTokensUsed: z.number().optional(),
     outputTokensUsed: z.number().optional(),
