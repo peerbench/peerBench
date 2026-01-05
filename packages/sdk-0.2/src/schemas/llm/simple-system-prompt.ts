@@ -1,7 +1,9 @@
 import { z } from "zod";
-import { defineSystemPromptSchemaV1 } from "./system-prompt";
+import { defineSystemPromptSchema } from "./system-prompt";
+import { BaseSystemPromptSchemaV1 } from "./system-prompt";
 
-export const SimpleSystemPromptSchemaV1 = defineSystemPromptSchemaV1({
+export const SimpleSystemPromptSchemaV1 = defineSystemPromptSchema({
+  baseSchema: BaseSystemPromptSchemaV1,
   kind: "sys-prompt.simple",
   schemaVersion: 1,
   fields: {

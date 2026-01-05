@@ -1,3 +1,4 @@
+import { IdSchema } from "../id";
 import { BaseResponseSchemaV1, defineResponseSchema } from "../response";
 import z from "zod";
 
@@ -10,6 +11,7 @@ export const BaseLLMChatResponseSchemaV1 = defineResponseSchema({
     data: z.string(),
     modelSlug: z.string(),
     provider: z.string(),
+    systemPromptId: IdSchema,
 
     inputTokensUsed: z.number().optional(),
     outputTokensUsed: z.number().optional(),

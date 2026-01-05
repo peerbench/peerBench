@@ -1,8 +1,8 @@
 import z from "zod";
 
 /**
- * Provides a set of fields that holds information about the AI model
- * that was used to calculate the score.
+ * Provides a set of fields that holds information about the LLM model
+ * that was used to judge the response.
  */
 export const ExtensionLLMAsAJudgeScorerFieldsV1 = {
   scorerAIProvider: z.string().optional(),
