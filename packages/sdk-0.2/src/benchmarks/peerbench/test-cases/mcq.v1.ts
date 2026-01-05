@@ -28,7 +28,6 @@ export type PeerbenchMultipleChoiceTestCaseV1 = z.infer<
 // Response schema
 export const PeerbenchMultipleChoiceResponseSchemaV1 = defineResponseSchema({
   baseSchema: BaseLLMChatResponseSchemaV1,
-
   kind: "pb.rs.mcq",
   schemaVersion: 1,
   fields: {},
@@ -40,6 +39,7 @@ export type PeerbenchMultipleChoiceResponseV1 = z.infer<
 // Score schema
 export const PeerbenchMultipleChoiceScoreSchemaV1 = defineScoreSchema({
   baseSchema: PeerbenchBaseScoreSchemaV1,
+  kind: "pb.sc.mcq",
   schemaVersion: 1,
   fields: {
     extractedAnswers: z.array(z.string()),
