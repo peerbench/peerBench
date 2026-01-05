@@ -27,19 +27,14 @@ function reverseString(input: string): string {
 }
 
 /**
- * Tutorial: one benchmark pack, multiple "kinds".
+ * Some benchmarks have multiple test case types. In that case, a single benchmark pack can define
+ * multiple test case schemas with different `kind` values and use a single runner to handle them.
  *
- * Many benchmarks aren't a single task type. You might have "mcq", "open-ended", "rewrite", etc.
- * In the SDK, the standard way to represent that is multiple TestCase schemas with different `kind`s,
- * then a single runner that dispatches on `testCase.kind`.
+ * This runner demonstrates how to dispatch on `testCase.kind` and implement different prompt formatting
+ * for each kind.
  *
- * This file demonstrates that pattern by supporting two kinds:
- * - `example.mk.ts.echo`
- * - `example.mk.ts.reverse`
- *
- * Note: this runner also embeds a tiny deterministic scoring rule. That's a valid choice when:
- * - scoring is cheap and deterministic, and
- * - you don't want scoring to be configurable per run.
+ * This example also includes deterministic scoring inside the runner. This is a valid approach when scoring
+ * is cheap and deterministic, and you don't need a separate scorer abstraction.
  */
 export async function runTestCase(params: {
   testCase: TestCase;
@@ -52,8 +47,7 @@ export async function runTestCase(params: {
     params.idGenerators?.response ?? idGeneratorUUIDv7;
   const scoreIdGenerator = params.idGenerators?.score ?? idGeneratorUUIDv7;
 
-  // Even with multiple kinds, the provider interface stays the same.
-  // Only the prompt formatting and scoring logic differs per kind.
+  // Provider request is still the same (messages + model). Only prompt changes based on the kind.
   const messages: ChatCompletionMessageParam[] = [];
   if (params.systemPrompt) {
     messages.push({ role: "system", content: params.systemPrompt.content });

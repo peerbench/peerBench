@@ -14,6 +14,17 @@ import {
 
 type TestCase = ExampleMKEchoTestCaseV1 | ExampleMKReverseTestCaseV1;
 
+/**
+ * In the multi-kind example we still load "test cases", but we don't know which schema each JSON item
+ * belongs to until we inspect it.
+ *
+ * The simplest approach is: try to parse with schema A, if it fails try schema B, and so on.
+ * That’s what this loader does. It accepts both JSON arrays and JSONL to make quick experiments easy.
+ *
+ * Real benchmarks often have a dedicated `kind` field in the raw data so you can dispatch without
+ * trying every schema. That’s a nice optimization, but the "try-parse" approach is surprisingly handy
+ * when you are iterating on a benchmark pack.
+ */
 export class ExampleMKJSONDataLoader extends AbstractDataLoader {
   override readonly kind = "example.mk.load.json.data";
 

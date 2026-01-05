@@ -8,6 +8,16 @@ import {
 import { BaseLLMChatResponseSchemaV1 } from "@/schemas/llm/response";
 import { BaseScoreSchemaV1 } from "@/schemas/score";
 
+/**
+ * This is the second test-case type for the multi-kind example.
+ *
+ * Notice how the schemas are structurally identical to the echo test case file; the difference
+ * is the `kind` strings. Those `kind` values are what the runner uses to decide "what to do"
+ * for a given test case.
+ *
+ * In a real benchmark, different kinds usually exist because the tasks are genuinely different
+ * (e.g. `summarize`, `classify`, `extract`) and each task needs different prompting and scoring.
+ */
 export const ExampleMKReverseTestCaseSchemaV1 = defineTestCaseSchema({
   baseSchema: BaseTestCaseSchemaV1,
   kind: "example.mk.ts.reverse",

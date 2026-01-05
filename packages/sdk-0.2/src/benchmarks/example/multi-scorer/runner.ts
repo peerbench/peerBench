@@ -14,20 +14,11 @@ import {
 } from "./test-cases/keywords.v1";
 
 /**
- * Tutorial: supporting multiple scorer implementations.
+ * Some benchmarks can be scored in multiple ways. For instance you may have a deterministic scorer
+ * (fast and stable) and an LLM judge scorer (flexible but slow/costly).
  *
- * In practice, you often want two scoring modes:
- * - a fast deterministic scorer (cheap, stable, easy to debug)
- * - an LLM judge scorer (flexible rubric, but slower/costly)
- *
- * The runner is the place where this gets wired together. Why?
- * - The provider only knows how to talk to a backend.
- * - The scorer only knows how to evaluate a response.
- * - The runner is the only component that sees both the TestCase and the Response entity,
- *   so it can translate them into the scorer's input and then persist a Score.
- *
- * The common pattern is dispatching on `scorer.kind` so you can pass different scorer
- * instances without changing the runner API.
+ * This runner demonstrates how to support multiple scorer implementations in a single runner function.
+ * We are doing that by checking `scorer.kind` and mapping scorer results into the same score schema.
  */
 export async function runTestCase(params: {
   testCase: ExampleMSKeywordsTestCaseV1;
@@ -43,7 +34,7 @@ export async function runTestCase(params: {
     params.idGenerators?.response ?? idGeneratorUUIDv7;
   const scoreIdGenerator = params.idGenerators?.score ?? idGeneratorUUIDv7;
 
-  // The runner builds provider messages from the test case.
+  // Convert test case into provider messages.
   const messages: ChatCompletionMessageParam[] = [];
   if (params.systemPrompt) {
     messages.push({ role: "system", content: params.systemPrompt.content });

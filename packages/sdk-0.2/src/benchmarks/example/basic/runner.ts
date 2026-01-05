@@ -15,21 +15,22 @@ import {
 } from "./test-cases/echo.v1";
 
 /**
- * Tutorial: a "runner" is the glue between schemas and runtime execution.
+ * Runner is the execution part of a benchmark. It takes a test case and produces a response entity.
+ * In a typical benchmark flow, runner sits between schemas and providers:
  *
- * You start with a TestCase (already validated by Zod). The runner's job is to:
- * 1) turn that test case into a provider call (for chat LLMs: a `messages[]` array),
- * 2) call the Provider (`provider.forward(...)`) to get model output,
- * 3) map the raw provider output into a persisted Response entity (linking it to the test case),
- * 4) optionally call a scorer and map the scorer output into a persisted Score entity.
+ * - Schemas define how test cases/responses/scores look like (data contract).
+ * - Provider is responsible for talking with a model backend.
+ * - Runner is responsible for:
+ *   1) formatting the test case into a provider request (here it is OpenAI-style `messages[]`),
+ *   2) calling `provider.forward(...)`,
+ *   3) mapping provider output into a response entity (including `testCaseId`),
+ *   4) optionally scoring and producing a score entity (including `responseId`).
  *
- * The important dependency direction is:
- * - runners depend on providers (runtime),
- * - runners depend on schemas (persistence),
- * - providers do NOT depend on benchmarks.
+ * This runner also demonstrates how a single runner can support multiple scorer implementations.
+ * We are doing that by checking `scorer.kind` and calling the right scoring flow.
  *
- * The relationship you should keep in your head while writing runners:
- * `TestCase` → Provider → `Response` → (optional) Scorer → `Score`
+ * Managing how runners are orchestrated across multiple test cases (parallelism, retries, persistence)
+ * are the host application's responsibility.
  */
 export async function runTestCase(params: {
   testCase: ExampleEchoTestCaseV1;
@@ -51,18 +52,14 @@ export async function runTestCase(params: {
     params.idGenerators?.response ?? idGeneratorUUIDv7;
   const scoreIdGenerator = params.idGenerators?.score ?? idGeneratorUUIDv7;
 
-  // Step 1: convert the test case into a provider-friendly request.
-  // For chat LLMs in this SDK, we standardize on OpenAI-style `messages[]`.
+  // Convert the test case into provider-friendly request. For chat LLMs this is `messages[]`.
   const messages: ChatCompletionMessageParam[] = [];
   if (params.systemPrompt) {
     messages.push({ role: "system", content: params.systemPrompt.content });
   }
 
-  // Optional benchmark-level configuration (spec) is where you can put knobs that are not
-  // specific to a single test case. Host apps can also use the spec for UI/configuration.
-  //
-  // In this example we use the spec to inject a prefix/suffix into the user prompt, which is a
-  // common pattern when you want to A/B test prompt wrappers without changing every test case.
+  // Benchmark spec is an optional object that can be stored along with the dataset/run.
+  // In this benchmark we use it as a prompt wrapper (prefix/suffix).
   const promptPrefix = params.benchmarkSpec?.promptPrefix ?? "";
   const promptSuffix = params.benchmarkSpec?.promptSuffix ?? "";
 
@@ -82,8 +79,7 @@ export async function runTestCase(params: {
     messages,
   });
 
-  // Step 2–3: call the provider, then map it into a persisted Response entity.
-  // Notice how the Response includes `testCaseId` so it can be joined back to the input later.
+  // Map provider output into a response entity. Response points to its test case via `testCaseId`.
   const response: ExampleEchoResponseV1 = ExampleEchoResponseSchemaV1.new({
     id: "",
     data: providerResponse.data,
@@ -99,16 +95,13 @@ export async function runTestCase(params: {
   });
   response.id = await responseIdGenerator(response);
 
-  // Step 4 (optional): scoring.
-  // A runner can support multiple scorer implementations; the usual pattern is to dispatch by `scorer.kind`.
-  // This keeps the provider backend-agnostic and keeps benchmark scoring rules in benchmark code.
+  // Scoring is optional. If a scorer is provided, runner is responsible for turning scorer output into a score entity.
   if (params.scorer?.kind === "example.exactMatch") {
     const scorerResult = await params.scorer.score({
       expected: params.testCase.expectedOutput,
       actual: response.data,
     });
 
-    // The scorer returns a normalized result. The runner turns it into a Score entity and links it via `responseId`.
     const score: ExampleEchoScoreV1 = ExampleEchoScoreSchemaV1.new({
       id: "",
       responseId: response.id,
@@ -130,8 +123,7 @@ export async function runTestCase(params: {
   }
 
   if (params.scorer?.kind === "llmJudge" && params.runConfig.llmJudgeModel) {
-    // LLM-judge scoring is useful when deterministic scoring is hard.
-    // It is slower/costly, but can express nuanced rubrics.
+    // LLM judge scorer uses another model to score. It is slower/costly but useful when scoring is semantic.
     const scorerResult = await params.scorer.score({
       task: params.testCase.instruction,
       candidateAnswer: response.data,
@@ -148,8 +140,6 @@ export async function runTestCase(params: {
         metadata: scorerResult.metadata,
         scoringMethod: ScoringMethod.ai,
         match: scorerResult.value >= 0.999,
-
-        // These fields make the score auditable across hosts (which judge model/provider produced it).
         scorerAIProvider: scorerResult.provider,
         scorerAIModelSlug: params.runConfig.llmJudgeModel,
         scorerAIInputTokensUsed: scorerResult.inputTokensUsed,
@@ -162,6 +152,6 @@ export async function runTestCase(params: {
     }
   }
 
-  // Not every run must produce a score. Returning only a Response is valid and common.
+  // If there is no scorer, or scorer didn't produce output, we only return the response.
   return { response };
 }

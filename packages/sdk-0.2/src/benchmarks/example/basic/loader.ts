@@ -8,16 +8,12 @@ import {
 } from "./test-cases/echo.v1";
 
 /**
- * Tutorial: loaders are how bytes become entities.
+ * Loader is responsible for reading external data and mapping it into benchmark entities.
+ * This example loader focuses only on loading test cases from a JSON array. It does not load
+ * responses or scores, so those arrays are returned as empty.
  *
- * A loader sits at the boundary between "some external format" and "SDK entities".
- * You might load from JSON, JSONL, Parquet, SQLite rows, an HTTP endpoint, etc.
- *
- * This particular loader is intentionally small: it only supports a JSON array of TestCases.
- * (Many real loaders can also load previously saved Responses/Scores, but that's optional.)
- *
- * The key rule is: validate at the boundary. If you return `TestCase[]` here, everything
- * downstream (runner/scorer/orchestrator) can assume the shape is correct.
+ * The validation happens in the loader (Zod parse). This is important because once data is loaded,
+ * runner and scorers can assume that test cases are following the schema.
  */
 export class ExampleJSONDataLoader extends AbstractDataLoader {
   override readonly kind = "example.load.json.data";
@@ -44,14 +40,12 @@ export class ExampleJSONDataLoader extends AbstractDataLoader {
 
     for (const [index, item] of parsed.entries()) {
       // Validate each item with the benchmark schema.
-      // If your data format needs mapping (e.g., DB columns -> object fields),
-      // you would do that mapping before calling `.parse()`/`.safeParse()`.
       const validation = ExampleEchoTestCaseSchemaV1.safeParse(item);
       if (!validation.success) {
         throw new Error(`Invalid test case at index ${index}`);
       }
 
-      // Deduplicate by ID to make merges deterministic (optional, but useful in practice).
+      // Deduplicate by ID to make merging inputs predictable.
       const idStr = String(validation.data.id);
       if (!seen.has(idStr)) {
         seen.add(idStr);

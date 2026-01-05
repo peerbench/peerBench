@@ -8,6 +8,13 @@ import {
   type ExampleMSKeywordsTestCaseV1,
 } from "./test-cases/keywords.v1";
 
+/**
+ * This loader is intentionally basic. It exists to support the "multi-scorer" runner example, so it only
+ * loads test cases and leaves everything else to the host app.
+ *
+ * The small trick here is that it supports both JSON arrays and JSONL. JSONL is convenient when you want
+ * to build a dataset by appending one test case per line.
+ */
 export class ExampleMSJSONDataLoader extends AbstractDataLoader {
   override readonly kind = "example.ms.load.json.data";
 
@@ -29,7 +36,9 @@ export class ExampleMSJSONDataLoader extends AbstractDataLoader {
       : parseJSONL<unknown>(contentStr, { errorOnInvalid: true });
 
     if (!Array.isArray(items) || items.length === 0) {
-      throw new Error("Invalid data: content must be a non-empty JSON array/JSONL");
+      throw new Error(
+        "Invalid data: content must be a non-empty JSON array/JSONL"
+      );
     }
 
     const testCases: ExampleMSKeywordsTestCaseV1[] = [];

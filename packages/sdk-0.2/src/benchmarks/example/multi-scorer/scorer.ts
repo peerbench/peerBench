@@ -4,6 +4,16 @@ function normalize(input: string): string {
   return input.toLowerCase();
 }
 
+/**
+ * This is the deterministic scorer for the multi-scorer example.
+ *
+ * The "runner" decides which scorer to use (based on `scorer.kind`), but each scorer is still a normal
+ * class that just exposes `score(...)`.
+ *
+ * This scorer looks for keyword coverage. It's a good mental model for real-world deterministic scoring:
+ * it’s cheap, stable, and explainable, but it can be too strict for tasks where "meaning" matters more
+ * than literal strings. That’s why the same benchmark can also offer an LLM judge scorer.
+ */
 export class ExampleMSKeywordsScorer extends AbstractScorer {
   override readonly kind = "example.ms.keywords";
 
@@ -29,7 +39,8 @@ export class ExampleMSKeywordsScorer extends AbstractScorer {
 
     return {
       value,
-      explanation: missing.length === 0 ? "All keywords present" : "Missing keywords",
+      explanation:
+        missing.length === 0 ? "All keywords present" : "Missing keywords",
       present,
       missing,
       metadata: {
@@ -39,4 +50,3 @@ export class ExampleMSKeywordsScorer extends AbstractScorer {
     };
   }
 }
-

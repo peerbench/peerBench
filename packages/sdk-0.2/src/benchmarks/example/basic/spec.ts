@@ -2,22 +2,15 @@ import { BaseBenchmarkSpecSchemaV1, defineBenchmarkSpecSchema } from "@/schemas"
 import z from "zod";
 
 /**
- * Tutorial: what is a "BenchmarkSpec"?
+ * Benchmark spec is an optional entity that holds benchmark-level configuration.
+ * It is not a test case; it is applied to the whole dataset/run.
  *
- * A BenchmarkSpec is an optional, persisted config blob that travels with a dataset/run.
- * It is useful for:
- * - benchmark-level knobs (shared across many test cases)
- * - prompt templates or reusable text blobs (when you don't want them embedded in every test case)
- * - UI/configuration metadata for host apps
+ * Typical use cases:
+ * - prompt wrappers and templates that you don't want to repeat in every test case
+ * - UI metadata for host apps
  *
- * It is NOT meant for secrets. If you need private prompts/docs, store them out-of-band and
- * keep only hashes/references in the spec (see `SPEC_HISTORY.md` redaction notes).
- *
- * How it’s used:
- * - loaders may load a spec from a separate file and return it as `benchmarkSpec`
- * - runners accept the spec and use it to shape prompt formatting or runtime behavior
- *
- * See usage in `packages/sdk-0.2/src/benchmarks/example/basic/runner.ts`.
+ * It is not recommended to store secrets inside the spec. If you need to store private content,
+ * host application should store it out-of-band and keep only references/hashes in the spec.
  */
 export const ExampleBenchmarkSpecSchemaV1 = defineBenchmarkSpecSchema({
   baseSchema: BaseBenchmarkSpecSchemaV1,
