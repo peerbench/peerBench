@@ -48,9 +48,8 @@ export async function runTestCase(params: {
     messages,
   });
 
-  const response: ExampleMSKeywordsResponseV1 =
-    ExampleMSKeywordsResponseSchemaV1.new({
-      id: "",
+  const response = await ExampleMSKeywordsResponseSchemaV1.newWithId(
+    {
       data: providerResponse.data,
       startedAt: providerResponse.startedAt,
       completedAt: providerResponse.completedAt,
@@ -61,8 +60,9 @@ export async function runTestCase(params: {
       outputTokensUsed: providerResponse.outputTokensUsed,
       inputCost: providerResponse.inputCost,
       outputCost: providerResponse.outputCost,
-    });
-  response.id = await responseIdGenerator(response);
+    },
+    responseIdGenerator
+  );
 
   // Scorer #1: deterministic keyword coverage.
   if (params.scorer.kind === "example.ms.keywords") {
@@ -71,17 +71,18 @@ export async function runTestCase(params: {
       response: response.data,
     });
 
-    const score: ExampleMSKeywordsScoreV1 = ExampleMSKeywordsScoreSchemaV1.new({
-      id: "",
-      responseId: response.id,
-      value: result.value,
-      explanation: result.explanation,
-      metadata: result.metadata,
-      scoringMethod: ScoringMethod.algo,
-      present: result.present,
-      missing: result.missing,
-    });
-    score.id = await scoreIdGenerator(score);
+    const score = await ExampleMSKeywordsScoreSchemaV1.newWithId(
+      {
+        responseId: response.id,
+        value: result.value,
+        explanation: result.explanation,
+        metadata: result.metadata,
+        scoringMethod: ScoringMethod.algo,
+        present: result.present,
+        missing: result.missing,
+      },
+      scoreIdGenerator
+    );
     return { response, score };
   }
 
@@ -102,9 +103,8 @@ export async function runTestCase(params: {
       // Real benchmarks often include judge-specific fields via schema extensions.
       const present = params.testCase.requiredKeywords;
       const missing: string[] = [];
-      const score: ExampleMSKeywordsScoreV1 =
-        ExampleMSKeywordsScoreSchemaV1.new({
-          id: "",
+      const score = await ExampleMSKeywordsScoreSchemaV1.newWithId(
+        {
           responseId: response.id,
           value: judge.value,
           explanation: judge.explanation,
@@ -112,8 +112,9 @@ export async function runTestCase(params: {
           scoringMethod: ScoringMethod.ai,
           present,
           missing,
-        });
-      score.id = await scoreIdGenerator(score);
+        },
+        scoreIdGenerator
+      );
       return { response, score };
     }
   }

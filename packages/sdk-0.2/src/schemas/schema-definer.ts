@@ -1,3 +1,4 @@
+import { IdGenerator } from "@/types";
 import z from "zod";
 
 export function buildSchemaDefiner<
@@ -61,6 +62,23 @@ export function buildSchemaDefiner<
           schemaVersion: config.schemaVersion,
         });
       },
+      async newWithId(
+        input: Omit<z.infer<typeof schema>, "kind" | "schemaVersion" | "id">,
+        generator: IdGenerator
+      ) {
+        const obj = schema.parse({
+          ...input,
+          id: "",
+          kind: config.kind,
+          schemaVersion: config.schemaVersion,
+        });
+        const id = await generator(obj);
+
+        return {
+          ...obj,
+          id,
+        };
+      },
     }) as unknown as SchemaType & {
       /**
        * Creates a new object with the given input. Uses the `kind` and
@@ -72,6 +90,11 @@ export function buildSchemaDefiner<
       new: (
         input: Omit<z.infer<SchemaType>, "kind" | "schemaVersion">
       ) => z.infer<SchemaType>;
+
+      newWithId(
+        input: Omit<z.infer<SchemaType>, "id" | "kind" | "schemaVersion">,
+        generator: IdGenerator
+      ): Promise<z.infer<SchemaType>>;
     };
   };
 }

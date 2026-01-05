@@ -80,20 +80,21 @@ export async function runTestCase(params: {
   });
 
   // Map provider output into a response entity. Response points to its test case via `testCaseId`.
-  const response: ExampleEchoResponseV1 = ExampleEchoResponseSchemaV1.new({
-    id: "",
-    data: providerResponse.data,
-    startedAt: providerResponse.startedAt,
-    completedAt: providerResponse.completedAt,
-    testCaseId: params.testCase.id,
-    modelSlug: params.runConfig.model,
-    provider: params.provider.kind,
-    inputTokensUsed: providerResponse.inputTokensUsed,
-    outputTokensUsed: providerResponse.outputTokensUsed,
-    inputCost: providerResponse.inputCost,
-    outputCost: providerResponse.outputCost,
-  });
-  response.id = await responseIdGenerator(response);
+  const response = await ExampleEchoResponseSchemaV1.newWithId(
+    {
+      data: providerResponse.data,
+      startedAt: providerResponse.startedAt,
+      completedAt: providerResponse.completedAt,
+      testCaseId: params.testCase.id,
+      modelSlug: params.runConfig.model,
+      provider: params.provider.kind,
+      inputTokensUsed: providerResponse.inputTokensUsed,
+      outputTokensUsed: providerResponse.outputTokensUsed,
+      inputCost: providerResponse.inputCost,
+      outputCost: providerResponse.outputCost,
+    },
+    responseIdGenerator
+  );
 
   // Scoring is optional. If a scorer is provided, runner is responsible for turning scorer output into a score entity.
   if (params.scorer?.kind === "example.exactMatch") {
@@ -102,23 +103,24 @@ export async function runTestCase(params: {
       actual: response.data,
     });
 
-    const score: ExampleEchoScoreV1 = ExampleEchoScoreSchemaV1.new({
-      id: "",
-      responseId: response.id,
-      value: scorerResult.value,
-      explanation: scorerResult.explanation,
-      metadata: scorerResult.metadata,
-      scoringMethod: ScoringMethod.algo,
-      match: Boolean(scorerResult.metadata?.match),
-      normalized:
-        typeof scorerResult.metadata?.normalize === "boolean"
-          ? {
-              expected: params.testCase.expectedOutput.trim(),
-              actual: response.data.trim(),
-            }
-          : undefined,
-    });
-    score.id = await scoreIdGenerator(score);
+    const score = await ExampleEchoScoreSchemaV1.newWithId(
+      {
+        responseId: response.id,
+        value: scorerResult.value,
+        explanation: scorerResult.explanation,
+        metadata: scorerResult.metadata,
+        scoringMethod: ScoringMethod.algo,
+        match: Boolean(scorerResult.metadata?.match),
+        normalized:
+          typeof scorerResult.metadata?.normalize === "boolean"
+            ? {
+                expected: params.testCase.expectedOutput.trim(),
+                actual: response.data.trim(),
+              }
+            : undefined,
+      },
+      scoreIdGenerator
+    );
     return { response, score };
   }
 
@@ -132,22 +134,23 @@ export async function runTestCase(params: {
     });
 
     if (scorerResult !== null) {
-      const score: ExampleEchoScoreV1 = ExampleEchoScoreSchemaV1.new({
-        id: "",
-        responseId: response.id,
-        value: scorerResult.value,
-        explanation: scorerResult.explanation,
-        metadata: scorerResult.metadata,
-        scoringMethod: ScoringMethod.ai,
-        match: scorerResult.value >= 0.999,
-        scorerAIProvider: scorerResult.provider,
-        scorerAIModelSlug: params.runConfig.llmJudgeModel,
-        scorerAIInputTokensUsed: scorerResult.inputTokensUsed,
-        scorerAIOutputTokensUsed: scorerResult.outputTokensUsed,
-        scorerAIInputCost: scorerResult.inputCost,
-        scorerAIOutputCost: scorerResult.outputCost,
-      });
-      score.id = await scoreIdGenerator(score);
+      const score = await ExampleEchoScoreSchemaV1.newWithId(
+        {
+          responseId: response.id,
+          value: scorerResult.value,
+          explanation: scorerResult.explanation,
+          metadata: scorerResult.metadata,
+          scoringMethod: ScoringMethod.ai,
+          match: scorerResult.value >= 0.999,
+          scorerAIProvider: scorerResult.provider,
+          scorerAIModelSlug: params.runConfig.llmJudgeModel,
+          scorerAIInputTokensUsed: scorerResult.inputTokensUsed,
+          scorerAIOutputTokensUsed: scorerResult.outputTokensUsed,
+          scorerAIInputCost: scorerResult.inputCost,
+          scorerAIOutputCost: scorerResult.outputCost,
+        },
+        scoreIdGenerator
+      );
       return { response, score };
     }
   }

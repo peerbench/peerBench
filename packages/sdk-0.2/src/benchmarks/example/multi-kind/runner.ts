@@ -66,9 +66,8 @@ export async function runTestCase(params: {
       messages,
     });
 
-    const response: ExampleMKEchoResponseV1 = ExampleMKEchoResponseSchemaV1.new(
+    const response = await ExampleMKEchoResponseSchemaV1.newWithId(
       {
-        id: "",
         data: providerResponse.data,
         startedAt: providerResponse.startedAt,
         completedAt: providerResponse.completedAt,
@@ -79,20 +78,21 @@ export async function runTestCase(params: {
         outputTokensUsed: providerResponse.outputTokensUsed,
         inputCost: providerResponse.inputCost,
         outputCost: providerResponse.outputCost,
-      }
+      },
+      responseIdGenerator
     );
-    response.id = await responseIdGenerator(response);
 
     // Deterministic scoring can be embedded directly in the runner.
     const match = providerResponse.data.trim() === params.testCase.input.trim();
-    const score: ExampleMKEchoScoreV1 = ExampleMKEchoScoreSchemaV1.new({
-      id: "",
-      value: match ? 1 : 0,
-      responseId: response.id,
-      scoringMethod: ScoringMethod.algo,
-      match,
-    });
-    score.id = await scoreIdGenerator(score);
+    const score = await ExampleMKEchoScoreSchemaV1.newWithId(
+      {
+        value: match ? 1 : 0,
+        responseId: response.id,
+        scoringMethod: ScoringMethod.algo,
+        match,
+      },
+      scoreIdGenerator
+    );
 
     return { response, score };
   }
@@ -112,9 +112,8 @@ export async function runTestCase(params: {
       messages,
     });
 
-    const response: ExampleMKReverseResponseV1 =
-      ExampleMKReverseResponseSchemaV1.new({
-        id: "",
+    const response = await ExampleMKReverseResponseSchemaV1.newWithId(
+      {
         data: providerResponse.data,
         startedAt: providerResponse.startedAt,
         completedAt: providerResponse.completedAt,
@@ -125,19 +124,21 @@ export async function runTestCase(params: {
         outputTokensUsed: providerResponse.outputTokensUsed,
         inputCost: providerResponse.inputCost,
         outputCost: providerResponse.outputCost,
-      });
-    response.id = await responseIdGenerator(response);
+      },
+      responseIdGenerator
+    );
 
     const expected = reverseString(params.testCase.input);
     const match = providerResponse.data.trim() === expected.trim();
-    const score: ExampleMKReverseScoreV1 = ExampleMKReverseScoreSchemaV1.new({
-      id: "",
-      value: match ? 1 : 0,
-      responseId: response.id,
-      scoringMethod: ScoringMethod.algo,
-      match,
-    });
-    score.id = await scoreIdGenerator(score);
+    const score = await ExampleMKReverseScoreSchemaV1.newWithId(
+      {
+        value: match ? 1 : 0,
+        responseId: response.id,
+        scoringMethod: ScoringMethod.algo,
+        match,
+      },
+      scoreIdGenerator
+    );
 
     return { response, score };
   }

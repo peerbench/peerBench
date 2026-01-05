@@ -7,12 +7,15 @@ import { LLMJudgeScorer } from "@/scorers/llm-judge";
 import {
   PeerbenchMultipleChoiceResponseSchemaV1,
   PeerbenchMultipleChoiceResponseV1,
+  PeerbenchMultipleChoiceScoreSchemaV1,
   PeerbenchMultipleChoiceScoreV1,
   PeerbenchMultipleChoiceTestCaseV1,
 } from "./test-cases/mcq.v1";
 import { ScoringMethod } from "@/types";
 import {
+  PeerbenchOpenEndedResponseSchemaV1,
   PeerbenchOpenEndedResponseV1,
+  PeerbenchOpenEndedScoreSchemaV1,
   PeerbenchOpenEndedScoreV1,
   PeerbenchOpenEndedTestCaseV1,
 } from "./test-cases/open-ended.v1";
@@ -68,21 +71,22 @@ export async function runTestCase(params: {
       messages,
     });
 
-    const response = PeerbenchMultipleChoiceResponseSchemaV1.new({
-      id: "",
-      data: providerResponse.data,
-      startedAt: providerResponse.startedAt,
-      completedAt: providerResponse.completedAt,
-      testCaseId: testCase.id,
-      modelSlug: params.runConfig.model,
-      provider: params.provider.kind,
+    const response = await PeerbenchMultipleChoiceResponseSchemaV1.newWithId(
+      {
+        data: providerResponse.data,
+        startedAt: providerResponse.startedAt,
+        completedAt: providerResponse.completedAt,
+        testCaseId: testCase.id,
+        modelSlug: params.runConfig.model,
+        provider: params.provider.kind,
 
-      inputTokensUsed: providerResponse.inputTokensUsed,
-      outputTokensUsed: providerResponse.outputTokensUsed,
-      inputCost: providerResponse.inputCost,
-      outputCost: providerResponse.outputCost,
-    });
-    response.id = await responseIdGenerator(response);
+        inputTokensUsed: providerResponse.inputTokensUsed,
+        outputTokensUsed: providerResponse.outputTokensUsed,
+        inputCost: providerResponse.inputCost,
+        outputCost: providerResponse.outputCost,
+      },
+      responseIdGenerator
+    );
 
     if (params.scorer?.kind === "mcq") {
       const scorerResult = await params.scorer.score({
@@ -92,17 +96,16 @@ export async function runTestCase(params: {
       });
 
       if (scorerResult !== null) {
-        const score: PeerbenchMultipleChoiceScoreV1 = {
-          id: "",
-          kind: "pb.sc.mcq",
-          schemaVersion: 1,
-          scoringMethod: ScoringMethod.algo,
-          value: scorerResult.value,
-          responseId: response.id,
-          extractedAnswers: scorerResult.extractedAnswers,
-          metadata: response.metadata,
-        };
-        score.id = await scoreIdGenerator(score);
+        const score = await PeerbenchMultipleChoiceScoreSchemaV1.newWithId(
+          {
+            scoringMethod: ScoringMethod.algo,
+            value: scorerResult.value,
+            responseId: response.id,
+            extractedAnswers: scorerResult.extractedAnswers,
+            metadata: response.metadata,
+          },
+          scoreIdGenerator
+        );
 
         return { response, score };
       }
@@ -129,23 +132,22 @@ export async function runTestCase(params: {
       messages,
     });
 
-    const response: PeerbenchOpenEndedResponseV1 = {
-      id: "",
-      kind: "pb.rs.open-ended",
-      schemaVersion: 1,
-      data: providerResponse.data,
-      startedAt: providerResponse.startedAt,
-      completedAt: providerResponse.completedAt,
-      testCaseId: testCase.id,
-      modelSlug: params.runConfig.model,
-      provider: params.provider.kind,
+    const response = await PeerbenchOpenEndedResponseSchemaV1.newWithId(
+      {
+        data: providerResponse.data,
+        startedAt: providerResponse.startedAt,
+        completedAt: providerResponse.completedAt,
+        testCaseId: testCase.id,
+        modelSlug: params.runConfig.model,
+        provider: params.provider.kind,
 
-      inputTokensUsed: providerResponse.inputTokensUsed,
-      outputTokensUsed: providerResponse.outputTokensUsed,
-      inputCost: providerResponse.inputCost,
-      outputCost: providerResponse.outputCost,
-    };
-    response.id = await responseIdGenerator(response);
+        inputTokensUsed: providerResponse.inputTokensUsed,
+        outputTokensUsed: providerResponse.outputTokensUsed,
+        inputCost: providerResponse.inputCost,
+        outputCost: providerResponse.outputCost,
+      },
+      responseIdGenerator
+    );
 
     if (params.scorer?.kind === "llmJudge" && params.runConfig.llmJudgeModel) {
       const scorerResult = await params.scorer.score({
@@ -156,24 +158,23 @@ export async function runTestCase(params: {
       });
 
       if (scorerResult !== null) {
-        const score: PeerbenchOpenEndedScoreV1 = {
-          id: "",
-          kind: "pb.sc.open-ended",
-          schemaVersion: 1,
-          scoringMethod: ScoringMethod.ai,
-          value: scorerResult.value,
-          responseId: response.id,
-          explanation: scorerResult.explanation,
-          metadata: scorerResult.metadata,
+        const score = await PeerbenchOpenEndedScoreSchemaV1.newWithId(
+          {
+            scoringMethod: ScoringMethod.ai,
+            value: scorerResult.value,
+            responseId: response.id,
+            explanation: scorerResult.explanation,
+            metadata: scorerResult.metadata,
 
-          scorerAIProvider: scorerResult.provider,
-          scorerAIModelSlug: params.runConfig.llmJudgeModel,
-          scorerAIInputTokensUsed: scorerResult.inputTokensUsed,
-          scorerAIOutputTokensUsed: scorerResult.outputTokensUsed,
-          scorerAIInputCost: scorerResult.inputCost,
-          scorerAIOutputCost: scorerResult.outputCost,
-        };
-        score.id = await scoreIdGenerator(score);
+            scorerAIProvider: scorerResult.provider,
+            scorerAIModelSlug: params.runConfig.llmJudgeModel,
+            scorerAIInputTokensUsed: scorerResult.inputTokensUsed,
+            scorerAIOutputTokensUsed: scorerResult.outputTokensUsed,
+            scorerAIInputCost: scorerResult.inputCost,
+            scorerAIOutputCost: scorerResult.outputCost,
+          },
+          scoreIdGenerator
+        );
 
         return { response, score };
       }

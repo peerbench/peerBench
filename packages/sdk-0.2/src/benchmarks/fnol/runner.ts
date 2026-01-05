@@ -190,24 +190,25 @@ export async function runTestCase(params: {
     .reverse()
     .find((m) => m.role === "assistant");
 
-  const response: FNOLResponseV1 = FNOLResponseSchemaV1.new({
-    id: "",
-    data:
-      typeof lastAssistant?.content === "string" ? lastAssistant.content : "",
-    startedAt,
-    completedAt,
-    testCaseId: params.testCase.id,
-    modelSlug: params.runConfig.model,
-    provider: params.provider.kind,
-    conversation: conversation.map((m) => ({
-      role: m.role === "user" ? "user" : "assistant",
-      content: String(m.content),
-    })),
-    turnsUsed: conversation.filter((m) => m.role === "assistant").length,
-    doneReason,
-    extracted,
-  });
-  response.id = await responseIdGenerator(response);
+  const response: FNOLResponseV1 = await FNOLResponseSchemaV1.newWithId(
+    {
+      data:
+        typeof lastAssistant?.content === "string" ? lastAssistant.content : "",
+      startedAt,
+      completedAt,
+      testCaseId: params.testCase.id,
+      modelSlug: params.runConfig.model,
+      provider: params.provider.kind,
+      conversation: conversation.map((m) => ({
+        role: m.role === "user" ? "user" : "assistant",
+        content: String(m.content),
+      })),
+      turnsUsed: conversation.filter((m) => m.role === "assistant").length,
+      doneReason,
+      extracted,
+    },
+    responseIdGenerator
+  );
 
   if (params.scorer?.kind === "fnol.fields") {
     const scorerResult = await params.scorer.score({
@@ -215,20 +216,21 @@ export async function runTestCase(params: {
       extracted,
     });
 
-    const score: FNOLFieldsScoreV1 = FNOLFieldsScoreSchemaV1.new({
-      id: "",
-      responseId: response.id,
-      value: scorerResult.value,
-      explanation: scorerResult.explanation,
-      metadata: scorerResult.metadata,
-      scoringMethod: ScoringMethod.algo,
+    const score = await FNOLFieldsScoreSchemaV1.newWithId(
+      {
+        responseId: response.id,
+        value: scorerResult.value,
+        explanation: scorerResult.explanation,
+        metadata: scorerResult.metadata,
+        scoringMethod: ScoringMethod.algo,
 
-      requiredKeys: scorerResult.requiredKeys,
-      presentKeys: scorerResult.presentKeys,
-      missingKeys: scorerResult.missingKeys,
-      mismatchedKeys: scorerResult.mismatchedKeys,
-    });
-    score.id = await scoreIdGenerator(score);
+        requiredKeys: scorerResult.requiredKeys,
+        presentKeys: scorerResult.presentKeys,
+        missingKeys: scorerResult.missingKeys,
+        mismatchedKeys: scorerResult.mismatchedKeys,
+      },
+      scoreIdGenerator
+    );
     return { response, score };
   }
 
@@ -252,23 +254,24 @@ export async function runTestCase(params: {
     });
 
     if (scorerResult !== null) {
-      const score: FNOLLLMJudgeScoreV1 = FNOLLLMJudgeScoreSchemaV1.new({
-        id: "",
-        responseId: response.id,
-        value: scorerResult.value,
-        explanation: scorerResult.explanation,
-        metadata: scorerResult.metadata,
-        scoringMethod: ScoringMethod.ai,
-        verdict: scorerResult.verdict,
+      const score = await FNOLLLMJudgeScoreSchemaV1.newWithId(
+        {
+          responseId: response.id,
+          value: scorerResult.value,
+          explanation: scorerResult.explanation,
+          metadata: scorerResult.metadata,
+          scoringMethod: ScoringMethod.ai,
+          verdict: scorerResult.verdict,
 
-        scorerAIProvider: scorerResult.provider,
-        scorerAIModelSlug: params.runConfig.llmJudgeModel,
-        scorerAIInputTokensUsed: scorerResult.inputTokensUsed,
-        scorerAIOutputTokensUsed: scorerResult.outputTokensUsed,
-        scorerAIInputCost: scorerResult.inputCost,
-        scorerAIOutputCost: scorerResult.outputCost,
-      });
-      score.id = await scoreIdGenerator(score);
+          scorerAIProvider: scorerResult.provider,
+          scorerAIModelSlug: params.runConfig.llmJudgeModel,
+          scorerAIInputTokensUsed: scorerResult.inputTokensUsed,
+          scorerAIOutputTokensUsed: scorerResult.outputTokensUsed,
+          scorerAIInputCost: scorerResult.inputCost,
+          scorerAIOutputCost: scorerResult.outputCost,
+        },
+        scoreIdGenerator
+      );
       return { response, score };
     }
   }
