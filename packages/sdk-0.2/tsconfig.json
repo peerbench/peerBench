@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "experimentalDecorators": false,
+
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "skipLibCheck": true,
+
+    "noEmit": true,
+    "noUncheckedIndexedAccess": true,
+
+    "outDir": "dist",
+
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist", "src/dev.ts"],
+  "include": ["src/**/*", "scripts/**/*"]
+}
