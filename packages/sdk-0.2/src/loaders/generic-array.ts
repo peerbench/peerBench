@@ -7,28 +7,32 @@ import { LoaderResult } from "@/loaders/abstract/loader";
 import { tryParseJson, parseJSONL } from "@/utils/json";
 import { bufferToString } from "@/utils/string";
 
-export type GenericJSONArrayLoaderResult = LoaderResult<
-  BaseTestCaseV1,
-  BaseResponseV1,
-  BaseScoreV1
->;
+export type GenericJSONArrayLoaderResult<
+  TTestCase extends BaseTestCaseV1 = BaseTestCaseV1,
+  TResponse extends BaseResponseV1 = BaseResponseV1,
+  TScore extends BaseScoreV1 = BaseScoreV1,
+> = LoaderResult<TTestCase, TResponse, TScore>;
 
-export abstract class GenericJSONArrayDataLoader extends AbstractDataLoader {
+export abstract class GenericJSONArrayDataLoader<
+  TTestCase extends BaseTestCaseV1 = BaseTestCaseV1,
+  TResponse extends BaseResponseV1 = BaseResponseV1,
+  TScore extends BaseScoreV1 = BaseScoreV1,
+> extends AbstractDataLoader {
   protected abstract testCaseBuilder(
     data: any,
     context: {
-      result: GenericJSONArrayLoaderResult;
+      result: GenericJSONArrayLoaderResult<TTestCase, TResponse, TScore>;
     }
-  ): MaybePromise<BaseTestCaseV1 | undefined>;
+  ): MaybePromise<TTestCase | undefined>;
 
   protected async responseBuilder(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     data: any,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     context: {
-      result: GenericJSONArrayLoaderResult;
+      result: GenericJSONArrayLoaderResult<TTestCase, TResponse, TScore>;
     }
-  ): Promise<BaseResponseV1 | undefined> {
+  ): Promise<TResponse | undefined> {
     return undefined;
   }
 
@@ -37,15 +41,15 @@ export abstract class GenericJSONArrayDataLoader extends AbstractDataLoader {
     data: any,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     context: {
-      result: GenericJSONArrayLoaderResult;
+      result: GenericJSONArrayLoaderResult<TTestCase, TResponse, TScore>;
     }
-  ): Promise<BaseScoreV1 | undefined> {
+  ): Promise<TScore | undefined> {
     return undefined;
   }
 
   async loadData(params: {
     content: Uint8Array;
-  }): Promise<GenericJSONArrayLoaderResult> {
+  }): Promise<GenericJSONArrayLoaderResult<TTestCase, TResponse, TScore>> {
     const contentStr = bufferToString(params.content);
     let data: unknown[] | undefined = tryParseJson<unknown[]>(contentStr);
 
@@ -64,11 +68,11 @@ export abstract class GenericJSONArrayDataLoader extends AbstractDataLoader {
 
   private async transformArrayToResult(
     data: unknown[]
-  ): Promise<GenericJSONArrayLoaderResult> {
+  ): Promise<GenericJSONArrayLoaderResult<TTestCase, TResponse, TScore>> {
     const includedTestCaseIds: Set<string> = new Set();
     const includedResponseIds: Set<string> = new Set();
     const includedScoreIds: Set<string> = new Set();
-    const result: GenericJSONArrayLoaderResult = {
+    const result: GenericJSONArrayLoaderResult<TTestCase, TResponse, TScore> = {
       testCases: [],
       responses: [],
       scores: [],

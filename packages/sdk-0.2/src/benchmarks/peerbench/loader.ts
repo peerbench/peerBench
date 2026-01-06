@@ -3,11 +3,17 @@ import {
   PeerbenchMultipleChoiceResponseSchemaV1,
   PeerbenchMultipleChoiceScoreSchemaV1,
   PeerbenchMultipleChoiceTestCaseSchemaV1,
+  PeerbenchMultipleChoiceResponseV1,
+  PeerbenchMultipleChoiceScoreV1,
+  PeerbenchMultipleChoiceTestCaseV1,
 } from "./test-cases/mcq.v1";
 import {
   PeerbenchOpenEndedResponseSchemaV1,
   PeerbenchOpenEndedScoreSchemaV1,
   PeerbenchOpenEndedTestCaseSchemaV1,
+  PeerbenchOpenEndedResponseV1,
+  PeerbenchOpenEndedScoreV1,
+  PeerbenchOpenEndedTestCaseV1,
 } from "./test-cases/open-ended.v1";
 import {
   PeerbenchBenchmarkSpecSchemaV1,
@@ -16,7 +22,11 @@ import {
 import z from "zod";
 import { bufferToString } from "@/utils";
 
-export class PeerbenchJSONDataLoader extends GenericJSONArrayDataLoader {
+export class PeerbenchJSONDataLoader extends GenericJSONArrayDataLoader<
+  PeerbenchMultipleChoiceTestCaseV1 | PeerbenchOpenEndedTestCaseV1,
+  PeerbenchMultipleChoiceResponseV1 | PeerbenchOpenEndedResponseV1,
+  PeerbenchMultipleChoiceScoreV1 | PeerbenchOpenEndedScoreV1
+> {
   override readonly kind = "pb.load.json.data";
 
   async loadBenchmarkSpec(params: {
