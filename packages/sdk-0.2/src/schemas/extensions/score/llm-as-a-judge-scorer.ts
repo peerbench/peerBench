@@ -5,6 +5,7 @@ import z from "zod";
  * that was used to judge the response.
  */
 export const ExtensionLLMAsAJudgeScorerFieldsV1 = {
+  scorerAISystemPrompt: z.string().optional(),
   scorerAIProvider: z.string().optional(),
   scorerAIModelSlug: z.string().optional(),
   scorerAIInputTokensUsed: z.number().optional(),

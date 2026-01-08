@@ -394,3 +394,31 @@ If a source file only contains TypeScript types (e.g. `export type ...`), the em
 
 - FNOL is modeled as a **multi-turn conversation benchmark**, but still fits the SDK runner shape by treating “one test case” as “one simulated interview”.
 - The runner’s output `Response` stores the full conversation and optional parsed `extracted` JSON object.
+
+## 2026-01-08 — Data Quality App ↔ Backtesting Framework
+
+### Q&A
+
+**Q: What is the relationship between `dev-simple_question_data_quality` and `renisa/packages/backtesting`?**  
+**A:** There is no direct code dependency between them, but they can share the same Supabase database tables (notably `conversation_logs`, `conversation_scores`, and `comments`). The web app provides UI/admin workflows to create/browse/score/manage content, while the backtesting framework can query those tables to analyze and backtest prompt/agent behavior.
+
+**Q: From which tables can exports like `answers_Franzi_all.json` be produced?**  
+**A:** The export is produced by querying `answers` (raw answer text + structured columns like `insured`/`liable`), joining `questions` (question text), `user_settings` (display name), and optionally `scores` (for averages/fallback selection). Fields like `begruendung`, `unsicher_anmerkung`, and `relevante_paragraphen` are derived by parsing `answers.text_body` rather than coming from dedicated DB columns.
+
+### Decisions
+
+- Treat the web app as the **source UI** for curation/labeling, and the backtesting framework as a **consumer** that can query the same Supabase dataset for evaluation/monitoring.
+
+## 2026-01-08 — `apps/renisa-cli` Split Into Independent Monorepo
+
+### Q&A
+
+**Q: Should we update the root workspace to exclude `apps/renisa-cli`?**  
+**A:** No. The folder will be made into its own monorepo first and then moved elsewhere; no changes to the current repo’s Turborepo/workspaces are needed.
+
+**Q: Where should CLI-related assets live after the split (e.g. `data/`, `debug/`, `.env`)?**  
+**A:** Move them under the CLI package at `apps/renisa-cli/apps/cli/` along with the source/config/build files.
+
+### Decisions
+
+- Convert `apps/renisa-cli/` into a standalone Turborepo monorepo root (its own `package.json` + `turbo.json`) and move the existing CLI package to `apps/renisa-cli/apps/cli/`.

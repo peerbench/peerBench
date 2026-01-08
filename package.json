@@ -12,6 +12,7 @@
   "packageManager": "npm@11.3.0",
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "!packages/sdk-0.2"
   ]
 }

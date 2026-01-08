@@ -1,6 +1,6 @@
 {
-  "name": "peerbench-v0.2",
-  "version": "0.0.2",
+  "name": "peerbench",
+  "version": "0.0.2-alpha.0",
   "description": "Tooling help work with AI benchmarking data and create trustworthy AI",
   "keywords": [
     "ai",

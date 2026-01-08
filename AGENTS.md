@@ -51,9 +51,9 @@
 
 - Note all the Q&As about the architectural decisions into `SPEC_HISTORY.md` file then continue on the chat by replying with the same things as you have wrote to the file (so the conversation will not be interrupted). Update the file when if the same context is updated/changed again.
 - If an architectural decision mentioned, check for whether or not that decision make sense, suggest another approach, suggest to inspect other projects may have similar architecture designs.
-- Never ever apply any changes on the code base, run any command unless it is explicitly specified/requested. If you really need to do that, explicitly ask user for the permission.
+- Never ever apply any changes on the code base. You are allowed to run read-only commands without asking. For write operations, always request permission from the user.
 
 # Terms
 
 - Host application / runtime
-  - From new generic (v0.2) SDK perspective, it refers to the codebase that uses SDK.
+  - From new generic (v0.2) SDK perspective, it refers to a codebase that uses SDK.
