@@ -4,6 +4,7 @@ import { config } from "@dotenvx/dotenvx";
 import { LLMAsAJudgeScorer } from "../scorers";
 import { MCQTestCaseSchemaV1 } from "../benchmarks/peerbench";
 import { SimpleSystemPromptSchemaV1 } from "../schemas/llm";
+import z from "zod";
 
 // Load env variables
 config();
@@ -43,6 +44,15 @@ async function main() {
     scorer: llmJudgeScorer,
     runConfig: {
       systemPrompt,
+
+      llmJudgeFieldsToExtract: {
+        firstWord: z
+          .string()
+          .nullable()
+          .describe(
+            "The first complete word of the answer included within the answer in case. Null if only one character"
+          ),
+      },
 
       model: "meta-llama/llama-3.2-3b-instruct:free",
       llmJudgeModel: "mistralai/mistral-7b-instruct:free",

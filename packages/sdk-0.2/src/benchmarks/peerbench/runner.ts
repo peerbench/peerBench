@@ -45,6 +45,9 @@ export const peerbenchRunner = defineRunner(
       model: z.string(),
       llmJudgeModel: z.string().optional(),
       llmJudgeSystemPrompt: SimpleSystemPromptSchemaV1.optional(),
+      llmJudgeFieldsToExtract: z
+        .record(z.string(), z.custom<z.ZodType>())
+        .optional(),
       systemPrompt: SimpleSystemPromptSchemaV1.optional(),
       templateVariables: z.record(z.string(), z.string()).optional(),
     },
@@ -122,6 +125,7 @@ async function runQA(params: {
     model: string;
     llmJudgeModel?: string;
     llmJudgeSystemPrompt?: SimpleSystemPromptV1;
+    llmJudgeFieldsToExtract?: Record<string, z.ZodType>;
     systemPrompt?: SimpleSystemPromptV1;
   };
   idGenerators: {
@@ -174,6 +178,7 @@ async function runQA(params: {
           weight: 1,
         },
       ],
+      fieldsToExtract: runConfig.llmJudgeFieldsToExtract ?? {},
     });
 
     if (scorerResult !== null) {
@@ -183,7 +188,6 @@ async function runQA(params: {
           value: scorerResult.value,
           responseId: response.id,
           explanation: scorerResult.explanation,
-          metadata: scorerResult.metadata,
           scorerAIInputCost: scorerResult.inputCost,
           scorerAIOutputCost: scorerResult.outputCost,
           scorerAIInputTokensUsed: scorerResult.inputTokensUsed,
@@ -191,6 +195,10 @@ async function runQA(params: {
           scorerAIProvider: scorerResult.provider,
           scorerAIModelSlug: runConfig.llmJudgeModel,
           scorerAISystemPromptId: runConfig.llmJudgeSystemPrompt?.id,
+          metadata: {
+            ...scorerResult.metadata,
+            extractedFields: scorerResult.extractedFields,
+          },
         },
         params.idGenerators?.score ?? idGeneratorUUIDv7
       );
@@ -211,6 +219,7 @@ async function runMCQ(params: {
     model: string;
     llmJudgeModel?: string;
     llmJudgeSystemPrompt?: SimpleSystemPromptV1;
+    llmJudgeFieldsToExtract?: Record<string, z.ZodType>;
     systemPrompt?: SimpleSystemPromptV1;
   };
   idGenerators: {
@@ -294,20 +303,22 @@ Valid Answer texts: ${testCase.correctAnswerKeys.map((key) => `- ${testCase.opti
           .describe(
             "The extracted answer keys, valid or invalid (even if the answer text is provided rather than the key)"
           ),
+        ...(runConfig.llmJudgeFieldsToExtract ?? {}),
       },
       response: response.data,
       systemPrompt: runConfig.llmJudgeSystemPrompt?.content,
     });
 
     if (scorerResult !== null) {
+      const { extractedAnswers, ...extractedFields } =
+        scorerResult.extractedFields;
       const score = await MCQScoreSchemaV1.newWithId(
         {
           scoringMethod: ScoringMethod.ai,
           value: scorerResult.value,
-          extractedAnswers: scorerResult.extractedFields.extractedAnswers,
+          extractedAnswers,
           responseId: response.id,
           explanation: scorerResult.explanation,
-          metadata: scorerResult.metadata,
           scorerAIInputCost: scorerResult.inputCost,
           scorerAIOutputCost: scorerResult.outputCost,
           scorerAIInputTokensUsed: scorerResult.inputTokensUsed,
@@ -315,6 +326,10 @@ Valid Answer texts: ${testCase.correctAnswerKeys.map((key) => `- ${testCase.opti
           scorerAIProvider: scorerResult.provider,
           scorerAIModelSlug: runConfig.llmJudgeModel,
           scorerAISystemPromptId: runConfig.llmJudgeSystemPrompt?.id,
+          metadata: {
+            ...scorerResult.metadata,
+            extractedFields,
+          },
         },
         params.idGenerators?.score ?? idGeneratorUUIDv7
       );
