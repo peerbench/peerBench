@@ -45,7 +45,7 @@
       "types": "./dist/schemas/llm/index.d.ts",
       "import": "./dist/schemas/llm/index.js"
     },
-    "./extensions": {
+    "./schemas/extensions": {
       "types": "./dist/schemas/extensions/index.d.ts",
       "import": "./dist/schemas/extensions/index.js"
     },
@@ -53,9 +53,13 @@
       "types": "./dist/scorers/index.d.ts",
       "import": "./dist/scorers/index.js"
     },
-    "./catalogs": {
-      "types": "./dist/catalogs/index.d.ts",
-      "import": "./dist/catalogs/index.js"
+    "./storages": {
+      "types": "./dist/storages/index.d.ts",
+      "import": "./dist/storages/index.js"
+    },
+    "./aggregators": {
+      "types": "./dist/aggregators/index.d.ts",
+      "import": "./dist/aggregators/index.js"
     }
   },
   "files": [
@@ -71,10 +75,11 @@
   "dependencies": {
     "@mastra/client-js": "^0.17.2",
     "axios": "^1.11.0",
+    "better-sqlite3": "^12.6.0",
     "cheerio": "^1.1.2",
     "decimal.js": "^10.6.0",
+    "handlebars": "^4.7.8",
     "hyparquet": "^1.11.0",
-    "json-stable-stringify": "^1.3.0",
     "jsonrepair": "^3.13.0",
     "multiformats": "^13.3.2",
     "openai": "^6.15.0",
@@ -85,6 +90,7 @@
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.49.0",
     "@eslint/js": "^9.24.0",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^22.14.0",
     "eslint": "^9.24.0",
     "prettier": "^3.7.1",

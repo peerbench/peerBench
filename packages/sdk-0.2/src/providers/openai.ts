@@ -7,9 +7,10 @@ import {
 } from "openai/resources/shared";
 import OpenAI, { APIError } from "openai";
 import { AbstractLLMProvider, ChatResponse } from "./abstract/llm";
+import { PEERBENCH_NAMESPACE } from "@/constants";
 
 export class OpenAIProvider extends AbstractLLMProvider {
-  override readonly kind = "openai";
+  override readonly kind = `${PEERBENCH_NAMESPACE}/llm/openai` as const;
 
   private client: OpenAI;
   private rateLimiter: RateLimiter;

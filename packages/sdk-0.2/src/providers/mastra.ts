@@ -26,26 +26,11 @@ export class MastraProvider extends AbstractLLMProvider {
     });
   }
 
-  override async forward(args: LLMProviderForwardArgs): Promise<ChatResponse> {
-    const startedAt = Date.now();
-
-    if (
-      !this.warnedAboutSystemMessages &&
-      args.messages.some((m) => m.role === "system")
-    ) {
-      this.warnedAboutSystemMessages = true;
-      console.warn(
-        `Mastra provider: system messages are ignored (agent "${args.model}" has baked-in prompts).`
-      );
+  override async forward(
+    args: LLMProviderForwardArgs & {
+      memory?: AgentMemoryOption;
     }
-
-    if (!this.warnedAboutResponseFormat && args.responseFormat) {
-      this.warnedAboutResponseFormat = true;
-      console.warn(
-        `Mastra provider: responseFormat is ignored (configure structured output in the Mastra agent).`
-      );
-    }
-
+  ): Promise<ChatResponse> {
     const apiMessages = args.messages
       .filter((m) => m.role === "user" || m.role === "assistant")
       .map((m) => ({
@@ -54,12 +39,17 @@ export class MastraProvider extends AbstractLLMProvider {
       }));
 
     const agent = this.client.getAgent(args.model);
-    const response = await agent.generate({
-      messages: apiMessages,
-      runtimeContext: {
-        "model-id": args.model,
+
+    const startedAt = Date.now();
+    const response = await agent.generate(
+      {
+        messages: apiMessages,
+        runtimeContext: {
+          "model-id": args.model,
+        },
       },
-    });
+      { memory: args.memory }
+    );
 
     return {
       data: response.text,
@@ -68,3 +58,12 @@ export class MastraProvider extends AbstractLLMProvider {
     };
   }
 }
+
+// NOTE: Mastra client does not export this type
+export type AgentMemoryOption = Parameters<
+  Parameters<MastraClient["getAgent"]>["0"] extends string
+    ? ReturnType<MastraClient["getAgent"]>["generate"]
+    : never
+>[0] extends { memory?: infer M }
+  ? M
+  : never;

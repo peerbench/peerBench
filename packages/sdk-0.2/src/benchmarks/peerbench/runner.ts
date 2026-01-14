@@ -1,195 +1,345 @@
-import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
-import { idGeneratorUUIDv7 } from "@/utils/id-generator";
-import { IdGenerator, RunnerResult } from "@/types";
-import { AbstractLLMProvider } from "@/providers/abstract/llm";
-import { MCQScorer } from "@/scorers/mcq";
-import { LLMJudgeScorer } from "@/scorers/llm-judge";
+import { defineRunner } from "@/helpers/define-runner";
+import { AbstractLLMProvider } from "@/providers";
 import {
-  PeerbenchMultipleChoiceResponseSchemaV1,
-  PeerbenchMultipleChoiceResponseV1,
-  PeerbenchMultipleChoiceScoreSchemaV1,
-  PeerbenchMultipleChoiceScoreV1,
-  PeerbenchMultipleChoiceTestCaseV1,
-} from "./test-cases/mcq.v1";
-import { ScoringMethod } from "@/types";
+  SimpleSystemPromptSchemaV1,
+  SimpleSystemPromptV1,
+} from "@/schemas/llm";
+import { LLMAsAJudgeScorer, MCQScorer } from "@/scorers";
+import { IdGenerator, ScoringMethod } from "@/types";
+import { idGeneratorUUIDv7 } from "@/utils";
+import { ChatCompletionMessageParam } from "openai/resources/index";
+import Handlebars from "handlebars";
+import z from "zod";
 import {
-  PeerbenchOpenEndedResponseSchemaV1,
-  PeerbenchOpenEndedResponseV1,
-  PeerbenchOpenEndedScoreSchemaV1,
-  PeerbenchOpenEndedScoreV1,
-  PeerbenchOpenEndedTestCaseV1,
-} from "./test-cases/open-ended.v1";
-import { PeerbenchBenchmarkSpecV1 } from "./spec";
-import { SimpleSystemPromptV1 } from "@/schemas/llm";
+  MCQResponseSchemaV1,
+  MCQScoreSchemaV1,
+  MCQTestCaseSchemaV1,
+  MCQTestCaseV1,
+} from "./schema-sets/mcq.v1";
+import {
+  QAResponseSchemaV1,
+  QAScoreSchemaV1,
+  QATestCaseSchemaV1,
+  QATestCaseV1,
+} from "./schema-sets/qa.v1";
+import { PEERBENCH_NAMESPACE } from "@/constants";
 
-type ResponseTypes =
-  | PeerbenchMultipleChoiceResponseV1
-  | PeerbenchOpenEndedResponseV1;
-type ScoreTypes = PeerbenchMultipleChoiceScoreV1 | PeerbenchOpenEndedScoreV1;
-type TestCaseTypes =
-  | PeerbenchMultipleChoiceTestCaseV1
-  | PeerbenchOpenEndedTestCaseV1;
+export const peerbenchRunner = defineRunner(
+  {
+    schemaSets: [
+      {
+        testCase: MCQTestCaseSchemaV1,
+        response: MCQResponseSchemaV1,
+        score: MCQScoreSchemaV1,
+      },
+      {
+        testCase: QATestCaseSchemaV1,
+        response: QAResponseSchemaV1,
+        score: QAScoreSchemaV1,
+      },
+    ],
+    providers: [AbstractLLMProvider],
+    scorers: [LLMAsAJudgeScorer, MCQScorer],
 
-export async function runTestCase(params: {
-  testCase: TestCaseTypes;
+    runConfigSchema: {
+      model: z.string(),
+      llmJudgeModel: z.string().optional(),
+      llmJudgeSystemPrompt: SimpleSystemPromptSchemaV1.optional(),
+      systemPrompt: SimpleSystemPromptSchemaV1.optional(),
+      templateVariables: z.record(z.string(), z.string()).optional(),
+    },
+  },
+  async (params) => {
+    const { testCase, provider, scorer, runConfig } = params;
+    const messages: ChatCompletionMessageParam[] = [];
+
+    if (runConfig.systemPrompt) {
+      messages.push({
+        role: "system",
+        content: runConfig.systemPrompt.content,
+      });
+    }
+
+    if (testCase.kind === "llm/mcq.tc") {
+      messages.push({
+        role: "user",
+        content: formatMCQ(testCase),
+      });
+      templateMessages(messages, runConfig.templateVariables ?? {});
+
+      return runMCQ({
+        testCase,
+        messages,
+        provider,
+        scorer,
+        runConfig,
+        idGenerators: {
+          response: params.idGenerators?.response ?? idGeneratorUUIDv7,
+          score: params.idGenerators?.score ?? idGeneratorUUIDv7,
+        },
+      });
+    }
+
+    if (testCase.kind === "llm/qa.tc") {
+      if (
+        scorer &&
+        scorer?.kind !== (`${PEERBENCH_NAMESPACE}/llm-as-a-judge` as const)
+      ) {
+        throw new Error(
+          `QA test cases can only be scored with an LLM as a judge scorer, but ${scorer?.kind} was provided`
+        );
+      }
+
+      messages.push({
+        role: "user",
+        content: testCase.question,
+      });
+      templateMessages(messages, runConfig.templateVariables ?? {});
+
+      return runQA({
+        testCase,
+        messages,
+        provider,
+        scorer,
+        runConfig,
+        idGenerators: {
+          response: params.idGenerators?.response ?? idGeneratorUUIDv7,
+          score: params.idGenerators?.score ?? idGeneratorUUIDv7,
+        },
+      });
+    }
+
+    throw new Error("Unsupported test case kind");
+  }
+);
+
+async function runQA(params: {
+  messages: ChatCompletionMessageParam[];
+  testCase: QATestCaseV1;
   provider: AbstractLLMProvider;
-  scorer?: MCQScorer | LLMJudgeScorer;
-  spec?: PeerbenchBenchmarkSpecV1;
+  scorer?: LLMAsAJudgeScorer;
   runConfig: {
     model: string;
     llmJudgeModel?: string;
+    llmJudgeSystemPrompt?: SimpleSystemPromptV1;
+    systemPrompt?: SimpleSystemPromptV1;
   };
-  systemPrompt?: SimpleSystemPromptV1;
-  idGenerators?: {
-    response?: IdGenerator;
-    score?: IdGenerator;
+  idGenerators: {
+    response: IdGenerator;
+    score: IdGenerator;
   };
-}): Promise<RunnerResult<ResponseTypes, ScoreTypes>> {
-  const { testCase } = params;
-  const responseIdGenerator =
-    params.idGenerators?.response ?? idGeneratorUUIDv7;
-  const scoreIdGenerator = params.idGenerators?.score ?? idGeneratorUUIDv7;
-  const messages: ChatCompletionMessageParam[] = [];
+}) {
+  const { messages, testCase, provider, scorer, runConfig } = params;
 
-  if (params.systemPrompt) {
-    messages.push({
-      role: "system",
-      content: params.systemPrompt.content,
+  const providerResponse = await provider.forward({
+    model: runConfig.model,
+    messages,
+  });
+
+  const response = await QAResponseSchemaV1.newWithId(
+    {
+      data: providerResponse.data,
+      startedAt: providerResponse.startedAt,
+      completedAt: providerResponse.completedAt,
+      testCaseId: testCase.id,
+      modelSlug: runConfig.model,
+      provider: provider.kind,
+      systemPromptId: runConfig.systemPrompt?.id,
+
+      inputTokensUsed: providerResponse.inputTokensUsed,
+      outputTokensUsed: providerResponse.outputTokensUsed,
+      inputCost: providerResponse.inputCost,
+      outputCost: providerResponse.outputCost,
+    },
+    params.idGenerators?.response ?? idGeneratorUUIDv7
+  );
+
+  if (scorer?.kind === (`${PEERBENCH_NAMESPACE}/llm-as-a-judge` as const)) {
+    if (!runConfig.llmJudgeModel) {
+      throw new Error(
+        "LLM judge model is required when using LLM as a judge scorer"
+      );
+    }
+
+    const scorerResult = await scorer.score({
+      model: runConfig.llmJudgeModel,
+      response: response.data,
+      rubric: `Expected/Valid answers: ${testCase.goodAnswers.join("\n")}\nInvalid answers: ${testCase.badAnswers.join("\n")}`,
+      systemPrompt: runConfig.llmJudgeSystemPrompt?.content,
+      criteria: [
+        {
+          id: "correctness",
+          description:
+            "Is the response matches with the expected/valid answers in terms of meaning?",
+          weight: 1,
+        },
+      ],
     });
+
+    if (scorerResult !== null) {
+      const score = await QAScoreSchemaV1.newWithId(
+        {
+          scoringMethod: ScoringMethod.ai,
+          value: scorerResult.value,
+          responseId: response.id,
+          explanation: scorerResult.explanation,
+          metadata: scorerResult.metadata,
+          scorerAIInputCost: scorerResult.inputCost,
+          scorerAIOutputCost: scorerResult.outputCost,
+          scorerAIInputTokensUsed: scorerResult.inputTokensUsed,
+          scorerAIOutputTokensUsed: scorerResult.outputTokensUsed,
+          scorerAIProvider: scorerResult.provider,
+          scorerAIModelSlug: runConfig.llmJudgeModel,
+          scorerAISystemPromptId: runConfig.llmJudgeSystemPrompt?.id,
+        },
+        params.idGenerators?.score ?? idGeneratorUUIDv7
+      );
+
+      return { response, score };
+    }
   }
 
-  if (testCase.kind === "pb.ts.mcq") {
-    const formattedPrompt = formatMCQPrompt(testCase);
-
-    messages.push({
-      role: "user",
-      content: formattedPrompt,
-    });
-
-    const providerResponse = await params.provider.forward({
-      model: params.runConfig.model,
-      messages,
-    });
-
-    const response = await PeerbenchMultipleChoiceResponseSchemaV1.newWithId(
-      {
-        data: providerResponse.data,
-        startedAt: providerResponse.startedAt,
-        completedAt: providerResponse.completedAt,
-        testCaseId: testCase.id,
-        modelSlug: params.runConfig.model,
-        provider: params.provider.kind,
-
-        inputTokensUsed: providerResponse.inputTokensUsed,
-        outputTokensUsed: providerResponse.outputTokensUsed,
-        inputCost: providerResponse.inputCost,
-        outputCost: providerResponse.outputCost,
-      },
-      responseIdGenerator
-    );
-
-    if (params.scorer?.kind === "mcq") {
-      const scorerResult = await params.scorer.score({
-        response: response.data,
-        choices: testCase.options ?? {},
-        correctAnswers: [testCase.answerKey],
-      });
-
-      if (scorerResult !== null) {
-        const score = await PeerbenchMultipleChoiceScoreSchemaV1.newWithId(
-          {
-            scoringMethod: ScoringMethod.algo,
-            value: scorerResult.value,
-            responseId: response.id,
-            extractedAnswers: scorerResult.extractedAnswers,
-            metadata: response.metadata,
-          },
-          scoreIdGenerator
-        );
-
-        return { response, score };
-      }
-    }
-
-    return { response };
-  } else if (testCase.kind === "pb.ts.open-ended") {
-    const messages: ChatCompletionMessageParam[] = [];
-
-    if (params.systemPrompt) {
-      messages.push({
-        role: "system",
-        content: params.systemPrompt.content,
-      });
-    }
-
-    messages.push({
-      role: "user",
-      content: testCase.question,
-    });
-
-    const providerResponse = await params.provider.forward({
-      model: params.runConfig.model,
-      messages,
-    });
-
-    const response = await PeerbenchOpenEndedResponseSchemaV1.newWithId(
-      {
-        data: providerResponse.data,
-        startedAt: providerResponse.startedAt,
-        completedAt: providerResponse.completedAt,
-        testCaseId: testCase.id,
-        modelSlug: params.runConfig.model,
-        provider: params.provider.kind,
-
-        inputTokensUsed: providerResponse.inputTokensUsed,
-        outputTokensUsed: providerResponse.outputTokensUsed,
-        inputCost: providerResponse.inputCost,
-        outputCost: providerResponse.outputCost,
-      },
-      responseIdGenerator
-    );
-
-    if (params.scorer?.kind === "llmJudge" && params.runConfig.llmJudgeModel) {
-      const scorerResult = await params.scorer.score({
-        task: testCase.question,
-        candidateAnswer: response.data,
-        referenceAnswer: testCase.answer,
-        model: params.runConfig.llmJudgeModel,
-      });
-
-      if (scorerResult !== null) {
-        const score = await PeerbenchOpenEndedScoreSchemaV1.newWithId(
-          {
-            scoringMethod: ScoringMethod.ai,
-            value: scorerResult.value,
-            responseId: response.id,
-            explanation: scorerResult.explanation,
-            metadata: scorerResult.metadata,
-
-            scorerAIProvider: scorerResult.provider,
-            scorerAIModelSlug: params.runConfig.llmJudgeModel,
-            scorerAIInputTokensUsed: scorerResult.inputTokensUsed,
-            scorerAIOutputTokensUsed: scorerResult.outputTokensUsed,
-            scorerAIInputCost: scorerResult.inputCost,
-            scorerAIOutputCost: scorerResult.outputCost,
-          },
-          scoreIdGenerator
-        );
-
-        return { response, score };
-      }
-    }
-
-    return { response };
-  }
-
-  throw new Error("Unsupported test case kind");
+  return { response };
 }
 
-function formatMCQPrompt(testCase: PeerbenchMultipleChoiceTestCaseV1) {
+async function runMCQ(params: {
+  messages: ChatCompletionMessageParam[];
+  testCase: MCQTestCaseV1;
+  provider: AbstractLLMProvider;
+  scorer?: MCQScorer | LLMAsAJudgeScorer;
+  runConfig: {
+    model: string;
+    llmJudgeModel?: string;
+    llmJudgeSystemPrompt?: SimpleSystemPromptV1;
+    systemPrompt?: SimpleSystemPromptV1;
+  };
+  idGenerators: {
+    response: IdGenerator;
+    score: IdGenerator;
+  };
+}) {
+  const { messages, testCase, provider, scorer, runConfig } = params;
+
+  const providerResponse = await provider.forward({
+    model: runConfig.model,
+    messages,
+  });
+
+  const response = await MCQResponseSchemaV1.newWithId(
+    {
+      data: providerResponse.data,
+      startedAt: providerResponse.startedAt,
+      completedAt: providerResponse.completedAt,
+      testCaseId: testCase.id,
+      modelSlug: runConfig.model,
+      provider: provider.kind,
+      systemPromptId: runConfig.systemPrompt?.id,
+
+      inputTokensUsed: providerResponse.inputTokensUsed,
+      outputTokensUsed: providerResponse.outputTokensUsed,
+      inputCost: providerResponse.inputCost,
+      outputCost: providerResponse.outputCost,
+    },
+    params.idGenerators?.response ?? idGeneratorUUIDv7
+  );
+
+  if (scorer?.kind === (`${PEERBENCH_NAMESPACE}/mcq` as const)) {
+    const scorerResult = await scorer.score({
+      response: response.data,
+      choices: testCase.options,
+      correctAnswers: testCase.correctAnswerKeys,
+    });
+
+    if (scorerResult !== null) {
+      const score = await MCQScoreSchemaV1.newWithId(
+        {
+          scoringMethod: ScoringMethod.algo,
+          value: scorerResult.value,
+          responseId: response.id,
+          extractedAnswers: scorerResult.extractedAnswers,
+          explanation: scorerResult.explanation,
+          metadata: scorerResult.metadata,
+        },
+        params.idGenerators?.score ?? idGeneratorUUIDv7
+      );
+
+      return { response, score };
+    }
+  }
+
+  if (scorer?.kind === (`${PEERBENCH_NAMESPACE}/llm-as-a-judge` as const)) {
+    if (!runConfig.llmJudgeModel) {
+      throw new Error(
+        "LLM judge model is required when using LLM as a judge scorer"
+      );
+    }
+
+    const scorerResult = await scorer.score({
+      model: runConfig.llmJudgeModel,
+      criteria: [
+        {
+          id: "correctness",
+          description:
+            "Is the given answer key matches with one of the correct answer keys?",
+          weight: 1,
+        },
+      ],
+      rubric: `Answer text itself or the key (A, B, C) is accepted
+Valid answer keys: ${testCase.correctAnswerKeys.map((key) => `- ${key}`).join("\n")}
+Valid Answer texts: ${testCase.correctAnswerKeys.map((key) => `- ${testCase.options?.[key] ?? ""}`).join("\n")}`,
+      fieldsToExtract: {
+        extractedAnswers: z
+          .string()
+          .array()
+          .describe(
+            "The extracted answer keys, valid or invalid (even if the answer text is provided rather than the key)"
+          ),
+      },
+      response: response.data,
+      systemPrompt: runConfig.llmJudgeSystemPrompt?.content,
+    });
+
+    if (scorerResult !== null) {
+      const score = await MCQScoreSchemaV1.newWithId(
+        {
+          scoringMethod: ScoringMethod.ai,
+          value: scorerResult.value,
+          extractedAnswers: scorerResult.extractedFields.extractedAnswers,
+          responseId: response.id,
+          explanation: scorerResult.explanation,
+          metadata: scorerResult.metadata,
+          scorerAIInputCost: scorerResult.inputCost,
+          scorerAIOutputCost: scorerResult.outputCost,
+          scorerAIInputTokensUsed: scorerResult.inputTokensUsed,
+          scorerAIOutputTokensUsed: scorerResult.outputTokensUsed,
+          scorerAIProvider: scorerResult.provider,
+          scorerAIModelSlug: runConfig.llmJudgeModel,
+          scorerAISystemPromptId: runConfig.llmJudgeSystemPrompt?.id,
+        },
+        params.idGenerators?.score ?? idGeneratorUUIDv7
+      );
+
+      return { response, score };
+    }
+  }
+
+  return { response };
+}
+
+function formatMCQ(testCase: MCQTestCaseV1) {
   return `Question: ${testCase.question}\nOptions:\n${Object.entries(
     testCase.options ?? {}
   )
     .map(([key, value]) => `${key}: ${value}`)
     .join("\n")}`;
+}
+
+function templateMessages(
+  messages: ChatCompletionMessageParam[],
+  templateVariables: Record<string, string>
+) {
+  for (let i = 0; i < messages.length; i++) {
+    const template = Handlebars.compile(messages[i]!.content);
+    messages[i]!.content = template(templateVariables);
+  }
 }

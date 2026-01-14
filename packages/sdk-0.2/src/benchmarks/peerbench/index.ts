@@ -1,4 +1,7 @@
-export * from "./loader";
+export * from "./schema-sets/mcq.v1";
+export * from "./schema-sets/multi-turn.v1";
+export * from "./schema-sets/qa.v1";
+
 export * from "./runner";
-export * from "./test-cases/mcq.v1";
-export * from "./test-cases/open-ended.v1";
+
+export * from "./storages/json";

@@ -1,9 +1,10 @@
-import { ExtensionLLMAsAJudgeScorerFieldsV1 } from "./score/llm-as-a-judge-scorer";
+import { ExtensionLLMResponseFieldsV1 } from "./response/llm";
+import { ExtensionLLMAsAJudgeScoreFieldsV1 } from "./score/llm-as-a-judge-scorer";
 
 export const ScoreExtensions = {
-  /**
-   * @deprecated Use `ExtensionLLMAsAJudgeScorerFieldsV1` instead.
-   */
-  ExtensionAIScorerFieldsV1: ExtensionLLMAsAJudgeScorerFieldsV1,
-  ExtensionLLMAsAJudgeScorerFieldsV1,
+  ExtensionLLMAsAJudgeScoreFieldsV1,
+};
+
+export const ResponseExtensions = {
+  ExtensionLLMResponseFieldsV1,
 };

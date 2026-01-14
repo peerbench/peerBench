@@ -1,6 +1,7 @@
 import { parseResponseAsJSON } from "@/utils";
 import { AbstractScorer, BaseScorerResult } from "./abstract";
 import { RegexScorer, RegexPattern, RegexScorerParams } from "./regex";
+import { PEERBENCH_NAMESPACE } from "@/constants";
 
 export type MCQScorerParams = {
   response: string;
@@ -9,12 +10,14 @@ export type MCQScorerParams = {
 };
 
 export class MCQScorer extends AbstractScorer {
-  override readonly kind = "mcq";
+  override readonly kind = `${PEERBENCH_NAMESPACE}/mcq` as const;
   private regexScorer = new RegexScorer();
 
-  async score(params: MCQScorerParams): Promise<BaseScorerResult & {
-    extractedAnswers: string[];
-  }> {
+  async score(params: MCQScorerParams): Promise<
+    BaseScorerResult & {
+      extractedAnswers: string[];
+    }
+  > {
     const { response, choices, correctAnswers } = params;
     const normalizedCorrectAnswers = correctAnswers.map((ca) =>
       ca.toUpperCase()

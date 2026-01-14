@@ -1,8 +1,11 @@
 /**
  * Converts the given byte array to a string
  */
-export function bufferToString(buffer: Uint8Array): string {
-  const decoder = new TextDecoder();
+export function bufferToString(
+  buffer: Uint8Array,
+  encoding: BufferEncoding = "utf-8"
+): string {
+  const decoder = new TextDecoder(encoding);
   return decoder.decode(buffer);
 }
 

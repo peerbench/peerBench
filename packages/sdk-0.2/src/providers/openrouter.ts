@@ -1,23 +1,25 @@
-import { ChatResponse } from "./abstract/llm";
+import {
+  AbstractLLMProvider,
+  ChatResponse,
+  LLMProviderForwardArgs,
+} from "./abstract/llm";
 import { RateLimiter } from "@/utils";
 import { OpenAIProvider } from "./openai";
-import { ChatCompletionMessageParam } from "openai/resources/index";
-import {
-  ResponseFormatText,
-  ResponseFormatJSONSchema,
-  ResponseFormatJSONObject,
-} from "openai/resources/shared";
-import axios from "axios";
+import { PEERBENCH_NAMESPACE } from "@/constants";
 import Decimal from "decimal.js";
+import axios from "axios";
 
 const baseURL = "https://openrouter.ai/api/v1";
 const MODELS_CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours
 
-export class OpenRouterProvider extends OpenAIProvider {
+export class OpenRouterProvider extends AbstractLLMProvider {
+  override readonly kind = `${PEERBENCH_NAMESPACE}/llm/openrouter.ai` as const;
+
   private models: ModelsResponse | undefined = undefined;
   private modelsCachePromise: Promise<ModelsResponse | undefined> =
     Promise.resolve(undefined);
   private modelsUpdatedAt = 0;
+  private openAIProvider: OpenAIProvider;
 
   constructor(config: {
     apiKey: string;
@@ -25,7 +27,8 @@ export class OpenRouterProvider extends OpenAIProvider {
     timeout?: number;
     rateLimiter?: RateLimiter;
   }) {
-    super({
+    super();
+    this.openAIProvider = new OpenAIProvider({
       baseURL,
       apiKey: config.apiKey,
       maxRetries: config.maxRetries,
@@ -34,21 +37,12 @@ export class OpenRouterProvider extends OpenAIProvider {
     });
   }
 
-  override async forward(args: {
-    messages: ChatCompletionMessageParam[];
-    model: string;
-    abortSignal?: AbortSignal;
-    temperature?: number;
-    responseFormat?:
-      | ResponseFormatText
-      | ResponseFormatJSONSchema
-      | ResponseFormatJSONObject;
-  }): Promise<ChatResponse> {
+  override async forward(args: LLMProviderForwardArgs): Promise<ChatResponse> {
     // Update models cache concurrently (non-blocking)
     const [response] = await Promise.all([
-      super.forward(args),
+      this.openAIProvider.forward(args),
       this.updateModelsCache().catch(() => {
-        // Silently fail if cache update fails
+        // Silently fail if cache update fails so we won't have cost info in the result
       }),
     ]);
 

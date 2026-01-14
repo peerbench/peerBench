@@ -4,6 +4,7 @@ import { buildSchemaDefiner } from "../schema-definer";
 
 export const BaseSystemPromptSchemaV1 = z.object({
   id: IdSchema,
+  namespace: z.string(),
   kind: z.string(),
   schemaVersion: z.number(),
   version: z.number(),
@@ -11,5 +12,7 @@ export const BaseSystemPromptSchemaV1 = z.object({
 });
 export type BaseSystemPromptV1 = z.infer<typeof BaseSystemPromptSchemaV1>;
 
-export const defineSystemPromptSchema =
-  buildSchemaDefiner<typeof BaseSystemPromptSchemaV1.shape>();
+export const defineSystemPromptSchema = buildSchemaDefiner(
+  BaseSystemPromptSchemaV1,
+  "sys-prompt"
+);

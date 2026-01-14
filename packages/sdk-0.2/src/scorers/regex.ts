@@ -1,3 +1,4 @@
+import { PEERBENCH_NAMESPACE } from "@/constants";
 import { AbstractScorer, BaseScorerResult } from "./abstract";
 
 export type RegexPattern = {
@@ -54,7 +55,7 @@ export type RegexScorerParams = {
  * Generic Regex scorer. It scores the given input against a set of regex patterns.
  */
 export class RegexScorer extends AbstractScorer {
-  override readonly kind = "regex";
+  override readonly kind = `${PEERBENCH_NAMESPACE}/regex` as const;
 
   override async score(params: RegexScorerParams) {
     // Collect all named group names from all patterns

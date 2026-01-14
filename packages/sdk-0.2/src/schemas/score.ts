@@ -5,6 +5,7 @@ import z from "zod";
 
 export const BaseScoreSchemaV1 = z.object({
   id: IdSchema,
+  namespace: z.string(),
   kind: z.string(),
   schemaVersion: z.number(),
 
@@ -16,5 +17,4 @@ export const BaseScoreSchemaV1 = z.object({
 });
 export type BaseScoreV1 = z.infer<typeof BaseScoreSchemaV1>;
 
-export const defineScoreSchema =
-  buildSchemaDefiner<typeof BaseScoreSchemaV1.shape>();
+export const defineScoreSchema = buildSchemaDefiner(BaseScoreSchemaV1, "sc");

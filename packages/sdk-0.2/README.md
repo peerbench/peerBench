@@ -1,12 +1,11 @@
 # `peerbench` SDK
 
-This package is the shared “domain core” for _building benchmarks_ in a standardized, portable way. It gives you a consistent set of _persistable entities_ (schemas + types), and a consistent set of _runtime contracts_ (loaders, runners, scorers, providers) so the same benchmark can run in a CLI, a web app, a worker, or anything else.
+This package is the shared “domain core” for _building benchmarks_ in a standardized, portable way. It gives you a consistent set of _persistable entities_ (schemas + types), and a consistent set of _runtime contracts_ (runners, scorers, providers, storages, aggregators) so the same benchmark can run in a CLI, a web app, a worker, or anything else.
 
-> _Runtime_ refers to the codebase (a CLI, a webapp, a background service etc.) that uses the SDK.
+If you’re implementing a new benchmark, the SDK is the part that keeps it portable instead of glued to one runtime. If you’re integrating peerbench SDK into a runtime, the SDK is the part you don’t want to rewrite in every repo.
 
-If you’re implementing a new benchmark, the SDK is the part that keeps it portable instead of glued to one runtime. If you’re integrating Peerbench into a runtime, the SDK is the part you don’t want to rewrite in every repo.
-
-> This package does not support CommonJS
+> - _Runtime_ refers to the codebase that uses peerbench SDK (a CLI, a webapp, a background service etc.)
+> - This package does not support CommonJS
 
 ## What is a benchmark?
 
@@ -18,39 +17,43 @@ If you look at widely-used benchmarks, the pattern is always the same even when 
 - In BIG-bench style task suites, you have many different task types and you want a consistent way to run and score them.
 - In HELM-style evaluations, you care about not only “did it answer correctly”, but also how you ran it (prompting setup, constraints, metadata) and how you report results.
 
-Those benchmarks differ in details, but they all boil down to the same building blocks: a dataset of test cases, a way to run a system on each test case, and a way to score the output. The Peerbench SDK is designed so these patterns can be represented with the same portable shape.
+Those benchmarks differ in details, but they all boil down to the same building blocks: a dataset of test cases, a way to run a system on each test case, and a way to score the output. The peerbench SDK is designed so these patterns can be represented with the same portable shape.
 
 ## The mental model
 
-Now that we agree on what a benchmark is, we can talk about how Peerbench represents it.
+Now that we agree on what a benchmark is, we can talk about how peerbench represents it.
 
-Peerbench is deliberately boring here. It doesn’t try to invent a new “benchmark framework”. It gives you a small set of building blocks that you can compose. If you understand these pieces, you can read any benchmark implementation and know where to look.
+peerbench is deliberately boring here. It doesn’t try to invent a new “benchmark framework”. It gives you a small set of building blocks that you can compose. If you understand these pieces, you can read any benchmark implementation and know where to look.
 
 ### Entities (the things you store)
 
-When you run an evaluation, you end up with data that you want to store, query, re-score, and share. Peerbench standardizes that output by modeling it as a small set of entities.
+When you run an evaluation, you end up with data that you want to store, query, re-score, and share. peerbench standardizes that output by modeling it as a small set of entities.
 
-This SDK assumes four core entities:
+This SDK assumes three core entities:
 
-- `BenchmarkSpec`: optional benchmark-level configuration (think: “applies to the whole dataset/run”).
 - `TestCase`: a single input/task.
 - `Response`: the model output for a specific test case (`testCaseId` points to `TestCase.id`).
-- `Score`: an evaluation result for a specific response (`responseId` points to `Response.id`).
+- `Score` (optional): an evaluation result for a specific response (`responseId` points to `Response.id`).
 
 Everything else in the SDK exists to create these entities in a predictable way.
 
-Two fields show up everywhere:
+Three fields show up everywhere:
 
 - `kind` tells you _what type_ of entity something is. It is a stable string you pick (descriptive).
 - `schemaVersion` tells you _which version_ of that entity shape you’re looking at.
+- `namespace` tells you which “owner” defines that kind (e.g peerbench.ai).
 
-This is why Peerbench leans on [Zod](https://zod.dev) schemas: it keeps the persisted data contract explicit and runtime-validated.
+This is why peerbench leans on [Zod](https://zod.dev) schemas: it keeps the persisted data contract explicit and runtime-validated.
 
-### Loader (how raw data becomes test cases)
+### Storage (how entities are persisted)
 
-In real projects, test cases live in many places: JSON files, JSONL streams, a database, Parquet, an API, etc.
+The SDK does not prescribe how you ingest datasets. Runtimes often load test cases from JSON/JSONL, DB rows, Parquet, or an API. Storages are the abstractions that allow you to standardize the way you load the data from a source to the memory.
 
-A loader is the piece that reads that raw data and returns `TestCase[]` (and optionally existing `Response[]` / `Score[]`). The important point is not the file format. The important point is that the loader is where your “raw input → Peerbench entities” mapping lives.
+peerbench SDK provides some pre-defined storage abstractions you can use out of the box:
+
+- file-based storage with custom codecs (`FileStorage`)
+- JSON array files (`JSONFileStorage`)
+- SQLite storage (codec-based)
 
 ### Provider (how you talk to a model)
 
@@ -65,13 +68,13 @@ If you already have your own service in front of the model, you can still model 
 
 ### Runner (how you execute one test case)
 
-A runner is the execution part of a benchmark. A runner function takes whatever inputs it needs, calls a provider, and produces a `Response`. It may also produce a `Score` (directly, or via a scorer).
+A runner is the execution part of a benchmark. A runner function takes whatever inputs it needs, calls a provider, and produces a `Response`. It may also produce a `Score` (via a scorer).
 
 Runners are indented to be “per test case” because it keeps the benchmark logic small and easy to compose. Running a whole dataset is orchestration, and orchestration is where runtimes differ (parallelism, retries, persistence, budgets, progress UI).
 
 There is no restriction that a benchmark must have exactly one runner. You can export multiple runner functions (different modes, different prompts, different providers, different scoring strategies). The runtime just needs to pick the runner it wants to use.
 
-One practical convention you will see in the examples is `runConfig`. It’s runner-specific, and it’s usually kept as a simple JSON-serializable object so you can store it alongside your run and reproduce it later. This is a best practice, not a hard restriction: if something doesn’t belong in `runConfig`, you can pass it as a normal parameter next to it.
+One practical convention you will see in the examples is `runConfig`. It’s runner-specific, and it’s recommended to kept as a simple JSON-serializable object so you can store it alongside your run and reproduce it later.
 
 ### Scorer (how you judge a response)
 
@@ -79,7 +82,7 @@ A scorer produces a numeric result. Some scorers are deterministic (same input �
 
 A scorer takes what it needs. Sometimes it’s “expected + actual strings”. Sometimes it’s “a list of required fields + a JSON output”. The runner decides what to pass into the scorer, because the runner is the piece that knows how the benchmark is structured.
 
-If your benchmark can be scored in multiple ways, a runner can accept multiple scorer implementations and choose between them based on `scorer.kind`. The examples in `packages/sdk-0.2/src/benchmarks/example/` show what that looks like in code.
+If your benchmark can be scored in multiple ways, a runner can accept multiple scorer implementations and choose between them. The examples in `packages/sdk-0.2/src/benchmarks/examples/` show what that looks like in code.
 
 ## What the SDK does vs what the runtime does
 
@@ -87,14 +90,15 @@ It’s easy to accidentally push “too much responsibility” to the SDK and en
 
 This SDK tries to draw a clean line:
 
-The SDK is responsible for:
+It is responsible for:
 
 - defining and validating entity shapes (Zod schemas are the source of truth)
-- providing base contracts and reusable building blocks (schemas + loaders + runners + scorers)
+- providing base contracts and reusable building blocks (schemas + runners + scorers + storages + aggregators)
 - defining provider/scorer contracts so you can swap backends without rewriting benchmarks
 
 The runtime is responsible for:
 
+- sourcing test cases (JSON/DB/Parquet/API/etc.) and mapping them into `TestCase` entities
 - orchestration across many test cases (parallelism, retries, persistence, resuming, progress UI)
 - deciding how/where entities are stored (DB schema, file layout, caching)
 - secrets and private content (API keys, redacted prompts, access control)
@@ -110,7 +114,6 @@ In practice, the benchmark implementer is responsible for:
 
 - choosing stable `kind` strings (namespaced, descriptive) and bumping `schemaVersion` on breaking changes
 - defining the schemas that are safe to store and share (and keeping secrets out of them)
-- deciding how raw datasets map into `TestCase` entities (loader)
 - deciding how a test case is executed (runner) and how it becomes a `Response`
 - deciding how scoring works (inline in runner, a separate scorer, or multiple scorers)
 
@@ -125,19 +128,22 @@ Benchmarks can implement everything themselves, but they can also reuse the SDK�
 A “benchmark” in this SDK is not a magical object. It is a small folder that exports a few well-known pieces. The simplest complete benchmark usually includes:
 
 1. schemas (test case / response / score)
-2. a loader (how test cases are read from disk/DB/etc.)
-3. a runner (how a single test case is executed)
-4. one or more scorers (optional)
+2. a runner (how a single test case is executed)
+3. one or more scorers (if the SDK provided scorers do not work)
+4. (optional) one or more storages (how entities are persisted)
 
 You can see a compact, end-to-end reference in:
 
-- `packages/sdk-0.2/src/benchmarks/example/basic/`
+- `packages/sdk-0.2/src/benchmarks/examples/echo-basic/`
+- `packages/sdk-0.2/src/benchmarks/examples/text-transform/`
+- `packages/sdk-0.2/src/benchmarks/examples/exact-match-scorer/`
+- `packages/sdk-0.2/src/benchmarks/examples/mcq-qa-templated/`
 
 ### 1) Schemas: the source of truth
 
 Schemas are the core of a benchmark. They are the entities that hold the data.
 
-In `packages/sdk-0.2/src/benchmarks/example/basic/test-cases/echo.v1.ts` you can see the pattern:
+In `packages/sdk-0.2/src/benchmarks/examples/echo-basic/schema-sets/echo.v1.ts` you can see the pattern:
 
 - define a test case schema (`kind` + `schemaVersion` + benchmark fields)
 - define a response schema for that test case
@@ -153,7 +159,8 @@ import { BaseTestCaseSchemaV1, defineTestCaseSchema } from "peerbench/schemas";
 
 export const MyTestCaseSchemaV1 = defineTestCaseSchema({
   baseSchema: BaseTestCaseSchemaV1,
-  kind: "mybench.ts.someTask",
+  namespace: "example.peerbench.ai",
+  kind: "llm/my-benchmark",
   schemaVersion: 1,
   fields: {
     prompt: z.string(),
@@ -161,38 +168,19 @@ export const MyTestCaseSchemaV1 = defineTestCaseSchema({
 });
 ```
 
-### 2) Loader: how test cases become entities
-
-A loader reads external data and returns in-memory entities:
-
-```ts
-type LoaderResult<TTestCase> = {
-  testCases: TTestCase[];
-  responses: [];
-  scores: [];
-};
-```
-
-In the basic example (`packages/sdk-0.2/src/benchmarks/example/basic/loader.ts`) the loader reads a JSON array and maps it into `TestCase` entities.
-
-### 3) Provider: how runners talk to models
+### 2) Provider: how runners talk to models
 
 Runners communicate with models through a provider implementation. That’s how the same benchmark can run against different backends without rewriting the benchmark.
 
-There are also example providers meant to be read as reference implementations:
-
-- `packages/sdk-0.2/src/providers/example/echo.ts` (no network calls; returns deterministic content)
-- `packages/sdk-0.2/src/providers/example/restapi.ts` (calls your own REST “agent service”)
-
 If you already have a service in front of your model, the REST API provider example shows the pattern: accept the SDK’s `messages + model` input, translate it to an HTTP request, and translate the HTTP response back into a single string. Nothing else is required.
 
-### 4) Runner: run one test case
+### 3) Runner: run one test case
 
 A runner function typically executes one test case and returns `{ response, score? }`.
 
 This is intentional. Running many test cases is orchestration, and orchestration is where runtimes differ the most (parallelism, retries, persistence, resuming, UI, cost limits). The runner is the small, portable unit.
 
-In the basic example runner (`packages/sdk-0.2/src/benchmarks/example/basic/runner.ts`) you can see the responsibilities:
+In the example runners (e.g. `packages/sdk-0.2/src/benchmarks/examples/echo-basic/runner.ts`) you can see the responsibilities:
 
 - format a test case into provider-friendly input (for chat models, `messages[]`)
 - call `provider.forward(...)`
@@ -215,7 +203,7 @@ const response = ResponseSchemaV1.new({
 });
 ```
 
-### 5) Scorers: optional, but powerful
+### 5) Scorers
 
 Some benchmarks are easy to score deterministically (string match, regex extraction, set coverage). Some benchmarks need semantic judgment. Some benchmarks want both.
 
@@ -223,70 +211,106 @@ That’s why scorers are separate objects and why runners can accept more than o
 
 The examples show:
 
-- a deterministic scorer (`packages/sdk-0.2/src/benchmarks/example/basic/scorer.ts`)
-- a non-deterministic scorer (`packages/sdk-0.2/src/scorers/llm-judge.ts`)
-- a runner that can switch based on `scorer.kind` (`packages/sdk-0.2/src/benchmarks/example/basic/runner.ts`)
+- deterministic scoring inside a runner (`packages/sdk-0.2/src/benchmarks/examples/text-transform/runner.ts`)
+- multi-scorer dispatch (`packages/sdk-0.2/src/benchmarks/examples/exact-match-scorer/runner.ts`)
+- `MCQScorer` and `LLMAsAJudgeScorer` in `peerbench/scorers`
+
+`LLMAsAJudgeScorer` returns a normalized `value` in the `0..1` range (inclusive).
 
 ## Usage: run a single test case end-to-end
 
-First, pick a benchmark and a provider:
+First, define schemas and a runner (this is the “portable benchmark code”):
 
 ```ts
-import { example } from "peerbench/benchmarks";
-import { ExampleEchoLLMProvider } from "peerbench/providers";
+import { defineRunner, idGeneratorUUIDv7 } from "peerbench";
+import { AbstractLLMProvider } from "peerbench/providers";
+import {
+  BaseResponseSchemaV1,
+  BaseScoreSchemaV1,
+  BaseTestCaseSchemaV1,
+  defineResponseSchema,
+  defineScoreSchema,
+  defineTestCaseSchema,
+} from "peerbench/schemas";
+import { ResponseExtensions } from "peerbench/schemas/extensions";
+import z from "zod";
 
-const provider = new ExampleEchoLLMProvider();
-```
+const Namespace = "example.peerbench.ai" as const;
+const Kind = "llm/echo-basic" as const;
 
-Then build a test case entity and run it:
-
-```ts
-const testCase = example.ExampleEchoTestCaseSchemaV1.new({
-  id: "tc-1",
-  instruction: "Repeat the input exactly",
-  input: "hello",
-  expectedOutput: "hello",
+const TestCaseSchemaV1 = defineTestCaseSchema({
+  baseSchema: BaseTestCaseSchemaV1,
+  namespace: Namespace,
+  kind: Kind,
+  schemaVersion: 1,
+  fields: { input: z.string() },
 });
 
-const scorer = new example.ExampleExactMatchScorer();
-
-const { response, score } = await example.runTestCase({
-  testCase,
-  provider,
-  scorer,
-  runConfig: { model: "example-model" },
+const ResponseSchemaV1 = defineResponseSchema({
+  baseSchema: BaseResponseSchemaV1,
+  namespace: Namespace,
+  kind: Kind,
+  schemaVersion: 1,
+  fields: { ...ResponseExtensions.ExtensionLLMResponseFieldsV1 },
 });
-```
 
-If you want to load test cases instead of constructing them manually, use the loader:
+const ScoreSchemaV1 = defineScoreSchema({
+  baseSchema: BaseScoreSchemaV1,
+  namespace: Namespace,
+  kind: Kind,
+  schemaVersion: 1,
+  fields: {},
+});
 
-```ts
-const loader = new example.ExampleJSONDataLoader();
-const { testCases } = await loader.loadData({
-  content: new TextEncoder().encode(
-    JSON.stringify([
+export const runner = defineRunner(
+  {
+    schemaSets: [
       {
-        id: "tc-1",
-        kind: "example.ts.echo",
-        schemaVersion: 1,
-        instruction: "Repeat the input exactly",
-        input: "hello",
-        expectedOutput: "hello",
+        testCase: TestCaseSchemaV1,
+        response: ResponseSchemaV1,
+        score: ScoreSchemaV1,
       },
-    ])
-  ),
-});
+    ],
+    providers: [AbstractLLMProvider],
+    scorers: [],
+    runConfigSchema: { model: z.string() },
+  },
+  async ({ testCase, provider, runConfig, idGenerators }) => {
+    const providerResponse = await provider.forward({
+      model: runConfig.model,
+      messages: [{ role: "user", content: `Echo:\n${testCase.input}` }],
+    });
+
+    const response = await ResponseSchemaV1.newWithId(
+      {
+        data: providerResponse.data,
+        startedAt: providerResponse.startedAt,
+        completedAt: providerResponse.completedAt,
+        testCaseId: testCase.id,
+        modelSlug: runConfig.model,
+        provider: provider.kind,
+        inputTokensUsed: providerResponse.inputTokensUsed,
+        outputTokensUsed: providerResponse.outputTokensUsed,
+        inputCost: providerResponse.inputCost,
+        outputCost: providerResponse.outputCost,
+      },
+      idGenerators?.response ?? idGeneratorUUIDv7
+    );
+
+    return { response };
+  }
+);
 ```
 
 ## Usage: what the runtime adds (orchestration)
 
-Once you have `runTestCase(...)`, the runtime’s job is mostly about repetition and persistence.
+Once you have a runner, the runtime’s job is mostly about repetition and persistence.
 
 For example, a very small orchestrator might do:
 
 ```ts
 for (const testCase of testCases) {
-  const result = await example.runTestCase({ testCase, provider, runConfig });
+  const result = await runner({ testCase, provider, runConfig });
   // store `result.response` and `result.score` somewhere durable
   // decide how to handle errors, retries, progress, and budgets
 }
@@ -296,14 +320,14 @@ That loop is where your product decisions live. The SDK is intentionally not opi
 
 ## More examples to read
 
-The `example` benchmark is split into folders that each teach one idea:
+The examples under `packages/sdk-0.2/src/benchmarks/examples/` each teach one idea:
 
-- `packages/sdk-0.2/src/benchmarks/example/basic/`: the simplest complete example
-- `packages/sdk-0.2/src/benchmarks/example/multi-kind/`: one runner, multiple test case kinds
-- `packages/sdk-0.2/src/benchmarks/example/multi-scorer/`: one runner, multiple scorer implementations
+- `echo-basic`: minimal schema set + runner + storage examples
+- `text-transform`: one runner supports multiple kinds + deterministic scoring
+- `exact-match-scorer`: scorer dispatch pattern (algo scorer vs LLM judge scorer)
+- `mcq-qa-templated`: template variables + MCQ/QA tasks
 
 ## Design notes
 
 - Schemas are runtime-validated (Zod) so “type-only drift” doesn’t silently corrupt stored data.
 - Runners are per-test-case so they stay small and portable; runtimes keep orchestration control.
-- Kinds are namespaced strings (e.g. `example.ts.echo`) to avoid collisions across benchmarks.
