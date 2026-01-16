@@ -55,11 +55,10 @@ export class LLMAsAJudgeScorer extends AbstractScorer {
       ...(params.fieldsToExtract ?? {}),
     });
 
-    systemPrompt.push("You are a strict, fair evaluation judge.");
-
     if (params.systemPrompt) {
       systemPrompt.push(params.systemPrompt);
     } else {
+      systemPrompt.push("You are a strict, fair evaluation judge.");
       systemPrompt.push("Only use information from the rubric");
     }
 
