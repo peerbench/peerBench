@@ -11,8 +11,13 @@ export class MastraProvider extends AbstractLLMProvider {
   private readonly endpoint: string;
   private readonly authToken?: string;
   private client: MastraClient;
+  private memory?: AgentMemoryOption;
 
-  constructor(params: { endpoint: string; authToken?: string }) {
+  constructor(params: {
+    endpoint: string;
+    authToken?: string;
+    memory?: AgentMemoryOption;
+  }) {
     super();
     this.endpoint = params.endpoint;
     this.authToken = params.authToken;
@@ -24,6 +29,7 @@ export class MastraProvider extends AbstractLLMProvider {
           }
         : undefined,
     });
+    this.memory = params.memory;
   }
 
   override async forward(
@@ -48,7 +54,7 @@ export class MastraProvider extends AbstractLLMProvider {
           "model-id": args.model,
         },
       },
-      { memory: args.memory }
+      { memory: args.memory ?? this.memory }
     );
 
     return {

@@ -26,4 +26,6 @@ export type ChatResponse = ProviderResponse<string> & {
   outputTokensUsed?: number;
   inputCost?: string;
   outputCost?: string;
+
+  metadata?: Record<string, unknown>;
 };
