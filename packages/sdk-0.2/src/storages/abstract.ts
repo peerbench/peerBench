@@ -7,4 +7,8 @@ export abstract class AbstractStorage<TObject> {
     value: TObject,
     params?: unknown
   ): Promise<unknown>;
+
+  async count(): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
 }
