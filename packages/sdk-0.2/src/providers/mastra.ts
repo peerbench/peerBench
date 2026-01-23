@@ -1,3 +1,4 @@
+import { PEERBENCH_NAMESPACE } from "@/constants";
 import {
   AbstractLLMProvider,
   type ChatResponse,
@@ -5,8 +6,7 @@ import {
 } from "./abstract/llm";
 import { MastraClient, type GetAgentResponse } from "@mastra/client-js";
 
-export class MastraProvider extends AbstractLLMProvider {
-  override readonly kind = "mastra";
+export class MastraProvider extends AbstractLLMProvider.withKind(`${PEERBENCH_NAMESPACE}/llm/mastra`) {
 
   private readonly endpoint: string;
   private readonly authToken?: string;
@@ -25,8 +25,8 @@ export class MastraProvider extends AbstractLLMProvider {
       baseUrl: this.endpoint,
       headers: this.authToken
         ? {
-            Authorization: `Bearer ${this.authToken}`,
-          }
+          Authorization: `Bearer ${this.authToken}`,
+        }
         : undefined,
     });
     this.memory = params.memory;
@@ -35,6 +35,11 @@ export class MastraProvider extends AbstractLLMProvider {
   override async forward(
     args: LLMProviderForwardArgs & {
       memory?: AgentMemoryOption;
+
+      /**
+       * The model that will be used as the brain for the agent.
+       */
+      modelName?: string
     }
   ): Promise<ChatResponse> {
     const apiMessages = args.messages
@@ -51,7 +56,7 @@ export class MastraProvider extends AbstractLLMProvider {
       {
         messages: apiMessages,
         runtimeContext: {
-          "model-id": args.model,
+          "model-id": args.modelName,
         },
       },
       { memory: args.memory ?? this.memory }
@@ -84,16 +89,16 @@ export class MastraProvider extends AbstractLLMProvider {
 // NOTE: Mastra client does not export these types
 export type AgentMemoryOption = Parameters<
   Parameters<MastraClient["getAgent"]>["0"] extends string
-    ? ReturnType<MastraClient["getAgent"]>["generate"]
-    : never
+  ? ReturnType<MastraClient["getAgent"]>["generate"]
+  : never
 >[0] extends { memory?: infer M }
   ? M
   : never;
 
 type MastraRuntimeContext = Parameters<
   Parameters<MastraClient["getAgent"]>["0"] extends string
-    ? ReturnType<MastraClient["getAgent"]>["generate"]
-    : never
+  ? ReturnType<MastraClient["getAgent"]>["generate"]
+  : never
 >[0] extends { runtimeContext?: infer R }
   ? R
   : never;

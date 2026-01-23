@@ -9,8 +9,7 @@ export type MCQScorerParams = {
   correctAnswers: string[];
 };
 
-export class MCQScorer extends AbstractScorer {
-  override readonly kind = `${PEERBENCH_NAMESPACE}/mcq` as const;
+export class MCQScorer extends AbstractScorer.withKind(`${PEERBENCH_NAMESPACE}/mcq`) {
   private regexScorer = new RegexScorer();
 
   async score(params: MCQScorerParams): Promise<

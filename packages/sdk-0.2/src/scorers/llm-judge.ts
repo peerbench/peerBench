@@ -5,9 +5,7 @@ import { AbstractScorer, BaseScorerResult } from "./abstract";
 import { PEERBENCH_NAMESPACE } from "@/constants";
 import z from "zod";
 
-export class LLMAsAJudgeScorer extends AbstractScorer {
-  override readonly kind = `${PEERBENCH_NAMESPACE}/llm-as-a-judge` as const;
-
+export class LLMAsAJudgeScorer extends AbstractScorer.withKind(`${PEERBENCH_NAMESPACE}/llm-as-a-judge`) {
   private provider: AbstractLLMProvider;
 
   constructor(config: {

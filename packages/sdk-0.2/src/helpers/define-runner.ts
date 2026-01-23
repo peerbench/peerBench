@@ -39,7 +39,7 @@ export function defineRunner<
     InferRunConfig<TRunConfigSchema>
   >
 ) {
-  return async (params: Parameters<typeof fn>[0]) => {
+  const func = async (params: Parameters<typeof fn>[0]) => {
     if (config.runConfigSchema && config.parseRunConfig !== false) {
       z.object(config.runConfigSchema).parse(params.runConfig);
     }
@@ -60,6 +60,16 @@ export function defineRunner<
 
     return await fn(params);
   };
+
+  return Object.assign(func, {
+    /**
+     * The configuration that was used to define the runner.
+     */
+    config: {
+      ...config,
+      runConfigSchema: z.object(config.runConfigSchema),
+    },
+  });
 }
 
 type SchemaSetDefinition<

@@ -12,9 +12,7 @@ import axios from "axios";
 const baseURL = "https://openrouter.ai/api/v1";
 const MODELS_CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours
 
-export class OpenRouterProvider extends AbstractLLMProvider {
-  override readonly kind = `${PEERBENCH_NAMESPACE}/llm/openrouter.ai` as const;
-
+export class OpenRouterProvider extends AbstractLLMProvider.withKind(`${PEERBENCH_NAMESPACE}/llm/openrouter.ai`) {
   private models: ModelsResponse | undefined = undefined;
   private modelsCachePromise: Promise<ModelsResponse | undefined> =
     Promise.resolve(undefined);

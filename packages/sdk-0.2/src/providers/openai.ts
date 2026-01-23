@@ -9,9 +9,7 @@ import OpenAI, { APIError } from "openai";
 import { AbstractLLMProvider, ChatResponse } from "./abstract/llm";
 import { PEERBENCH_NAMESPACE } from "@/constants";
 
-export class OpenAIProvider extends AbstractLLMProvider {
-  override readonly kind = `${PEERBENCH_NAMESPACE}/llm/openai` as const;
-
+export class OpenAIProvider extends AbstractLLMProvider.withKind(`${PEERBENCH_NAMESPACE}/llm/openai`) {
   private client: OpenAI;
   private rateLimiter: RateLimiter;
   private maxRetries: number;
@@ -46,9 +44,9 @@ export class OpenAIProvider extends AbstractLLMProvider {
     abortSignal?: AbortSignal;
     temperature?: number;
     responseFormat?:
-      | ResponseFormatText
-      | ResponseFormatJSONSchema
-      | ResponseFormatJSONObject;
+    | ResponseFormatText
+    | ResponseFormatJSONSchema
+    | ResponseFormatJSONObject;
   }): Promise<ChatResponse> {
     let retryCount = this.maxRetries;
     while (retryCount > 0) {
