@@ -1,6 +1,6 @@
 {
   "name": "peerbench",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Tooling help work with AI benchmarking data and create trustworthy AI",
   "keywords": [
     "ai",
@@ -78,8 +78,8 @@
   },
   "scripts": {
     "lint": "tsc && eslint",
-    "dev": "tsup --silent --watch --onSuccess 'tsc-alias -p tsconfig.json -f'",
-    "build": "tsup --onSuccess 'tsc-alias -p tsconfig.json -f'",
+    "dev": "tsup --silent --watch --onSuccess 'tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json -f'",
+    "build": "tsup && tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json -f",
     "test": "vitest run",
     "clean": "rm -rf dist"
   },

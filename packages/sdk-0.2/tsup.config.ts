@@ -15,7 +15,7 @@ export default defineConfig({
   target: "node20",
   format: ["esm"],
   platform: "node",
-  dts: true,
+  dts: false,
   clean: true,
   outDir: "dist",
   bundle: true,
