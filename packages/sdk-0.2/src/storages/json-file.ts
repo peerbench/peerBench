@@ -1,4 +1,5 @@
 import { bufferToString } from "@/utils";
+import { tryParseJson, parseJSONL } from "@/utils/json";
 import {
   AbstractFileStorageCodec,
   FileStorage,
@@ -48,6 +49,10 @@ export class JSONFileStorageCodec<
       wholeFile.set(chunk.bytes, chunk.offset);
     }
 
-    return this.schema.array().parse(JSON.parse(bufferToString(wholeFile)));
+    const content = bufferToString(wholeFile);
+    const parsed =
+      tryParseJson(content) ?? parseJSONL(content, { errorOnInvalid: true });
+
+    return this.schema.array().parse(parsed);
   }
 }
