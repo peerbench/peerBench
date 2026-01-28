@@ -71,3 +71,9 @@
 - If you encounter a limitation of the programming language/tooling that contradicts with what user wants to do, let user know, ask what to do and propose solutions. Do not proceed something by your own.
 - Save all the key points about the project as your memory into "AGENT_MEMORY.md" file and read that file on startup and from time to time to keep it up to date. You are fully allowed to read/write on that file. Do not ask permission to user for writing that file. Just add information after each conversation that you have discussed something about the codebase. We only want to have existing context, not a future architectural decision.
 - Keep up to date AGENT_MEMORY.md file as per explained in the previous item after each conversation. DO not ask user for permission, just update it.
+- Everything instructed for AGENT_MEMORY.md file also applicable for MCP Memory tool.
+
+# MCP Memory Tool
+
+- When you learn important information about this project (architecture, preferences, decisions), store it in memory
+- Check memory at the start of complex tasks to recall previous context
