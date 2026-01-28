@@ -7,13 +7,16 @@ import z from "zod";
 
 export class LLMAsAJudgeScorer extends AbstractScorer.withKind(`${PEERBENCH_NAMESPACE}/llm-as-a-judge`) {
   private provider: AbstractLLMProvider;
+  private model?: string;
 
   constructor(config: {
     provider: AbstractLLMProvider;
+    model?: string;
     rateLimiter?: RateLimiter;
   }) {
     super();
     this.provider = config.provider;
+    this.model = config.model;
   }
 
   override async score<T extends z.ZodRawShape>(
@@ -29,6 +32,7 @@ export class LLMAsAJudgeScorer extends AbstractScorer.withKind(`${PEERBENCH_NAME
     | ScorerResultWithExtractedFields<T>
     | null
   > {
+    const model = params.model ?? this.model;
     const criteria = normalizeWeights(params.criteria);
     const systemPrompt = [];
     const responseSchema = z.object({
@@ -52,6 +56,10 @@ export class LLMAsAJudgeScorer extends AbstractScorer.withKind(`${PEERBENCH_NAME
 
       ...(params.fieldsToExtract ?? {}),
     });
+
+    if (!model) {
+      throw new Error("Model is not provided for the LLM as a judge scorer")
+    }
 
     if (params.systemPrompt) {
       systemPrompt.push(params.systemPrompt);
@@ -91,7 +99,7 @@ export class LLMAsAJudgeScorer extends AbstractScorer.withKind(`${PEERBENCH_NAME
           content: userPrompt.join("\n"),
         },
       ],
-      model: params.model,
+      model,
       responseFormat: {
         type: "json_schema",
         json_schema: {
@@ -133,7 +141,10 @@ export type LLMAsAJudgeCriterion = {
 };
 
 export type LLMAsAJudgeScoreParams = {
-  model: string;
+  /**
+   * @deprecated Use constructor's model parameter instead
+   */
+  model?: string;
   response: string;
   rubric: string;
   criteria: LLMAsAJudgeCriterion[];

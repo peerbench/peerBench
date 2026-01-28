@@ -11,16 +11,19 @@ export class MastraProvider extends AbstractLLMProvider.withKind(`${PEERBENCH_NA
   private readonly endpoint: string;
   private readonly authToken?: string;
   private client: MastraClient;
+  private underlyingModel?: string;
   private memory?: AgentMemoryOption;
 
   constructor(params: {
     endpoint: string;
     authToken?: string;
+    underlyingModel?: string;
     memory?: AgentMemoryOption;
   }) {
     super();
     this.endpoint = params.endpoint;
     this.authToken = params.authToken;
+    this.underlyingModel = params.underlyingModel;
     this.client = new MastraClient({
       baseUrl: this.endpoint,
       headers: this.authToken
@@ -35,11 +38,7 @@ export class MastraProvider extends AbstractLLMProvider.withKind(`${PEERBENCH_NA
   override async forward(
     args: LLMProviderForwardArgs & {
       memory?: AgentMemoryOption;
-
-      /**
-       * The model that will be used as the brain for the agent.
-       */
-      modelName?: string
+      underlyingModel?: string;
     }
   ): Promise<ChatResponse> {
     const apiMessages = args.messages
@@ -56,7 +55,7 @@ export class MastraProvider extends AbstractLLMProvider.withKind(`${PEERBENCH_NA
       {
         messages: apiMessages,
         runtimeContext: {
-          "model-id": args.modelName,
+          "model-id": args.underlyingModel ?? this.underlyingModel,
         },
       },
       { memory: args.memory ?? this.memory }
