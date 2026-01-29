@@ -34,8 +34,8 @@ export type RegexScorerParams = {
    * Expected value(s) to match against. Can be a record of expected values for named groups, or a validation function
    */
   expectedValue:
-  | Record<string, string>
-  | ((groupName: string, match: string) => boolean);
+    | Record<string, string>
+    | ((groupName: string, match: string) => boolean);
 
   /**
    * Optional: Which match to use when multiple matches are found
@@ -54,7 +54,9 @@ export type RegexScorerParams = {
 /**
  * Generic Regex scorer. It scores the given input against a set of regex patterns.
  */
-export class RegexScorer extends AbstractScorer.withKind(`${PEERBENCH_NAMESPACE}/regex`) {
+export class RegexScorer extends AbstractScorer.withKind(
+  `${PEERBENCH_NAMESPACE}/regex`
+) {
   override async score(params: RegexScorerParams) {
     // Collect all named group names from all patterns
     const allGroupNames = new Set<string>();
