@@ -1,8 +1,9 @@
+import { AbstractProvider } from "./abstract";
 import {
-  AbstractLLMProvider,
-  ChatResponse,
-  LLMProviderForwardArgs,
-} from "./abstract/llm";
+  type CallableLLM,
+  type LLMResponse,
+  type CallableLLMForwardArgs,
+} from "./callables/llm";
 import { RateLimiter } from "@/utils";
 import { OpenAIProvider } from "./openai";
 import { PEERBENCH_NAMESPACE } from "@/constants";
@@ -12,7 +13,9 @@ import axios from "axios";
 const baseURL = "https://openrouter.ai/api/v1";
 const MODELS_CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours
 
-export class OpenRouterProvider extends AbstractLLMProvider.withKind(`${PEERBENCH_NAMESPACE}/llm/openrouter.ai`) {
+export class OpenRouterProvider extends AbstractProvider.withKind(
+  `${PEERBENCH_NAMESPACE}/llm/openrouter.ai`
+) {
   private models: ModelsResponse | undefined = undefined;
   private modelsCachePromise: Promise<ModelsResponse | undefined> =
     Promise.resolve(undefined);
@@ -35,75 +38,61 @@ export class OpenRouterProvider extends AbstractLLMProvider.withKind(`${PEERBENC
     });
   }
 
-  override async forward(args: LLMProviderForwardArgs): Promise<ChatResponse> {
-    // Update models cache concurrently (non-blocking)
-    const [response] = await Promise.all([
-      this.openAIProvider.forward(args),
-      this.updateModelsCache().catch(() => {
-        // Silently fail if cache update fails so we won't have cost info in the result
-      }),
-    ]);
-
-    // Get the model info from the cache
-    const modelInfo = this.models?.data.find((m) => m.id === args.model);
-    let inputCost: string | undefined = undefined;
-    let outputCost: string | undefined = undefined;
-
-    if (modelInfo !== undefined) {
-      // Use Decimal.js for more accurate calculation
-      if (response.inputTokensUsed !== undefined) {
-        inputCost = new Decimal(modelInfo.pricing.prompt)
-          .mul(response.inputTokensUsed)
-          .toFixed(10);
-      }
-      if (response.outputTokensUsed !== undefined) {
-        outputCost = new Decimal(modelInfo.pricing.completion)
-          .mul(response.outputTokensUsed)
-          .toFixed(10);
-      }
-    }
+  model(config: { model: string }): CallableLLM<OpenRouterProvider> {
+    const openAICallable = this.openAIProvider.model({ model: config.model });
+    this.updateModelsCache().catch(() => { });
 
     return {
-      ...response,
-      inputCost,
-      outputCost,
+      slug: config.model,
+      provider: this,
+      forward: async (
+        args: CallableLLMForwardArgs
+      ): Promise<LLMResponse> => {
+        const response = await openAICallable.forward(args);
+
+        const modelInfo = this.models?.data.find(
+          (m) => m.id === config.model
+        );
+        let inputCost: string | undefined = undefined;
+        let outputCost: string | undefined = undefined;
+
+        if (modelInfo !== undefined) {
+          if (response.inputTokensUsed !== undefined) {
+            inputCost = new Decimal(modelInfo.pricing.prompt)
+              .mul(response.inputTokensUsed)
+              .toFixed(10);
+          }
+          if (response.outputTokensUsed !== undefined) {
+            outputCost = new Decimal(modelInfo.pricing.completion)
+              .mul(response.outputTokensUsed)
+              .toFixed(10);
+          }
+        }
+
+        return { ...response, inputCost, outputCost };
+      },
     };
   }
 
-  /**
-   * Updates the cache that holds information about OpenRouter models
-   * including pricing information. It will be valid for 24 hours as
-   * long as the instance of this Provider object is alive.
-   */
   private async updateModelsCache() {
-    // Chain each update method call to the promise.
-    // This approach prevents race conditions between multiple calls.
-    // Since each call is chained to the end of the previous one,
-    // each promise makes a request only if the models cache is not updated
-    // in the last call. Otherwise it simply resolves to the cached value.
     this.modelsCachePromise = this.modelsCachePromise
       .then(async () => {
         if (
-          // The data presented in the cache
           this.models !== undefined &&
-          // The cache is still valid
           Date.now() - this.modelsUpdatedAt < MODELS_CACHE_TTL
         ) {
           return this.models;
         }
 
-        // If the cache is not valid, update it
         return axios
           .get<ModelsResponse>(`${baseURL}/models`)
           .then((res) => res.data)
           .then((data) => {
-            // Only get the models that supports text input and output
             data = {
               data: data.data.filter(
                 (m) =>
                   m.architecture.input_modalities.includes("text") &&
                   m.architecture.output_modalities.includes("text") &&
-                  // These models are "fast apply model" and don't support multi turn conversations so don't include them
                   ![
                     "morph/morph-v3-large",
                     "morph/morph-v3-fast",
@@ -120,38 +109,40 @@ export class OpenRouterProvider extends AbstractLLMProvider.withKind(`${PEERBENC
       })
       .catch(() => undefined);
 
-    // Wait for the promise chain to resolve
     await this.modelsCachePromise;
   }
 }
 
 type PutModality = "text" | "image" | "file" | "audio";
 type Modality = "text->text" | "text+image->text" | "text+image->text+image";
+
+type ModelInfo = {
+  readonly id: string;
+  readonly canonical_slug: string;
+  readonly hugging_face_id: null | string;
+  readonly name: string;
+  readonly created: number;
+  readonly description: string;
+  readonly context_length: number;
+  readonly architecture: {
+    readonly modality: Modality;
+    readonly input_modalities: PutModality[];
+    readonly output_modalities: PutModality[];
+    readonly instruct_type: null | string;
+  };
+  readonly pricing: {
+    readonly prompt: string;
+    readonly completion: string;
+    readonly request?: string;
+    readonly image?: string;
+    readonly web_search?: string;
+    readonly internal_reasoning?: string;
+    readonly input_cache_read?: string;
+    readonly input_cache_write?: string;
+    readonly audio?: string;
+  };
+};
+
 type ModelsResponse = {
-  data: {
-    readonly id: string;
-    readonly canonical_slug: string;
-    readonly hugging_face_id: null | string;
-    readonly name: string;
-    readonly created: number;
-    readonly description: string;
-    readonly context_length: number;
-    readonly architecture: {
-      readonly modality: Modality;
-      readonly input_modalities: PutModality[];
-      readonly output_modalities: PutModality[];
-      readonly instruct_type: null | string;
-    };
-    readonly pricing: {
-      readonly prompt: string;
-      readonly completion: string;
-      readonly request?: string;
-      readonly image?: string;
-      readonly web_search?: string;
-      readonly internal_reasoning?: string;
-      readonly input_cache_read?: string;
-      readonly input_cache_write?: string;
-      readonly audio?: string;
-    };
-  }[];
+  data: ModelInfo[];
 };

@@ -1,29 +1,27 @@
 import { PEERBENCH_NAMESPACE } from "@/constants";
+import { AbstractProvider } from "./abstract";
 import {
-  AbstractLLMProvider,
-  type ChatResponse,
-  type LLMProviderForwardArgs,
-} from "./abstract/llm";
+  type CallableLLM,
+  type LLMResponse,
+  type CallableLLMForwardArgs,
+} from "./callables/llm";
 import { MastraClient, type GetAgentResponse } from "@mastra/client-js";
+import type { RequestContext } from "@mastra/core/request-context";
+import { AgentMemoryOption } from "@mastra/core/agent";
+import { ProviderOptions } from "@mastra/core/dist/llm/model/provider-options";
+import { CoreMessage } from "@mastra/core/llm";
 
-export class MastraProvider extends AbstractLLMProvider.withKind(`${PEERBENCH_NAMESPACE}/llm/mastra`) {
-
+export class MastraProvider extends AbstractProvider.withKind(
+  `${PEERBENCH_NAMESPACE}/llm/mastra`
+) {
   private readonly endpoint: string;
   private readonly authToken?: string;
   private client: MastraClient;
-  private underlyingModel?: string;
-  private memory?: AgentMemoryOption;
 
-  constructor(params: {
-    endpoint: string;
-    authToken?: string;
-    underlyingModel?: string;
-    memory?: AgentMemoryOption;
-  }) {
+  constructor(params: { endpoint: string; authToken?: string }) {
     super();
     this.endpoint = params.endpoint;
     this.authToken = params.authToken;
-    this.underlyingModel = params.underlyingModel;
     this.client = new MastraClient({
       baseUrl: this.endpoint,
       headers: this.authToken
@@ -32,72 +30,98 @@ export class MastraProvider extends AbstractLLMProvider.withKind(`${PEERBENCH_NA
         }
         : undefined,
     });
-    this.memory = params.memory;
-  }
-
-  override async forward(
-    args: LLMProviderForwardArgs & {
-      memory?: AgentMemoryOption;
-      underlyingModel?: string;
-    }
-  ): Promise<ChatResponse> {
-    const apiMessages = args.messages
-      .filter((m) => m.role === "user" || m.role === "assistant")
-      .map((m) => ({
-        role: m.role as "user" | "assistant",
-        content: String((m as any).content ?? ""),
-      }));
-
-    const agent = this.client.getAgent(args.model);
-
-    const startedAt = Date.now();
-    const response = await agent.generate(
-      {
-        messages: apiMessages,
-        runtimeContext: {
-          "model-id": args.underlyingModel ?? this.underlyingModel,
-        },
-      },
-      { memory: args.memory ?? this.memory }
-    );
-
-    return {
-      data: response.text,
-      startedAt,
-      completedAt: Date.now(),
-    };
   }
 
   async getAgentInfo(args: {
     agentId: string;
-    runtimeContext?: MastraRuntimeContext;
+    requestContext?: RequestContext;
   }) {
     return await this.client
       .getAgent(args.agentId)
-      .details(args.runtimeContext);
+      .details(args.requestContext);
   }
 
-  async getAgents(args?: {
-    runtimeContext?: MastraRuntimeContext;
+  async getAgents(params?: {
+    requestContext?: RequestContext;
     partial?: boolean;
   }): Promise<Record<string, GetAgentResponse>> {
-    return this.client.getAgents(args?.runtimeContext, args?.partial);
+    return this.client.listAgents(params?.requestContext, params?.partial);
+  }
+
+  agent(config: {
+    agentId: string;
+    memory?: AgentMemoryOption;
+    requestContext?: RequestContext;
+    providerOptions?: ProviderOptions;
+  }): CallableLLM<MastraProvider> {
+    return {
+      slug: config.agentId,
+      provider: this,
+      forward: async (
+        args: CallableLLMForwardArgs
+      ): Promise<LLMResponse> => {
+        const apiMessages = args.messages
+          .filter((m) => m.role === "user" || m.role === "assistant")
+          .map<CoreMessage>((m) => ({
+            role: m.role,
+            content: String(m.content ?? ""),
+          }));
+
+        const agent = this.client.getAgent(config.agentId);
+        const startedAt = Date.now();
+
+        const response = await agent.stream(
+          apiMessages,
+          {
+            providerOptions: config.providerOptions,
+            memory: config.memory,
+            requestContext: config.requestContext,
+          }
+        );
+
+        let text = "";
+        let firstTokenAt: number | undefined;
+        let inputTokensUsed: number | undefined;
+        let outputTokensUsed: number | undefined;
+        const metadata: Record<string, unknown> = {};
+
+        await response.processDataStream({
+          onChunk: async (chunk) => {
+            if (chunk.type === "text-delta") {
+              if (firstTokenAt === undefined) {
+                firstTokenAt = Date.now();
+              }
+              const payload = chunk.payload as { text?: string };
+              text += payload.text ?? "";
+            }
+
+            if (chunk.type === "finish") {
+              const payload = chunk.payload as {
+                output?: {
+                  usage?: {
+                    inputTokens?: number;
+                    outputTokens?: number;
+                  };
+                };
+              };
+              inputTokensUsed = payload.output?.usage?.inputTokens;
+              outputTokensUsed = payload.output?.usage?.outputTokens;
+            }
+          },
+        });
+
+        return {
+          data: text,
+          startedAt,
+          completedAt: Date.now(),
+          inputTokensUsed,
+          outputTokensUsed,
+          timeToFirstToken:
+            firstTokenAt !== undefined ? firstTokenAt - startedAt : undefined,
+          metadata:
+            Object.keys(metadata).length > 0 ? metadata : undefined,
+        };
+      },
+    };
   }
 }
-
-// NOTE: Mastra client does not export these types
-export type AgentMemoryOption = Parameters<
-  Parameters<MastraClient["getAgent"]>["0"] extends string
-  ? ReturnType<MastraClient["getAgent"]>["generate"]
-  : never
->[0] extends { memory?: infer M }
-  ? M
-  : never;
-
-type MastraRuntimeContext = Parameters<
-  Parameters<MastraClient["getAgent"]>["0"] extends string
-  ? ReturnType<MastraClient["getAgent"]>["generate"]
-  : never
->[0] extends { runtimeContext?: infer R }
-  ? R
-  : never;

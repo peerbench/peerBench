@@ -1,8 +1,7 @@
-import { peerbenchRunner } from "../benchmarks/peerbench/runner";
+import { mcqRunner, MCQTestCaseSchemaV1 } from "../benchmarks/peerbench";
 import { OpenRouterProvider } from "../providers";
 import { config } from "@dotenvx/dotenvx";
 import { LLMAsAJudgeScorer } from "../scorers";
-import { MCQTestCaseSchemaV1 } from "../benchmarks/peerbench";
 import { SimpleSystemPromptSchemaV1 } from "../schemas/llm";
 import z from "zod";
 
@@ -27,35 +26,34 @@ async function main() {
     apiKey: process.env.OPENROUTER_API_KEY!,
   });
 
-  const llmJudgeScorer = new LLMAsAJudgeScorer({
-    provider,
+  const target = provider.model({
+    model: "meta-llama/llama-3.2-3b-instruct:free",
   });
 
-  // System prompt for the target model
+  const llmJudgeScorer = new LLMAsAJudgeScorer({
+    callable: provider.model({
+      model: "mistralai/mistral-7b-instruct:free",
+    }),
+  });
+
   const systemPrompt = SimpleSystemPromptSchemaV1.new({
     id: "1",
     content: "Only provide your answer, no other text or explanation.",
     version: 1,
   });
 
-  const result = await peerbenchRunner({
+  const result = await mcqRunner({
     testCase: multipleChoiceQuestion,
-    provider,
+    target,
     scorer: llmJudgeScorer,
-    runConfig: {
-      systemPrompt,
-
-      llmJudgeFieldsToExtract: {
-        firstWord: z
-          .string()
-          .nullable()
-          .describe(
-            "The first complete word of the answer included within the answer in case. Null if only one character"
-          ),
-      },
-
-      model: "meta-llama/llama-3.2-3b-instruct:free",
-      llmJudgeModel: "mistralai/mistral-7b-instruct:free",
+    systemPrompt,
+    llmJudgeFieldsToExtract: {
+      firstWord: z
+        .string()
+        .nullable()
+        .describe(
+          "The first complete word of the answer included within the answer in case. Null if only one character"
+        ),
     },
   });
 

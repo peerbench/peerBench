@@ -3,7 +3,7 @@
 ## Project Overview
 
 - **peerBench** — monorepo for a benchmarking platform for AI systems
-- Published as `peerbench` on npm (v0.0.9), MIT license, ESM only (no CommonJS)
+- Published as `peerbench` on npm (v0.0.11), MIT license, ESM only (no CommonJS)
 - Homepage: https://peerbench.ai
 - Package manager: npm
 - Build: tsup + tsc + tsc-alias
@@ -53,44 +53,103 @@ Schemas get `.new()` (provide your own ID) and `.newWithId()` (use an `IdGenerat
 **System prompts** are LLM-specific. Schemas live under `src/schemas/llm/`:
 - `SimpleSystemPromptSchemaV1` — basic system prompt with `content` and `version`
 
-### Providers (class-based)
+### Providers and Callables
 
-Providers are the runtime bridge to model endpoints. Runners call providers, not models directly.
+The SDK separates **Provider** (API client factory) from **Callable** (callable unit passed to runners).
 
-**Abstract base:**
-- `AbstractProvider` — defines `kind` property and `withKind()` static factory method
-- `AbstractLLMProvider extends AbstractProvider` — defines `forward(args: LLMProviderForwardArgs): Promise<ChatResponse>`
+#### Callable Hierarchy
 
-**`LLMProviderForwardArgs`:** `{ messages, model, abortSignal?, temperature?, responseFormat? }`
+The SDK uses a two-level Callable hierarchy. Callables are **interfaces** (not classes).
 
-**`ChatResponse`:** `{ data, startedAt, completedAt, inputTokensUsed?, outputTokensUsed?, inputCost?, outputCost?, metadata? }`
+**Base `Callable<TProvider>`** (`src/providers/callables/callable.ts`) — shared root for all callable types:
+```ts
+interface Callable<TProvider = AbstractProvider> {
+  readonly provider: TProvider
+}
+```
 
-**Concrete providers:**
+**`CallableLLM<TProvider> extends Callable<TProvider>`** (`src/providers/callables/llm.ts`) — LLM-specific callable, what runners receive:
+```ts
+interface CallableLLM<TProvider = AbstractProvider> extends Callable<TProvider> {
+  slug: string
+  forward(args: CallableLLMForwardArgs): Promise<LLMResponse>
+}
+
+type CallableLLMForwardArgs = {
+  messages: ChatCompletionMessageParam[]
+  temperature?: number
+  maxTokens?: number
+  responseFormat?: ResponseFormatText | ResponseFormatJSONSchema | ResponseFormatJSONObject
+  abortSignal?: AbortSignal
+}
+```
+
+Providers return plain objects satisfying the interface from their factory methods (`.model()`, `.agent()`, etc.) — no separate callable classes needed. All forward logic is inlined as arrow functions within the factory method, capturing state via closures. No private `forward()` methods on providers.
+
+`LLMResponse` type lives in `callables/llm.ts` alongside `CallableLLM`.
+
+Key points:
+- No `model` in `forward()` — captured at construction time via closure
+- `provider` is generic — defaults to `AbstractProvider`, providers specify their type (e.g. `CallableLLM<OpenAIProvider>`)
+- `slug` is required — providers must provide a model/agent identifier
+- Runners are fully provider-agnostic — no special-casing per provider
+- No callable classes — providers return plain `{ slug, provider, forward }` objects
+- Base `Callable` exists as shared root for future non-LLM callable types
+- The name "Callable" is neutral — the role (target, judge, selector) is determined by context/parameter naming
+
+#### Provider (Abstract Base)
+
+- `AbstractProvider` (`src/providers/abstract.ts`) — defines `kind` property, `ProviderResponse<TData>` type, and `withKind()` static factory method. This is the **only** abstract class for providers — there is no `AbstractLLMProvider`.
+
+Providers extend `AbstractProvider` directly (usually via `.withKind()`) and define their own factory methods with semantically meaningful names: `.model()` for LLM providers, `.agent()` for agent providers, etc. The SDK does not enforce a specific factory method name — providers are free to name them as they see fit. Each callable stores a reference back to its parent provider via the `provider` field.
+
+**`LLMResponse`:** `ProviderResponse<string> & { inputTokensUsed?, outputTokensUsed?, inputCost?, outputCost?, timeToFirstToken?, metadata? }` (defined in `callables/llm.ts`)
+
+- `timeToFirstToken?: number` — milliseconds from request start to first response token (used by streaming providers like Mastra)
+- `metadata?: Record<string, unknown>` — provider-specific metadata
+
+**`withKind()` pattern:** All providers use `AbstractProvider.withKind("kind-string")` to create a typed subclass with a static + instance `kind` property. Scorers use the same pattern via `AbstractScorer.withKind()`.
+
+#### Concrete Providers
+
 - `OpenAIProvider` (kind: `peerbench.ai/llm/openai`) — wraps OpenAI SDK, built-in retry logic, rate limiting
-- `OpenRouterProvider` (kind: `peerbench.ai/llm/openrouter.ai`) — fetches and caches model list for 24h, calculates costs via `Decimal.js`, delegates to internal `OpenAIProvider`
-- `MastraProvider` (kind: `peerbench.ai/llm/mastra`) — wraps Mastra client, supports agent introspection (`getAgentInfo`, `getAgents`), accepts `memory` and `underlyingModel`
-- `ExampleEchoLLMProvider` — echoes last user message (for testing)
-- `ExampleRestApiLLMAgentProvider` — demonstrates custom REST API integration
+  - `.model({ model })` returns `CallableLLM<OpenAIProvider>` with model baked in
+- `OpenRouterProvider` (kind: `peerbench.ai/llm/openrouter.ai`) — fetches and caches model list for 24h, calculates costs via `Decimal.js`
+  - `.model({ model })` returns `CallableLLM<OpenRouterProvider>` that wraps OpenAI callable with cost calculation
+- `MastraProvider` (kind: `peerbench.ai/llm/mastra`) — wraps Mastra client v1, uses streaming for TTFT measurement, supports agent introspection (`getAgentInfo`, `getAgents`)
+  - `.agent({ agentId, memory?, requestContext?, providerOptions? })` returns `CallableLLM<MastraProvider>` with streaming + TTFT tracking
+  - Uses `agent.stream()` internally, accumulates text from `text-delta` chunks, captures token usage from `finish` chunk
+  - `requestContext` replaces old `runtimeContext` (Mastra v1 rename), imported from `@mastra/core/request-context`
+  - `memory` uses `AgentMemoryOption` type from `@mastra/core/agent`
+  - `providerOptions` uses `ProviderOptions` type from `@mastra/core/dist/llm/model/provider-options`
+  - `getAgents()` method internally calls `client.listAgents()` (v1 API)
+  - `CoreMessage` from `@mastra/core/llm` used for message mapping
+- `ExampleEchoLLMProvider` (kind: `example.echo`) — echoes last user message (for testing)
+  - `.model({ model? })` returns `CallableLLM<ExampleEchoLLMProvider>` for testing
+- `ExampleRestApiLLMAgentProvider` (kind: `example.rest-api.agent`) — demonstrates custom REST API integration
+  - `.model({ model? })` returns `CallableLLM<ExampleRestApiLLMAgentProvider>` that calls external REST API
 
-**`withKind()` pattern:** All providers use `AbstractLLMProvider.withKind("kind-string")` to create a typed subclass with a static + instance `kind` property.
+Note: Example providers (echo, restapi) are NOT exported from `peerbench/providers`. They live under `src/providers/example/` and are only for reference.
 
 ### Runners (function-based, per-test-case)
 
 A runner executes one test case and returns `{ response, score? }`. Orchestration (looping over many test cases) is the runtime's job.
 
-**`defineRunner(config, fn)`** — helper that creates a typed runner function with:
-- `schemaSets` — array of `{ testCase, response, score }` schema triplets the runner supports
-- `providers` — array of provider constructors the runner accepts
-- `scorers` — array of scorer constructors the runner accepts
-- `runConfigSchema` — Zod shape for runtime-provided config (validated automatically)
-- `defaults` — optional default scorer, ID generators
+**`defineRunner(fn)`** — wraps a function as a runner, enforcing the structural contract via TypeScript generics:
+- Params must include `testCase: BaseTestCaseV1`, `target: Callable`, `scorer?: AbstractScorer`
+- The runner author can add any additional params they need (temperature, systemPrompt, idGenerators, etc.)
+- Return type must be `{ response: BaseResponseV1, score?: BaseScoreV1 }`
+- No config object, no auto-validation, no schema sets — the runner handles everything itself
+- The caller gets full type safety based on the runner author's explicit param annotations
 
-The returned function auto-validates `runConfig`, provides default ID generators, and attaches a `.config` property.
+**`RunnerParams` type:** base constraint — `{ testCase: BaseTestCaseV1, target: Callable, scorer?: AbstractScorer }`
+**`RunnerResult` type:** `{ response: BaseResponseV1, score?: BaseScoreV1 }`
 
-**`Runner` type:** generic over `TTestCase, TResponse, TScore, TProvider, TScorer, TRunConfig`. Params: `{ testCase, provider, scorer?, runConfig, idGenerators? }`.
+Note: `RunnerParams` uses `target: Callable` (base interface), but concrete runners narrow to `target: CallableLLM` in their param types.
 
-**Built-in runners:**
-- `peerbenchRunner` — supports MCQ and QA test cases, MCQScorer + LLMAsAJudgeScorer, system prompts, Handlebars template variables
+**Built-in peerbench runners (each is 1:1 with a schema set):**
+- `mcqRunner` — MCQ test cases, supports MCQScorer + LLMAsAJudgeScorer, system prompts, Handlebars template variables
+- `qaRunner` — QA test cases, supports LLMAsAJudgeScorer only, system prompts, Handlebars template variables
 
 ### Scorers (class-based)
 
@@ -102,9 +161,11 @@ The returned function auto-validates `runConfig`, provides default ID generators
 - `MCQScorer` — regex-based multiple choice answer extraction
 - `RegexScorer` — generic regex pattern matching
 - `LLMAsAJudgeScorer` (kind: `peerbench.ai/llm-as-a-judge`) — LLM-based evaluation
-  - Accepts `provider` (an `AbstractLLMProvider`) and optional `model` in constructor
+  - Constructor receives `callable` (a `CallableLLM`) and optional `rateLimiter` — infrastructure config
+  - `score()` receives evaluation context: `response`, `rubric`, `criteria`, optional `fieldsToExtract`, `systemPrompt`, `maxExplanationLength`
+  - Design rationale: constructor = infrastructure (what model to use), `score()` = evaluation context (what to evaluate). Rubric and criteria are test-case-dependent — each runner builds them dynamically from test case data (e.g. correctAnswerKeys, goodAnswers, badAnswers).
   - Supports weighted criteria with configurable scales
-  - Returns normalized `value` in `0..1` range
+  - Returns normalized `value` in `0..1` range, plus `modelSlug` and `provider` from the callable
   - Supports `fieldsToExtract` (Zod shape) for structured extraction alongside scoring
   - Uses `responseFormat: json_schema` for structured output
 
@@ -128,8 +189,8 @@ Designed for streaming: push results one-by-one, then aggregate. Avoids material
 
 ```
 peerbench              → types, errors, utils, constants, helpers (defineRunner, idGeneratorUUIDv7)
-peerbench/benchmarks   → built-in benchmark runners (peerbenchRunner, etc.)
-peerbench/providers    → abstract + concrete providers
+peerbench/benchmarks   → built-in benchmark runners (mcqRunner, qaRunner, etc.)
+peerbench/providers    → abstract + concrete providers (excluding example providers)
 peerbench/schemas      → base schemas, schema definers
 peerbench/schemas/llm  → system prompt schemas
 peerbench/schemas/extensions → ExtensionLLMResponseFieldsV1, ExtensionLLMAsAJudgeScoreFieldsV1
@@ -138,11 +199,13 @@ peerbench/storages     → abstract + concrete storages
 peerbench/aggregators  → abstract + concrete aggregators
 ```
 
+`peerbench/providers` exports: `Callable`, `CallableLLM`, `CallableLLMForwardArgs`, `LLMResponse`, `AbstractProvider`, `ProviderResponse`, `MastraProvider`, `OpenAIProvider`, `OpenRouterProvider`
+
 ## SDK 0.2 — Key Dependencies
 
 - `zod` v4 (NOT v3)
 - `openai` v6 (for types like `ChatCompletionMessageParam`, `ResponseFormat`)
-- `@mastra/client-js` v0.17
+- `@mastra/client-js` v1 (also uses types from `@mastra/core` transitively — `RequestContext`, `AgentMemoryOption`, `ProviderOptions`, `CoreMessage`)
 - `better-sqlite3` v12
 - `handlebars` v4 (for template variables in runners)
 - `decimal.js` v10 (for accurate cost calculations in OpenRouter)
@@ -157,9 +220,10 @@ Located under `src/benchmarks/examples/`:
 - `exact-match-scorer` — scorer dispatch pattern (algorithmic vs LLM judge)
 
 Built-in peerbench benchmarks under `src/benchmarks/peerbench/`:
-- MCQ (multiple choice questions)
-- QA (question-answer)
-- Multi-turn conversation
+- MCQ (multiple choice questions) — `mcq-runner.ts`
+- QA (question-answer) — `qa-runner.ts`
+
+Note: The old monolithic `runner.ts` under `src/benchmarks/peerbench/` has been split into `mcq-runner.ts` and `qa-runner.ts`.
 
 ## SDK 0.2 — Path Aliases
 
@@ -167,56 +231,39 @@ The codebase uses `@/` as a path alias (defined in `tsconfig.json`). All interna
 
 ---
 
-## Planning / TODO
+## Usage Example
 
-Items discussed but not yet implemented.
-
-### Target Abstraction (Provider + Model Separation)
-
-**Status:** Discussed, not implemented.
-
-**Problem:** Providers currently serve dual roles — API client AND callable unit passed to runners. This causes:
-1. Mastra provider widens `forward()` signature with provider-specific params (`memory`, `underlyingModel`) at `src/providers/mastra.ts:38-42`, breaking the generic contract
-2. `args.model` means different things per provider (model slug in OpenAI, agent ID in Mastra at `mastra.ts:51`)
-3. Custom endpoint providers may not have a "model" concept at all
-4. Shared resources (rate limiters, caches) get duplicated when creating multiple provider instances for different models
-5. Runners must special-case providers if provider-specific params are needed
-
-**Proposed solution:** Split Provider into two concepts:
-- **Provider** = API client factory. Holds shared config (apiKey, rateLimiter, cache, endpoint). Produces Target instances via factory methods.
-- **Target** = the callable unit the runner receives. Has `forward()` (without `model` param), `slug`, and `providerKind`.
-
-```
-Provider (factory, shared config)
-  ├── .model("gpt-4o")       → returns Target
-  ├── .agent("my-agent", {}) → returns Target
-  └── Custom endpoint        → IS a Target directly (implements the interface)
-```
-
-**Proposed Target interface:**
 ```ts
-interface Target {
-  readonly slug: string          // "gpt-4o", "my-agent", etc.
-  readonly providerKind: string  // "peerbench.ai/llm/openai", etc.
-  forward(args: { messages, temperature?, responseFormat?, abortSignal? }): Promise<ChatResponse>
-}
+import { OpenRouterProvider } from "peerbench/providers";
+import { LLMAsAJudgeScorer } from "peerbench/scorers";
+import { mcqRunner } from "peerbench/benchmarks";
+
+const provider = new OpenRouterProvider({ apiKey: "..." });
+
+// Create callables from the provider — each provider names its factory method semantically
+const target = provider.model({ model: "meta-llama/llama-3.2-3b-instruct:free" });
+const judgeCallable = provider.model({ model: "mistralai/mistral-7b-instruct:free" });
+
+// Scorer receives a callable, not provider + model
+const scorer = new LLMAsAJudgeScorer({ callable: judgeCallable });
+
+// Each runner is 1:1 with a schema set — params are flat (no runConfig nesting)
+const result = await mcqRunner({
+  testCase,
+  target,
+  scorer,
+  systemPrompt,
+});
 ```
 
-**Key design decisions:**
-- `providerKind` is required on Target because the runner populates it in the response object
-- `model` is removed from `LLMProviderForwardArgs` — captured at Target construction time
-- All provider-specific config (memory, underlyingModel, agentId) is captured at construction, not at `forward()` call time
-- Named "Target" (not "Model" or "Agent") because it's neutral — represents "the thing being benchmarked"
-- No `providerOptions` escape hatch (unlike Vercel AI SDK) — runners must be fully provider-agnostic
+## Design Decisions Log
 
-**Prior art:** Vercel AI SDK uses the same provider/model separation. Letta provider wraps stateful agents into the same model interface. See:
-- https://ai-sdk.dev/docs/foundations/providers-and-models
-- https://ai-sdk.dev/docs/ai-sdk-core/provider-management
-- https://github.com/letta-ai/vercel-ai-sdk-provider
-
-**Generalization layers (future):**
-1. Programmatic: `openai.model("gpt-4o")` returns Target
-2. Config-driven: JSON config object → `createTargets(config)` → Target[]
-3. Registry: `TargetRegistry` with provider registration, Zod-validated per-provider config schemas, string-based resolution
-
-**Estimated scope:** ~17 files, mostly mechanical. Breaking change (acceptable for experimental SDK).
+- **Target → Callable rename (Jan 2026):** "Target" was semantically wrong for judge/selector LLMs — those aren't the "target" of benchmarking. "Callable" is a neutral name; the role (target, judge, selector) is determined by context/parameter naming, not by type.
+- **Interfaces for Callables (Jan 2026):** With the simplified `defineRunner`, classes are no longer needed as runtime values. Switched from `abstract class AbstractCallableLLM` to `interface CallableLLM<TProvider = AbstractProvider>`. Providers return plain objects from factory methods — no separate callable classes. Generic `TProvider` defaults to `AbstractProvider` so consumers don't need to specify it.
+- **Provider reference instead of string:** `callable.provider` holds a reference to the actual `AbstractProvider` instance, not a kind string. Access kind via `callable.provider.kind`.
+- **defineRunner simplification (Jan 2026):** Removed config object (callables, schemaSets, scorers, runConfigSchema, defaults). `defineRunner(fn)` now only enforces the structural contract: params must have `testCase + target (Callable) + scorer?`, return must be `{ response, score? }`. Runner authors explicitly type their params and handle their own validation/defaults.
+- **Runner ↔ schema set 1:1 (Jan 2026):** Split monolithic `peerbenchRunner` into `mcqRunner` and `qaRunner`. Each runner handles exactly one test case type. No union types or runtime `kind` discrimination in runners. Eliminates dead code paths and makes scorer types precise (e.g. `qaRunner` only accepts `LLMAsAJudgeScorer`).
+- **Remove AbstractLLMProvider, semantic factory names (Jan 2026):** Removed `AbstractLLMProvider` — providers extend `AbstractProvider` directly. Factory methods are no longer forced by an abstract method. Instead, each provider names its factory semantically: `.model()` for LLM-model providers (OpenAI, OpenRouter, Echo, RestApi), `.agent()` for agent providers (Mastra). `LLMResponse` type lives in `callables/llm.ts`. All factory methods have explicit return types (e.g. `CallableLLM<OpenAIProvider>`). All forward logic is inlined as arrow functions within factory methods — no private `forward()` methods on providers.
+- **ChatResponse → LLMResponse rename (Jan 2026):** `ChatResponse` was renamed to `LLMResponse` for clarity. The type is `ProviderResponse<string>` extended with token usage, cost, TTFT, and metadata fields.
+- **Mastra v1 streaming + TTFT (Jan 2026):** Updated `MastraProvider` for `@mastra/client-js` v1. Uses `agent.stream()` instead of `agent.generate()` to measure Time To First Token (TTFT). `runtimeContext` → `requestContext` (v1 rename). `getAgents()` method internally calls `client.listAgents()` (v1 rename). `timeToFirstToken` added to `LLMResponse` as a generic field all providers can use. Added `providerOptions` param to `.agent()` for passing through Mastra provider options.
+- **LLM Judge Scorer design (Jan 2026):** Constructor holds infrastructure config (`callable`, `rateLimiter`). `score()` receives evaluation context (`response`, `rubric`, `criteria`, `fieldsToExtract`). This split exists because rubric and criteria are test-case-dependent — each runner builds them dynamically from test case data. For example, MCQ runner builds rubric from `correctAnswerKeys` and `options`, QA runner builds rubric from `goodAnswers` and `badAnswers`.

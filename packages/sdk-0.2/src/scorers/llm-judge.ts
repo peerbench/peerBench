@@ -1,30 +1,29 @@
-import { AbstractLLMProvider } from "@/providers/abstract/llm";
+import { CallableLLM } from "@/providers/callables/llm";
 import { parseResponseAsJSON } from "@/utils";
 import { RateLimiter } from "@/utils/rate-limiter";
 import { AbstractScorer, BaseScorerResult } from "./abstract";
 import { PEERBENCH_NAMESPACE } from "@/constants";
 import z from "zod";
 
-export class LLMAsAJudgeScorer extends AbstractScorer.withKind(`${PEERBENCH_NAMESPACE}/llm-as-a-judge`) {
-  private provider: AbstractLLMProvider;
-  private model?: string;
+export class LLMAsAJudgeScorer extends AbstractScorer.withKind(
+  `${PEERBENCH_NAMESPACE}/llm-as-a-judge`
+) {
+  private model: CallableLLM;
 
   constructor(config: {
-    provider: AbstractLLMProvider;
-    model?: string;
+    callable: CallableLLM;
     rateLimiter?: RateLimiter;
   }) {
     super();
-    this.provider = config.provider;
-    this.model = config.model;
+    this.model = config.callable;
   }
 
   override async score<T extends z.ZodRawShape>(
     params: LLMAsAJudgeScoreParams & { fieldsToExtract: T }
-  ): Promise<ScorerResultWithExtractedFields<T> | null>;
+  ): Promise<ScorerResultWithExtractedFields<T>>;
   override async score(
     params: LLMAsAJudgeScoreParams & { fieldsToExtract?: never }
-  ): Promise<ScorerResultWithoutExtractedFields | null>;
+  ): Promise<ScorerResultWithoutExtractedFields>;
   override async score<T extends z.ZodRawShape>(
     params: LLMAsAJudgeScoreParams & { fieldsToExtract?: T }
   ): Promise<
@@ -32,7 +31,6 @@ export class LLMAsAJudgeScorer extends AbstractScorer.withKind(`${PEERBENCH_NAME
     | ScorerResultWithExtractedFields<T>
     | null
   > {
-    const model = params.model ?? this.model;
     const criteria = normalizeWeights(params.criteria);
     const systemPrompt = [];
     const responseSchema = z.object({
@@ -56,10 +54,6 @@ export class LLMAsAJudgeScorer extends AbstractScorer.withKind(`${PEERBENCH_NAME
 
       ...(params.fieldsToExtract ?? {}),
     });
-
-    if (!model) {
-      throw new Error("Model is not provided for the LLM as a judge scorer")
-    }
 
     if (params.systemPrompt) {
       systemPrompt.push(params.systemPrompt);
@@ -88,7 +82,7 @@ export class LLMAsAJudgeScorer extends AbstractScorer.withKind(`${PEERBENCH_NAME
     );
 
     const userPrompt = [`Answer: ${params.response}`];
-    const providerResponse = await this.provider.forward({
+    const providerResponse = await this.model.forward({
       messages: [
         {
           role: "system",
@@ -99,7 +93,6 @@ export class LLMAsAJudgeScorer extends AbstractScorer.withKind(`${PEERBENCH_NAME
           content: userPrompt.join("\n"),
         },
       ],
-      model,
       responseFormat: {
         type: "json_schema",
         json_schema: {
@@ -121,11 +114,15 @@ export class LLMAsAJudgeScorer extends AbstractScorer.withKind(`${PEERBENCH_NAME
       value: computeOverallScore(results, criteria),
       extractedFields: extractedFields as z.infer<z.ZodObject<T>>,
 
-      provider: this.provider.kind,
+      provider: this.model.provider.kind,
+      modelSlug: this.model.slug,
       inputTokensUsed: providerResponse.inputTokensUsed,
       outputTokensUsed: providerResponse.outputTokensUsed,
       inputCost: providerResponse.inputCost,
       outputCost: providerResponse.outputCost,
+      metadata: {
+        judgeResponseMetadata: providerResponse.metadata,
+      }
     };
   }
 }
@@ -141,10 +138,6 @@ export type LLMAsAJudgeCriterion = {
 };
 
 export type LLMAsAJudgeScoreParams = {
-  /**
-   * @deprecated Use constructor's model parameter instead
-   */
-  model?: string;
   response: string;
   rubric: string;
   criteria: LLMAsAJudgeCriterion[];
@@ -161,6 +154,7 @@ type ScorerResultWithoutExtractedFields = BaseScorerResult & {
   }[];
 
   provider: string;
+  modelSlug: string;
   inputTokensUsed?: number;
   outputTokensUsed?: number;
   inputCost?: string;

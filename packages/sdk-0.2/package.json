@@ -1,6 +1,6 @@
 {
   "name": "peerbench",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Tooling help work with AI benchmarking data and create trustworthy AI",
   "keywords": [
     "ai",
@@ -84,18 +84,17 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@mastra/client-js": "^0.17.2",
+    "@mastra/client-js": "^1.0.1",
     "axios": "^1.11.0",
     "better-sqlite3": "^12.6.0",
-    "cheerio": "^1.1.2",
     "decimal.js": "^10.6.0",
     "handlebars": "^4.7.8",
-    "hyparquet": "^1.11.0",
     "jsonrepair": "^3.13.0",
-    "multiformats": "^13.3.2",
     "openai": "^6.15.0",
     "safe-stable-stringify": "^2.5.0",
-    "uuid": "^11.1.0",
+    "uuid": "^11.1.0"
+  },
+  "peerDependencies": {
     "zod": "^4.2.1"
   },
   "devDependencies": {

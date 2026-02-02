@@ -5,31 +5,32 @@ import { LLMAsAJudgeScorer } from "@/scorers";
 import { IdGenerator, ScoringMethod } from "@/types";
 import { idGeneratorUUIDv7 } from "@/utils";
 import { ChatCompletionMessageParam } from "openai/resources/index";
-import { ExactMatchScorer } from "./scorer";
+import Handlebars from "handlebars";
+import z from "zod";
 import {
-  ExactMatchResponseSchemaV1,
-  ExactMatchScoreSchemaV1,
-  ExactMatchTestCaseV1,
-} from "./schema-sets/exact-match.v1";
+  QAResponseSchemaV1,
+  QAScoreSchemaV1,
+  QATestCaseV1,
+} from "./schema-sets/qa.v1";
+import { PEERBENCH_NAMESPACE } from "@/constants";
 
-export const exactMatchScorerRunner = defineRunner(
+export const qaRunner = defineRunner(
   async (params: {
-    testCase: ExactMatchTestCaseV1;
+    testCase: QATestCaseV1;
     target: CallableLLM;
-    scorer?: ExactMatchScorer | LLMAsAJudgeScorer;
-    temperature?: number;
+    scorer?: LLMAsAJudgeScorer;
     systemPrompt?: SimpleSystemPromptV1;
+    llmJudgeSystemPrompt?: SimpleSystemPromptV1;
+    llmJudgeFieldsToExtract?: Record<string, z.ZodType>;
+    templateVariables?: Record<string, string>;
     idGenerators?: {
       response?: IdGenerator;
       score?: IdGenerator;
     };
   }) => {
     const { testCase, target, scorer } = params;
-    const responseIdGenerator =
-      params.idGenerators?.response ?? idGeneratorUUIDv7;
-    const scoreIdGenerator = params.idGenerators?.score ?? idGeneratorUUIDv7;
-
     const messages: ChatCompletionMessageParam[] = [];
+
     if (params.systemPrompt) {
       messages.push({
         role: "system",
@@ -39,18 +40,13 @@ export const exactMatchScorerRunner = defineRunner(
 
     messages.push({
       role: "user",
-      content:
-        `Instruction: ${testCase.instruction}\n` +
-        `Input:\n${testCase.input}\n\n` +
-        `Return ONLY the final output string.`,
+      content: testCase.question,
     });
+    templateMessages(messages, params.templateVariables ?? {});
 
-    const providerResponse = await target.forward({
-      temperature: params.temperature,
-      messages,
-    });
+    const providerResponse = await target.forward({ messages });
 
-    const response = await ExactMatchResponseSchemaV1.newWithId(
+    const response = await QAResponseSchemaV1.newWithId(
       {
         data: providerResponse.data,
         startedAt: providerResponse.startedAt,
@@ -64,63 +60,47 @@ export const exactMatchScorerRunner = defineRunner(
         inputCost: providerResponse.inputCost,
         outputCost: providerResponse.outputCost,
       },
-      responseIdGenerator
+      params.idGenerators?.response ?? idGeneratorUUIDv7
     );
 
-    if (scorer?.kind === "example.peerbench.ai/exact-match") {
+    if (scorer?.kind === (`${PEERBENCH_NAMESPACE}/llm-as-a-judge` as const)) {
       const scorerResult = await scorer.score({
-        expected: testCase.expectedOutput,
-        actual: response.data,
-        normalize: testCase.normalize ?? true,
-      });
-
-      const score = await ExactMatchScoreSchemaV1.newWithId(
-        {
-          scoringMethod: ScoringMethod.algo,
-          value: scorerResult.value,
-          responseId: response.id,
-          match: Boolean(scorerResult.metadata?.match),
-          explanation: scorerResult.explanation,
-          metadata: scorerResult.metadata,
-          normalized: scorerResult.metadata?.normalized,
-        },
-        scoreIdGenerator
-      );
-      return { response, score };
-    }
-
-    if (scorer?.kind === "peerbench.ai/llm-as-a-judge") {
-      const scorerResult = await scorer.score({
+        response: response.data,
+        rubric: `Expected/Valid answers: ${testCase.goodAnswers.join("\n")}\nInvalid answers: ${testCase.badAnswers.join("\n")}`,
+        systemPrompt: params.llmJudgeSystemPrompt?.content,
         criteria: [
           {
             id: "correctness",
             description:
-              "Is the response matches with the expected output in terms of the meaning?",
+              "Is the response matches with the expected/valid answers in terms of meaning?",
             weight: 1,
           },
         ],
-        response: response.data,
-        rubric: `Expected output: ${testCase.expectedOutput}`,
+        fieldsToExtract: params.llmJudgeFieldsToExtract ?? {},
       });
 
       if (scorerResult !== null) {
-        const score = await ExactMatchScoreSchemaV1.newWithId(
+        const score = await QAScoreSchemaV1.newWithId(
           {
             scoringMethod: ScoringMethod.ai,
             value: scorerResult.value,
             responseId: response.id,
-            match: scorerResult.value >= 0.999,
             explanation: scorerResult.explanation,
-            metadata: scorerResult.metadata,
             scorerAIInputCost: scorerResult.inputCost,
             scorerAIOutputCost: scorerResult.outputCost,
             scorerAIInputTokensUsed: scorerResult.inputTokensUsed,
             scorerAIOutputTokensUsed: scorerResult.outputTokensUsed,
             scorerAIProvider: scorerResult.provider,
             scorerAIModelSlug: scorerResult.modelSlug,
+            scorerAISystemPromptId: params.llmJudgeSystemPrompt?.id,
+            metadata: {
+              ...scorerResult.metadata,
+              extractedFields: scorerResult.extractedFields,
+            },
           },
-          scoreIdGenerator
+          params.idGenerators?.score ?? idGeneratorUUIDv7
         );
+
         return { response, score };
       }
     }
@@ -128,3 +108,13 @@ export const exactMatchScorerRunner = defineRunner(
     return { response };
   }
 );
+
+function templateMessages(
+  messages: ChatCompletionMessageParam[],
+  templateVariables: Record<string, string>
+) {
+  for (let i = 0; i < messages.length; i++) {
+    const template = Handlebars.compile(messages[i]!.content);
+    messages[i]!.content = template(templateVariables);
+  }
+}

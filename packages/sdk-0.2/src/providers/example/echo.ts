@@ -1,14 +1,35 @@
+import { AbstractProvider } from "../abstract";
 import {
-  AbstractLLMProvider,
-  ChatResponse,
-  LLMProviderForwardArgs,
-} from "../abstract/llm";
+  type CallableLLM,
+  type LLMResponse,
+  type CallableLLMForwardArgs,
+} from "../callables/llm";
 import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import {
   ResponseFormatJSONObject,
   ResponseFormatJSONSchema,
   ResponseFormatText,
 } from "openai/resources/shared";
+
+export class ExampleEchoLLMProvider extends AbstractProvider.withKind(
+  "example.echo"
+) {
+  model(config?: { model?: string }): CallableLLM<ExampleEchoLLMProvider> {
+    const slug = config?.model ?? "echo";
+
+    return {
+      slug,
+      provider: this,
+      forward: async (args: CallableLLMForwardArgs): Promise<LLMResponse> => {
+        const startedAt = Date.now();
+        const prompt = getLastUserMessage(args.messages);
+        const data = toResponseText(prompt, args.responseFormat);
+
+        return { data, startedAt, completedAt: Date.now() };
+      },
+    };
+  }
+}
 
 function getLastUserMessage(messages: ChatCompletionMessageParam[]): string {
   for (let i = messages.length - 1; i >= 0; i--) {
@@ -31,29 +52,5 @@ function toResponseText(
     return prompt;
   }
 
-  // Very small example: when the caller requests JSON, return a JSON string.
   return JSON.stringify({ echo: prompt });
-}
-
-/**
- * Example provider implementation for local testing and as a reference.
- *
- * - Extends `AbstractLLMProvider`
- * - Implements `forward({ messages, model, ... })`
- * - Does not perform any network calls
- */
-export class ExampleEchoLLMProvider extends AbstractLLMProvider {
-  override readonly kind = "example.echo";
-
-  override async forward(args: LLMProviderForwardArgs): Promise<ChatResponse> {
-    const startedAt = Date.now();
-    const prompt = getLastUserMessage(args.messages);
-    const data = toResponseText(prompt, args.responseFormat);
-
-    return {
-      data,
-      startedAt,
-      completedAt: Date.now(),
-    };
-  }
 }

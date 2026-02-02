@@ -1,15 +1,36 @@
 import { RateLimiter } from "@/utils";
-import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
-import {
-  ResponseFormatJSONObject,
-  ResponseFormatJSONSchema,
-  ResponseFormatText,
-} from "openai/resources/shared";
 import OpenAI, { APIError } from "openai";
-import { AbstractLLMProvider, ChatResponse } from "./abstract/llm";
+import { AbstractProvider } from "./abstract";
 import { PEERBENCH_NAMESPACE } from "@/constants";
+import {
+  type CallableLLM,
+  type LLMResponse,
+  type CallableLLMForwardArgs,
+} from "./callables/llm";
 
-export class OpenAIProvider extends AbstractLLMProvider.withKind(`${PEERBENCH_NAMESPACE}/llm/openai`) {
+/**
+ * Provider implementation that uses OpenAI SDK. It can be used with
+ * any OpenAI compatible API.
+ *
+ * @example
+ * ```ts
+ * const provider = new OpenAIProvider({
+ *   apiKey: "sk-1234567890",
+ *   baseURL: "https://openrouter.ai/api/v1",
+ * });
+ * 
+ * const model = provider.model({ model: "gpt-4o" });
+ * 
+ * const response = await model.forward({
+ *   messages: [{ role: "user", content: "Hello, how are you?" }],
+ * });
+ * 
+ * console.log(response.data);
+ * ```
+ */
+export class OpenAIProvider extends AbstractProvider.withKind(
+  `${PEERBENCH_NAMESPACE}/llm/openai`
+) {
   private client: OpenAI;
   private rateLimiter: RateLimiter;
   private maxRetries: number;
@@ -38,92 +59,78 @@ export class OpenAIProvider extends AbstractLLMProvider.withKind(`${PEERBENCH_NA
     });
   }
 
-  async forward(args: {
-    messages: ChatCompletionMessageParam[];
-    model: string;
-    abortSignal?: AbortSignal;
-    temperature?: number;
-    responseFormat?:
-    | ResponseFormatText
-    | ResponseFormatJSONSchema
-    | ResponseFormatJSONObject;
-  }): Promise<ChatResponse> {
-    let retryCount = this.maxRetries;
-    while (retryCount > 0) {
-      let startedAt: Date = new Date();
+  model(config: { model: string }): CallableLLM<OpenAIProvider> {
+    return {
+      slug: config.model,
+      provider: this,
+      forward: async (args: CallableLLMForwardArgs): Promise<LLMResponse> => {
+        let retryCount = this.maxRetries;
+        while (retryCount > 0) {
+          let startedAt: Date = new Date();
 
-      try {
-        const response = await this.rateLimiter.execute(
-          async () => {
-            // Capture the start time of the request
-            startedAt = new Date();
-            return await this.client.chat.completions.create(
-              {
-                model: args.model,
-                messages: args.messages,
-                temperature: args.temperature,
-                response_format: args.responseFormat,
+          try {
+            const response = await this.rateLimiter.execute(
+              async () => {
+                startedAt = new Date();
+                return await this.client.chat.completions.create(
+                  {
+                    model: config.model,
+                    messages: args.messages,
+                    temperature: args.temperature,
+                    response_format: args.responseFormat,
+                  },
+                  { signal: args.abortSignal }
+                );
               },
-              // Signal for request
               { signal: args.abortSignal }
             );
-          },
-          // Signal for rate limiting
-          { signal: args.abortSignal }
-        );
 
-        if ("error" in response) {
-          const err = response.error as any;
-          throw new Error(
-            `${err.message} - Code ${err.code} - ${JSON.stringify(err)}`
-          );
-        }
+            if ("error" in response) {
+              const err = response.error as any;
+              throw new Error(
+                `${err.message} - Code ${err.code} - ${JSON.stringify(err)}`
+              );
+            }
 
-        if (!response?.choices?.[0]?.message?.content) {
-          throw new Error("No content returned from the model");
-        }
+            if (!response?.choices?.[0]?.message?.content) {
+              throw new Error("No content returned from the model");
+            }
 
-        return {
-          data: response.choices[0].message.content,
+            return {
+              data: response.choices[0].message.content,
+              inputTokensUsed: response?.usage?.prompt_tokens,
+              outputTokensUsed: response?.usage?.completion_tokens,
+              startedAt: startedAt.getTime(),
+              completedAt: Date.now(),
+            };
+          } catch (err) {
+            if (err instanceof APIError && err.status === 401) {
+              throw new Error(`Invalid credentials provided`, { cause: err });
+            }
 
-          inputTokensUsed: response?.usage?.prompt_tokens,
-          outputTokensUsed: response?.usage?.completion_tokens,
+            retryCount--;
 
-          startedAt: startedAt.getTime(),
-          completedAt: Date.now(),
-        };
-      } catch (err) {
-        if (err instanceof APIError && err.status === 401) {
-          throw new Error(`Invalid credentials provided`, { cause: err });
-        }
+            if (err instanceof SyntaxError) {
+              console.debug(err);
+              continue;
+            }
 
-        retryCount--;
+            if (retryCount !== 0) {
+              continue;
+            }
 
-        // More likely an empty HTTP response returned by the Provider
-        // and it couldn't be parsed as JSON by the OpenAI SDK. We need to retry the request
-        // More info can be found in the following links:
-        // https://www.reddit.com/r/SillyTavernAI/comments/1ik95vr/deepseek_r1_on_openrouter_returning_blank_messages/
-        // https://github.com/cline/cline/issues/60
-        if (err instanceof SyntaxError) {
-          console.debug(err);
-          continue;
-        }
-
-        // If it was another error, just continue until we run out of retries
-        if (retryCount !== 0) {
-          continue;
+            throw new Error(
+              `Failed to forward prompt to the model: ${err instanceof Error ? err.message : err}`,
+              { cause: err }
+            );
+          }
         }
 
         throw new Error(
-          `Failed to forward prompt to the model: ${err instanceof Error ? err.message : err}`,
-          { cause: err }
+          `Failed to forward prompt to the model: Max retries reached`,
+          { cause: new Error("Max retries reached") }
         );
-      }
-    }
-
-    throw new Error(
-      `Failed to forward prompt to the model: Max retries reached`,
-      { cause: new Error("Max retries reached") }
-    );
+      },
+    };
   }
 }

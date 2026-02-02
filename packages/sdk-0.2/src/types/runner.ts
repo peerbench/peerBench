@@ -1,27 +1,16 @@
-import { AbstractProvider } from "@/providers";
+import { Callable } from "@/providers/callables/callable";
 import { AbstractScorer } from "@/scorers";
-import { IdGenerator } from ".";
-import z from "zod";
+import { BaseTestCaseV1 } from "@/schemas/test-case";
+import { BaseResponseV1 } from "@/schemas/response";
+import { BaseScoreV1 } from "@/schemas/score";
 
-export type Runner<
-  TTestCase extends z.ZodObject,
-  TResponse extends z.ZodObject,
-  TScore extends z.ZodObject,
-  TProvider extends AbstractProvider,
-  TScorer extends AbstractScorer,
-  TRunConfig extends Record<string, unknown>,
-> = (params: {
-  testCase: z.infer<TTestCase>;
-  provider: TProvider;
-  scorer?: TScorer;
-  runConfig: TRunConfig;
+export type RunnerParams = {
+  testCase: BaseTestCaseV1;
+  target: Callable;
+  scorer?: AbstractScorer;
+};
 
-  idGenerators?: {
-    response?: IdGenerator;
-    score?: IdGenerator;
-  };
-}) => Promise<{ response: z.infer<TResponse>; score?: z.infer<TScore> }>;
-
-export type InferRunConfig<TRunConfigSchema extends z.ZodRawShape> = z.infer<
-  z.ZodObject<TRunConfigSchema>
->;
+export type RunnerResult = {
+  response: BaseResponseV1;
+  score?: BaseScoreV1;
+};

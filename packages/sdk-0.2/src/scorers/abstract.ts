@@ -9,7 +9,7 @@ export abstract class AbstractScorer {
       );
   }
 
-  abstract score(params: any): Promise<BaseScorerResult | null>;
+  abstract score(params: any): Promise<BaseScorerResult>;
 
   static withKind<
     TKind extends string,

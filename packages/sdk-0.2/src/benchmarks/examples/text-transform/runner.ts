@@ -1,43 +1,30 @@
 import { defineRunner } from "@/helpers/define-runner";
-import { AbstractLLMProvider } from "@/providers";
-import { ScoringMethod } from "@/types";
+import { CallableLLM } from "@/providers";
+import { IdGenerator, ScoringMethod } from "@/types";
 import { idGeneratorUUIDv7 } from "@/utils";
 import { ChatCompletionMessageParam } from "openai/resources/index";
-import z from "zod";
 import {
   TextTransformEchoResponseSchemaV1,
   TextTransformEchoScoreSchemaV1,
-  TextTransformEchoTestCaseSchemaV1,
+  TextTransformEchoTestCaseV1,
 } from "./schema-sets/echo.v1";
 import {
   TextTransformReverseResponseSchemaV1,
   TextTransformReverseScoreSchemaV1,
-  TextTransformReverseTestCaseSchemaV1,
+  TextTransformReverseTestCaseV1,
 } from "./schema-sets/reverse.v1";
 
 export const textTransformRunner = defineRunner(
-  {
-    schemaSets: [
-      {
-        testCase: TextTransformEchoTestCaseSchemaV1,
-        response: TextTransformEchoResponseSchemaV1,
-        score: TextTransformEchoScoreSchemaV1,
-      },
-      {
-        testCase: TextTransformReverseTestCaseSchemaV1,
-        response: TextTransformReverseResponseSchemaV1,
-        score: TextTransformReverseScoreSchemaV1,
-      },
-    ],
-    providers: [AbstractLLMProvider],
-    scorers: [],
-    runConfigSchema: {
-      model: z.string(),
-      temperature: z.number().optional(),
-    },
-  },
-  async (params) => {
-    const { testCase, provider, runConfig } = params;
+  async (params: {
+    testCase: TextTransformEchoTestCaseV1 | TextTransformReverseTestCaseV1;
+    target: CallableLLM;
+    temperature?: number;
+    idGenerators?: {
+      response?: IdGenerator;
+      score?: IdGenerator;
+    };
+  }) => {
+    const { testCase, target } = params;
 
     const baseMessages: ChatCompletionMessageParam[] = [];
 
@@ -47,21 +34,19 @@ export const textTransformRunner = defineRunner(
         content: `Echo the following text exactly:\n${testCase.input}`,
       });
 
-      const providerResponse = await provider.forward({
-        model: runConfig.model,
-        temperature: runConfig.temperature,
+      const providerResponse = await target.forward({
+        temperature: params.temperature,
         messages: baseMessages,
       });
 
-      // Generate a response entity connected to the test case.
       const response = await TextTransformEchoResponseSchemaV1.newWithId(
         {
           data: providerResponse.data,
           startedAt: providerResponse.startedAt,
           completedAt: providerResponse.completedAt,
           testCaseId: testCase.id,
-          modelSlug: runConfig.model,
-          provider: provider.kind,
+          modelSlug: target.slug,
+          provider: target.provider.kind,
           inputTokensUsed: providerResponse.inputTokensUsed,
           outputTokensUsed: providerResponse.outputTokensUsed,
           inputCost: providerResponse.inputCost,
@@ -70,7 +55,6 @@ export const textTransformRunner = defineRunner(
         params.idGenerators?.response ?? idGeneratorUUIDv7
       );
 
-      // For some tasks deterministic scoring is cheap and stable, so we do it inside the runner.
       const match =
         normalizeForCompare(providerResponse.data) ===
         normalizeForCompare(testCase.input);
@@ -96,21 +80,19 @@ export const textTransformRunner = defineRunner(
           `${testCase.input}`,
       });
 
-      const providerResponse = await provider.forward({
-        model: runConfig.model,
-        temperature: runConfig.temperature,
+      const providerResponse = await target.forward({
+        temperature: params.temperature,
         messages: baseMessages,
       });
 
-      // Generate a response entity connected to the test case.
       const response = await TextTransformReverseResponseSchemaV1.newWithId(
         {
           data: providerResponse.data,
           startedAt: providerResponse.startedAt,
           completedAt: providerResponse.completedAt,
           testCaseId: testCase.id,
-          modelSlug: runConfig.model,
-          provider: provider.kind,
+          modelSlug: target.slug,
+          provider: target.provider.kind,
           inputTokensUsed: providerResponse.inputTokensUsed,
           outputTokensUsed: providerResponse.outputTokensUsed,
           inputCost: providerResponse.inputCost,
@@ -124,7 +106,6 @@ export const textTransformRunner = defineRunner(
         normalizeForCompare(providerResponse.data) ===
         normalizeForCompare(expected);
 
-      // We store `expected` in the score object so it can be inspected without re-running the transform.
       const score = await TextTransformReverseScoreSchemaV1.newWithId(
         {
           scoringMethod: ScoringMethod.algo,
