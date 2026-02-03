@@ -50,5 +50,9 @@ export type LLMResponse = ProviderResponse<string> & {
    */
   timeToFirstToken?: number;
 
+
+  /**
+   * Additional metadata
+   */
   metadata?: Record<string, unknown>;
 };
