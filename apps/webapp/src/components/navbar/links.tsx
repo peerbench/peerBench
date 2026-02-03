@@ -9,44 +9,44 @@ import {
   LucideGitCompare,
   LucideMessageSquareText,
   LucideExternalLink,
-  LucideTrophy,
-  LucideUsers,
-  LucideUserCheck,
-  LucideSwords,
+  // LucideTrophy,
+  // LucideUsers,
+  // LucideUserCheck,
+  // LucideSwords,
 } from "lucide-react";
 import { SiDiscord, SiGithub } from "@icons-pack/react-simple-icons";
 
 export const links = [
-  {
-    label: "Leaderboards",
-    icon: <LucideTrophy size={16} />,
-    menu: [
-      // {
-      //   label: "Models (Performance)",
-      //   href: "/leaderboards/models-performance",
-      //   description: "Top performing AI models",
-      //   icon: <LucideBot />,
-      // },
-      {
-        label: "Models (ELO)",
-        href: "/leaderboards/models-elo",
-        description: "Head-to-head model rankings",
-        icon: <LucideSwords />,
-      },
-      {
-        label: "Reviewers",
-        href: "/leaderboards/reviewers",
-        description: "Most trusted reviewers",
-        icon: <LucideUserCheck />,
-      },
-      {
-        label: "Contributors",
-        href: "/leaderboards/contributors",
-        description: "Top data contributors",
-        icon: <LucideUsers />,
-      },
-    ],
-  },
+  // {
+  //   label: "Leaderboards",
+  //   icon: <LucideTrophy size={16} />,
+  //   menu: [
+  //     // {
+  //     //   label: "Models (Performance)",
+  //     //   href: "/leaderboards/models-performance",
+  //     //   description: "Top performing AI models",
+  //     //   icon: <LucideBot />,
+  //     // },
+  //     {
+  //       label: "Models (ELO)",
+  //       href: "/leaderboards/models-elo",
+  //       description: "Head-to-head model rankings",
+  //       icon: <LucideSwords />,
+  //     },
+  //     {
+  //       label: "Reviewers",
+  //       href: "/leaderboards/reviewers",
+  //       description: "Most trusted reviewers",
+  //       icon: <LucideUserCheck />,
+  //     },
+  //     {
+  //       label: "Contributors",
+  //       href: "/leaderboards/contributors",
+  //       description: "Top data contributors",
+  //       icon: <LucideUsers />,
+  //     },
+  //   ],
+  // },
   {
     label: "Benchmarks",
     icon: <LucideFileCog size={16} />,
