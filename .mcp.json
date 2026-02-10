@@ -1,12 +1,5 @@
 {
   "mcpServers": {
-    "memory": {
-      "command": "npm",
-      "args": [
-        "run",
-        "mcp:memory"
-      ]
-    },
     "shadcn": {
       "command": "npx",
       "args": [

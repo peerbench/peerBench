@@ -3,9 +3,7 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "build:container:webapp": "scripts/build.webapp.sh",
-    "mcp:memory": "MEMORY_FILE_PATH=$PWD/.agent-memory/memory.jsonl npx -y @modelcontextprotocol/server-memory"
+    "lint": "turbo run lint"
   },
   "devDependencies": {
     "turbo": "^2.6.1"
