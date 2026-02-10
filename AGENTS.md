@@ -67,7 +67,7 @@
 # General Rules
 
 - In some systems, `python` executable may not be available. In such case (you want to run `python` command) also try `python3`.
+- Use sub agents for search through the codebase, web etc. to avoid filling up your context with redundant data. Sub agents do that and report back you the most relevant information. Depend on the search task, choice cheapest or medium level models for the sub agents.
 - Never ever read sensitive credential files such as `.env`. Instead give user a check-list about what to do with that sensitive credentials file.
 - If you encounter a limitation of the programming language/tooling that contradicts with what user wants to do, let user know, ask what to do and propose solutions. Do not proceed something by your own.
-- Save all the key points about the project as your memory into "AGENT_MEMORY.md" file and read that file on startup and from time to time to keep it up to date. You are fully allowed to read/write on that file. Do not ask permission to user for writing that file. Just add information after each conversation that you have discussed something about the codebase. We only want to have existing context, not a future architectural decision.
-- Keep up to date AGENT_MEMORY.md file as per explained in the previous item after each conversation. DO not ask user for permission, just update it.
+- Save all the key points about the project as your memory into "AGENT_MEMORY.md" file. Check this file for having the information when you need to answer user or implement something. We only want to have information about present codebase, not a future architectural decision.

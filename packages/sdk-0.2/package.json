@@ -1,6 +1,6 @@
 {
   "name": "peerbench",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Tooling help work with AI benchmarking data and create trustworthy AI",
   "keywords": [
     "ai",
@@ -95,7 +95,9 @@
     "uuid": "^11.1.0"
   },
   "peerDependencies": {
-    "zod": "^4.2.1"
+    "zod": "^4.2.1",
+    "ai": ">=6.0.0 <7.0.0",
+    "@ai-sdk/provider": ">=3.0.0"
   },
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.49.0",
