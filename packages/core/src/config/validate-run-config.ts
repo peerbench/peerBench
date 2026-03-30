@@ -7,11 +7,17 @@ import type { ScorerEntry } from "@/registry/scorer";
 import type { StorageEntry } from "@/registry/storage";
 import type { ProviderEntry } from "@/registry/provider";
 
+interface RegistryLike {
+  has(name: string): boolean;
+  find(name: string): { configSchema?: z.ZodType; [key: string]: unknown };
+  list(): string[];
+}
+
 interface Registries {
-  runners: Registry<Record<string, RunnerEntry>>;
-  scorers: Registry<Record<string, ScorerEntry>>;
-  storages: Registry<Record<string, StorageEntry>>;
-  providers: Registry<Record<string, ProviderEntry>>;
+  runners: RegistryLike;
+  scorers: RegistryLike;
+  storages: RegistryLike;
+  providers: RegistryLike;
   aliases?: Record<string, string>;
 }
 

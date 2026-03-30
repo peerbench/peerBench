@@ -65,14 +65,14 @@ describe("RunConfigSchema", () => {
 });
 
 describe("validateRunConfig", () => {
-  const mockRegistries: Registries = {
+  const mockRegistries = {
     runners: createRegistry({
       "test-runner": {
         description: "Test",
         configSchema: z.object({
           speed: z.string().optional(),
         }),
-        executeFromConfig: async () => ({} as any),
+        executeFromConfig: async () => ({}) as any,
       },
     }),
     scorers: createRegistry({
@@ -81,7 +81,7 @@ describe("validateRunConfig", () => {
         configSchema: z.object({
           threshold: z.number().optional(),
         }),
-        instantiateFromConfig: () => ({} as any),
+        instantiateFromConfig: () => ({}) as any,
       },
     }),
     storages: createRegistry({
@@ -90,17 +90,17 @@ describe("validateRunConfig", () => {
         configSchema: z.object({
           path: z.string().optional(),
         }),
-        instantiateFromConfig: () => ({} as any),
+        instantiateFromConfig: () => ({}) as any,
       },
     }),
     providers: createRegistry({
       "test-provider": {
         description: "Test",
-        instantiateFromConfig: () => ({} as any),
+        instantiateFromConfig: () => ({}) as any,
         getEndpoint: () => "http://localhost",
       },
     }),
-  };
+  } satisfies Registries;
 
   it("validates a correct config", () => {
     const result = validateRunConfig(

@@ -31,7 +31,11 @@ class NoopDummyStorage extends AbstractStorage<NoOpDummyTestCaseV1> {
     );
   }
 
-  async write(): Promise<unknown> {
+  async write(
+    _key: string,
+    _value: NoOpDummyTestCaseV1,
+    _params?: unknown,
+  ): Promise<unknown> {
     throw new Error("NoopDummyStorage is read-only");
   }
 }
