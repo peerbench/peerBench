@@ -1,0 +1,60 @@
+{
+  "name": "@peerbench/harness",
+  "version": "0.1.0",
+  "description": "PeerBench platform runtime - Hono API server, Prisma DB, run executor, pollers",
+  "keywords": ["ai", "evaluation", "benchmark", "peerbench", "harness"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://peerbench.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peerbench/peerBench.git",
+    "directory": "packages/harness"
+  },
+  "license": "MIT",
+  "author": "peerBench community",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "prisma"],
+  "scripts": {
+    "build": "prisma generate && tsup",
+    "dev": "tsup --silent --watch",
+    "test": "vitest run",
+    "clean": "rm -rf dist",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@peerbench/core": "^0.1.0",
+    "@peerbench/providers": "^0.1.0",
+    "@peerbench/scorers": "^0.1.0",
+    "@hono/node-server": "^1.13.7",
+    "@prisma/adapter-pg": "^7.3.0",
+    "@prisma/client": "^7.3.0",
+    "hono": "^4.6.0",
+    "langfuse": "^3.38.6",
+    "peerbench": "^0.0.12",
+    "pg": "^8.17.2",
+    "pino": "^10.2.0",
+    "pino-pretty": "^13.0.0",
+    "zod": "^4.3.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@types/pg": "^8.17.2",
+    "prisma": "^7.3.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.8.3",
+    "vitest": "^4.0.16"
+  }
+}
