@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { serve } from "@hono/node-server";
-import type { Server } from "node:http";
+import type { ServerType } from "@hono/node-server";
 import type { ProviderEntry, RunnerEntry, ScorerEntry, StorageEntry } from "@peerbench/core";
 import { createRegistry } from "@peerbench/core";
 
@@ -19,7 +19,7 @@ type PeerBenchConfig = {
 
 class PeerBench {
   private readonly config: PeerBenchConfig;
-  private server: Server | null = null;
+  private server: ServerType | null = null;
   readonly app: Hono;
 
   readonly providerRegistry;
