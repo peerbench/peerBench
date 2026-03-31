@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, Link, useSearchParams } from "react-router-dom";
 import { api, type Result } from "@/lib/api";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -7,6 +7,7 @@ import { JsonDisplay } from "@/components/ui/JsonDisplay";
 import { Button } from "@/components/ui/button";
 import { AgentName } from "@/components/AgentName";
 import { useRun, useCancelRun } from "@/lib/queries";
+import { Download } from "lucide-react";
 
 interface TargetStats {
   model: string;
@@ -467,6 +468,61 @@ export function RunDetail() {
     return passing.length / scored.length;
   })();
 
+  const handleExportJson = useCallback(() => {
+    if (!run) return;
+
+    const activeFilters: Record<string, string> = {};
+    if (statusFilter !== "all") activeFilters.status = statusFilter;
+    if (targetFilter !== "all") activeFilters.target = targetFilter;
+    if (endpointFilter !== "all") activeFilters.endpoint = endpointFilter;
+    if (maxScore !== "") activeFilters.maxScore = maxScore;
+    if (testCaseFilter !== "") activeFilters.testCaseFilter = testCaseFilter;
+    if (minTargetsRight !== "") activeFilters.minTargetsRight = minTargetsRight;
+    if (minTargetsWrong !== "") activeFilters.minTargetsWrong = minTargetsWrong;
+
+    const exportData = {
+      run: {
+        id: run.id,
+        status: run.status,
+        configId: run.configId,
+        totalTestCases: run.totalTestCases,
+        completedTestCases: run.completedTestCases,
+        successfulTestCases: run.successfulTestCases,
+        failedTestCases: run.failedTestCases,
+        avgScore: run.avgScore,
+      },
+      filters: Object.keys(activeFilters).length > 0 ? activeFilters : null,
+      totalResults: resultsTotal,
+      filteredCount: filteredResults.length,
+      results: filteredResults.map((r) => ({
+        id: r.id,
+        testCaseId: r.testCaseId,
+        modelSlug: r.modelSlug,
+        agentEndpointUrl: r.agentEndpointUrl,
+        status: r.status,
+        scoreValue: r.scoreValue,
+        durationMs: r.durationMs,
+        errorMessage: r.errorMessage,
+        response: r.response,
+        score: r.score,
+        testCase: r.testCase,
+      })),
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    const suffix = hasActiveFilters ? "-filtered" : "";
+    a.download = `run-${run.id.substring(0, 8)}${suffix}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [run, filteredResults, resultsTotal, hasActiveFilters, statusFilter, targetFilter, endpointFilter, maxScore, testCaseFilter, minTargetsRight, minTargetsWrong]);
+
   if (loading) return <div className="text-center py-8">Loading...</div>;
   if (loadFailed)
     return <div className="text-center py-8">Failed to load run.</div>;
@@ -796,23 +852,34 @@ export function RunDetail() {
                 </svg>
               )}
             </div>
-            {hasActiveFilters && (
-              <button
-                onClick={() => {
-                  setStatusFilter("all");
-                  setTargetFilter("all");
-                  setEndpointFilter("all");
-                  setMaxScore("");
-                  setSortBy("none");
-                  setTestCaseFilter("");
-                  setMinTargetsRight("");
-                  setMinTargetsWrong("");
-                }}
-                className="text-xs text-blue-600 hover:text-blue-800"
-              >
-                Clear filters
-              </button>
-            )}
+            <div className="flex items-center gap-3">
+              {hasActiveFilters && (
+                <button
+                  onClick={() => {
+                    setStatusFilter("all");
+                    setTargetFilter("all");
+                    setEndpointFilter("all");
+                    setMaxScore("");
+                    setSortBy("none");
+                    setTestCaseFilter("");
+                    setMinTargetsRight("");
+                    setMinTargetsWrong("");
+                  }}
+                  className="text-xs text-blue-600 hover:text-blue-800"
+                >
+                  Clear filters
+                </button>
+              )}
+              {filteredResults.length > 0 && (
+                <button
+                  onClick={handleExportJson}
+                  className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-gray-800 border border-gray-300 rounded px-2 py-1 hover:bg-gray-50"
+                >
+                  <Download className="h-3 w-3" />
+                  Export JSON
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Filter & Sort Controls */}
