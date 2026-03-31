@@ -1,3 +1,4 @@
+import { Component, type ReactNode } from "react";
 import { Routes, Route } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -23,6 +24,19 @@ import { NewConfig } from "./pages/NewConfig";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { queryClient } from "./lib/query-client";
+
+class DevtoolsBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    return this.state.hasError ? null : this.props.children;
+  }
+}
 
 export default function App() {
   return (
@@ -69,7 +83,9 @@ export default function App() {
           </Route>
         </Routes>
       </>
-      <ReactQueryDevtools initialIsOpen={false} />
+      <DevtoolsBoundary>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </DevtoolsBoundary>
     </QueryClientProvider>
   );
 }
