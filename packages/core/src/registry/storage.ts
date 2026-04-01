@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { AbstractStorage } from "peerbench/storages";
+import type { AbstractStorage } from "../types/storage";
 
 function defineStorageEntry<
   TStorage extends AbstractStorage<any>,

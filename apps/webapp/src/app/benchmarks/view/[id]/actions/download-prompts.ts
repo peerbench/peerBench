@@ -1,7 +1,7 @@
 "use server";
 
 import { PromptService } from "@/services/prompt.service";
-import { Prompt, PromptSchema } from "peerbench";
+import { Prompt, PromptSchema } from "@peerbench/sdk-legacy";
 
 export async function downloadAllPromptsAction(data: {
   promptSetId: number;

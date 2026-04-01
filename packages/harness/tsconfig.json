@@ -10,9 +10,6 @@
     "skipLibCheck": true,
     "noEmit": true,
     "noUncheckedIndexedAccess": true,
-    "outDir": "dist",
-    "rootDir": "src",
-    "declaration": true,
     "paths": {
       "@/*": ["./src/*"]
     }

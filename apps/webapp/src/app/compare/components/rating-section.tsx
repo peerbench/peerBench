@@ -14,7 +14,7 @@ import {
   PromptResponse,
   ScoringMethods,
   stableStringify,
-} from "peerbench";
+} from "@peerbench/sdk-legacy";
 import { errorMessage } from "@/utils/error-message";
 import { usePromptAPI } from "@/lib/hooks/use-prompt-api";
 import { usePromptSetAPI } from "@/lib/hooks/use-prompt-set-api";

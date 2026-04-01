@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { readdir } from "fs/promises";
 import { join, resolve } from "path";
 import { validateRunConfig } from "@peerbench/core";
+import { getRegistries } from "../lib/registry-context";
 import { createConfig, ensureAgentsFromConfig } from "../lib/db";
 import { fileExists } from "../utils/file-exists";
 import { readJsonFile } from "../utils/read-json-file";
@@ -155,7 +156,7 @@ localConfigsRouter.post("/:name/import", async (c) => {
 
     const config = (await readJsonFile(configPath)) as Record<string, unknown>;
 
-    const validation = validateRunConfig(config);
+    const validation = validateRunConfig(config, getRegistries());
     if (!validation.valid) {
       return c.json(
         { error: "Config validation failed", errors: validation.errors },

@@ -1,4 +1,4 @@
-import { tryParseJson } from "peerbench";
+import { tryParseJson } from "@peerbench/sdk-legacy";
 import { useEffect, useState } from "react";
 
 export function useLocalStorage<T>(

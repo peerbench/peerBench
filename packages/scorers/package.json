@@ -38,14 +38,13 @@
   ],
   "scripts": {
     "lint": "tsc && eslint",
-    "dev": "tsup --silent --watch --onSuccess 'tsc-alias -p tsconfig.json -f'",
-    "build": "tsup --onSuccess 'tsc-alias -p tsconfig.json -f'",
+    "dev": "tsup --silent --watch",
+    "build": "tsup",
     "test": "vitest run",
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@peerbench/core": "^0.1.0",
-    "peerbench": "^0.0.12",
+    "@peerbench/core": "*",
     "zod": "^4.3.5"
   },
   "devDependencies": {

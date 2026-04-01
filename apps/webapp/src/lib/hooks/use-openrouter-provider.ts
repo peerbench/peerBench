@@ -1,4 +1,4 @@
-import { OpenRouterProvider } from "peerbench";
+import { OpenRouterProvider } from "@peerbench/sdk-legacy";
 import {
   LLMProviderInstantiateFunction,
   useLLMProvider,

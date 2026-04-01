@@ -1,4 +1,4 @@
-import { AbstractLLMProvider, MaybePromise } from "peerbench";
+import { AbstractLLMProvider, MaybePromise } from "@peerbench/sdk-legacy";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export type LLMProviderModel = {

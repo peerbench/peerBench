@@ -12,7 +12,7 @@ import {
   PromptResponseSchema,
   PromptTypes,
   stableStringify,
-} from "peerbench";
+} from "@peerbench/sdk-legacy";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import {

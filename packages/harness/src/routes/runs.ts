@@ -12,6 +12,7 @@ import {
 } from "../lib/db";
 import { executeRun, parseConfig } from "../lib/run-executor";
 import { createRunLogger } from "../lib/logger";
+import { getRegistries } from "../lib/registry-context";
 
 export const runsRouter = new Hono();
 
@@ -117,7 +118,7 @@ runsRouter.post("/:id/execute", async (c) => {
       await incrementRunCount(run.configId);
     }
 
-    await executeRun({ runId, config });
+    await executeRun({ runId, config, registries: getRegistries() });
 
     const updatedRun = await getRun(runId);
     return c.json(updatedRun);
@@ -236,7 +237,7 @@ runsRouter.post("/execute", async (c) => {
 
     c.header("Location", `/api/runs/${run.id}/execute`);
 
-    await executeRun({ runId: run.id, config });
+    await executeRun({ runId: run.id, config, registries: getRegistries() });
 
     const updatedRun = await getRun(run.id);
     runLog.info("Run execute completed", { status: updatedRun?.status });

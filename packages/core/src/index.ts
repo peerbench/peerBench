@@ -4,9 +4,39 @@ export * from "./registry";
 // Config
 export * from "./config";
 
+// Types (migrated from sdk-0.2)
+export * from "./types";
+
 // Schemas
 export { SystemPromptConfigSchema, type SystemPromptConfig } from "./schemas/system-prompt-config";
 export { ProviderConfigSchema, type ProviderConfig } from "./schemas/provider-config";
+export { IdSchema } from "./schemas/id";
+export {
+  BaseTestCaseSchemaV1,
+  defineTestCaseSchema,
+  type BaseTestCaseV1,
+} from "./schemas/base-test-case";
+export {
+  BaseResponseSchemaV1,
+  defineResponseSchema,
+  type BaseResponseV1,
+} from "./schemas/base-response";
+export {
+  BaseScoreSchemaV1,
+  defineScoreSchema,
+  type BaseScoreV1,
+} from "./schemas/base-score";
+export {
+  BaseSystemPromptSchemaV1,
+  defineSystemPromptSchema,
+  SimpleSystemPromptSchemaV1,
+  type BaseSystemPromptV1,
+  type SimpleSystemPromptV1,
+} from "./schemas/base-system-prompt";
+export { buildSchemaDefiner } from "./schemas/schema-definer";
+
+// Helpers
+export { defineRunner } from "./helpers/define-runner";
 
 // Testing infrastructure (noop-dummy)
 export * from "./testing";
@@ -15,6 +45,7 @@ export * from "./testing";
 export { getDefaultAuthToken, injectDefaultAuthToken } from "./utils/default-auth-tokens";
 export { escapeRegex } from "./utils/escape-regex";
 export { extractTagContent } from "./utils/extract-tag-content";
+export { idGeneratorUUIDv7 } from "./utils/id-generator";
 export { isNonEmptyString } from "./utils/is-non-empty-string";
 export { isNonNullRecord } from "./utils/is-non-null-record";
 export { normalizeWhitespace } from "./utils/normalize-whitespace";
@@ -44,20 +75,3 @@ export {
   type TraceMetadata,
   type PromptDenormalizedFields,
 } from "./utils/prompt-metadata";
-
-// Re-export key types from peerbench SDK for convenience
-export type { CallableLLM, CallableLLMForwardArgs, LLMResponse } from "peerbench/providers";
-export type { AbstractScorer, BaseScorerResult } from "peerbench/scorers";
-export type { AbstractStorage } from "peerbench/storages";
-export type { RunnerResult, RunnerParams } from "peerbench";
-export {
-  BaseTestCaseSchemaV1,
-  BaseResponseSchemaV1,
-  BaseScoreSchemaV1,
-  defineTestCaseSchema,
-  defineResponseSchema,
-  defineScoreSchema,
-} from "peerbench/schemas";
-export type { BaseTestCaseV1, BaseResponseV1, BaseScoreV1 } from "peerbench/schemas";
-export { defineRunner, idGeneratorUUIDv7, ScoringMethod } from "peerbench";
-export type { Id, IdGenerator, MaybePromise } from "peerbench";

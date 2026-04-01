@@ -1,4 +1,4 @@
-import { Prompt } from "peerbench";
+import { Prompt } from "@peerbench/sdk-legacy";
 
 interface OrderSentencesProps {
   prompt: Prompt;

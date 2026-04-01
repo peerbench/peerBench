@@ -1,10 +1,8 @@
 import { z } from "zod";
-import {
-  idGeneratorUUIDv7,
-  ScoringMethod,
-  defineRunner,
-} from "peerbench";
-import type { CallableLLM } from "peerbench/providers";
+import { idGeneratorUUIDv7 } from "../utils/id-generator";
+import { ScoringMethod } from "../types/common";
+import { defineRunner } from "../helpers/define-runner";
+import type { CallableLLM } from "../types/provider";
 import {
   NoOpDummyScoreSchemaV1,
   NoOpDummyResponseSchemaV1,
@@ -99,12 +97,13 @@ const noopDummyRunner = defineRunnerEntry({
   ...meta,
   async executeFromConfig(config, configSchema) {
     const params = configSchema!.parse(config.runnerParams);
-    return run({
-      testCase: NoOpDummyTestCaseSchemaV1.parse(config.testCase),
+    const result = await run({
+      testCase: NoOpDummyTestCaseSchemaV1.parse(config.testCase) as NoOpDummyTestCaseV1,
       target: {} as CallableLLM,
       delayMs: params.delayMs,
       fixedScore: params.fixedScore,
     });
+    return result as unknown as import("../types/runner").RunnerResult;
   },
 });
 

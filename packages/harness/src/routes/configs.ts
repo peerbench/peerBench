@@ -12,6 +12,7 @@ import {
   getConfigVersions,
 } from "../lib/db";
 import { validateRunConfig } from "@peerbench/core";
+import { getRegistries } from "../lib/registry-context";
 
 export const configsRouter = new Hono();
 
@@ -68,7 +69,7 @@ configsRouter.post("/", async (c) => {
     return c.json({ error: "name and configJson are required" }, 400);
   }
 
-  const validation = validateRunConfig(body.configJson);
+  const validation = validateRunConfig(body.configJson, getRegistries());
   if (!validation.valid) {
     return c.json(
       { error: "Config validation failed", errors: validation.errors },
@@ -101,7 +102,7 @@ configsRouter.patch("/:id", async (c) => {
   }>();
 
   if (body.configJson) {
-    const validation = validateRunConfig(body.configJson);
+    const validation = validateRunConfig(body.configJson, getRegistries());
     if (!validation.valid) {
       return c.json(
         { error: "Config validation failed", errors: validation.errors },

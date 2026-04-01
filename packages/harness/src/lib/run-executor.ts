@@ -10,11 +10,12 @@ import {
   type TargetConfig,
   type TestCaseSource,
   type ScorerConfig,
-  runnerRegistry,
-  storageRegistry,
-  providerRegistry,
+  type Registry,
+  type RunnerEntry,
+  type StorageEntry,
+  type ProviderEntry,
+  type ScorerEntry,
   resolveEnvVariables,
-  resolveSupabaseAuthInConfig,
   extractPromptFields,
 } from "@peerbench/core";
 import {
@@ -26,6 +27,13 @@ import {
 } from "./db";
 import { createRunLogger } from "./logger";
 import { resolveSupabaseDiscoveryInConfig } from "./supabase-discovery/resolve";
+
+export type Registries = {
+  runners: Registry<Record<string, RunnerEntry>>;
+  storages: Registry<Record<string, StorageEntry>>;
+  providers: Registry<Record<string, ProviderEntry>>;
+  scorers: Registry<Record<string, ScorerEntry>>;
+};
 
 export type ExecutionResult = {
   status: "completed" | "partial" | "failed";
@@ -47,20 +55,20 @@ export async function parseConfig(
 ): Promise<RunConfig> {
   const resolved = resolveEnvVariables(configSnapshot);
   const withDiscovery = await resolveSupabaseDiscoveryInConfig(resolved);
-  const withAuth = await resolveSupabaseAuthInConfig(withDiscovery);
-  return RunConfigSchema.parse(withAuth);
+  return RunConfigSchema.parse(withDiscovery);
 }
 
 /**
  * Load test cases from all configured storage sources
  */
 async function loadTestCases(
-  sources: TestCaseSource[]
+  sources: TestCaseSource[],
+  registries: Registries,
 ): Promise<Array<{ id: string } & Record<string, unknown>>> {
   const allTestCases: Array<{ id: string } & Record<string, unknown>> = [];
 
   for (const source of sources) {
-    const storage = storageRegistry
+    const storage = registries.storages
       .find(source.storage)
       .instantiateFromConfig(source);
     await storage.init();
@@ -95,21 +103,22 @@ export type ExecutionOptions = {
 export async function executeRun(params: {
   runId: string;
   config: RunConfig;
+  registries: Registries;
   options?: ExecutionOptions;
 }): Promise<ExecutionResult> {
-  const { runId, config, options = {} } = params;
+  const { runId, config, registries, options = {} } = params;
   const startedAt = new Date();
   const log = createRunLogger({ runId, source: "run-executor" });
 
   log.info("Starting run", { runner: config.runner, options });
 
-  const runnerEntry = runnerRegistry.find(config.runner);
+  const runnerEntry = registries.runners.find(config.runner);
   log.info("Runner resolved", { runner: config.runner });
 
   await updateRunStatus(runId, { status: "running", startedAt });
 
   // Fire-and-forget pre-run health checks (linked to this run via runId)
-  const preRunAgentIds = await resolveAgentIdsFromTargets(config.targets);
+  const preRunAgentIds = await resolveAgentIdsFromTargets(config.targets, registries);
   if (preRunAgentIds.length > 0) {
     performHealthCheckForAgents(preRunAgentIds, runId).catch((err) =>
       log.warn("Pre-run health check failed", { err })
@@ -117,7 +126,7 @@ export async function executeRun(params: {
   }
 
   log.info("Loading test cases", { sources: config.testCases.length });
-  let testCases = await loadTestCases(config.testCases);
+  let testCases = await loadTestCases(config.testCases, registries);
 
   if (testCases.length === 0) {
     throw new Error("No test cases found from configured storage sources.");
@@ -311,7 +320,7 @@ export async function executeRun(params: {
   };
 
   const processTarget = async (target: TargetConfig): Promise<void> => {
-    const providerEntry = providerRegistry.find(target.provider);
+    const providerEntry = registries.providers.find(target.provider);
     const callableLLM = providerEntry.instantiateFromConfig(target);
     const endpointUrl = providerEntry.getEndpoint(target);
 
@@ -490,13 +499,14 @@ export function normalizeEndpointUrl(value: string): string {
 }
 
 async function resolveAgentIdsFromTargets(
-  targets: TargetConfig[]
+  targets: TargetConfig[],
+  registries: Registries,
 ): Promise<string[]> {
   const ids: string[] = [];
 
   for (const target of targets) {
     try {
-      const providerEntry = providerRegistry.find(target.provider);
+      const providerEntry = registries.providers.find(target.provider);
       const callableLLM = providerEntry.instantiateFromConfig(target);
       const endpointUrl = normalizeEndpointUrl(
         providerEntry.getEndpoint(target)

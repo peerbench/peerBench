@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { CallableLLM } from "peerbench/providers";
+import type { CallableLLM } from "../types/provider";
 import { injectDefaultAuthToken } from "@/utils/default-auth-tokens";
 
 type Target = {

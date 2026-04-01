@@ -34,7 +34,7 @@ import {
   removeDIDPrefix,
   ScoringMethods,
   stableStringify,
-} from "peerbench";
+} from "@peerbench/sdk-legacy";
 import {
   and,
   count,

@@ -1,4 +1,4 @@
-import { EnumSchema } from "peerbench";
+import { EnumSchema } from "@peerbench/sdk-legacy";
 import { z } from "zod";
 
 export function orderBySchema<T extends Record<string, string>>(

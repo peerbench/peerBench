@@ -1,4 +1,4 @@
-import { OpenRouterProvider } from "peerbench/providers";
+import { OpenRouterProvider } from "./provider";
 import { defineProviderEntry } from "@peerbench/core";
 import meta from "./meta";
 

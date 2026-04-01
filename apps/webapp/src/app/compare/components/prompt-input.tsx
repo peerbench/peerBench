@@ -11,7 +11,7 @@ import {
   calculateSHA256,
   PromptResponse,
   PromptTypes,
-} from "peerbench";
+} from "@peerbench/sdk-legacy";
 import { errorMessage } from "@/utils/error-message";
 import { useModelAPI, RandomModelItem } from "@/lib/hooks/use-model-api";
 import { CompareModel } from "../context";

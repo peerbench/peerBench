@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { randomUUID } from "node:crypto";
-import { AbstractStorage } from "peerbench/storages";
+import { AbstractStorage } from "../types/storage";
 import {
   NoOpDummyTestCaseSchemaV1,
   type NoOpDummyTestCaseV1,

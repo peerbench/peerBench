@@ -35,19 +35,19 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
-    "@peerbench/core": "^0.1.0",
-    "@peerbench/providers": "^0.1.0",
-    "@peerbench/scorers": "^0.1.0",
+    "@peerbench/core": "*",
+    "@peerbench/providers": "*",
+    "@peerbench/scorers": "*",
     "@hono/node-server": "^1.13.7",
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
     "hono": "^4.6.0",
     "langfuse": "^3.38.6",
-    "peerbench": "^0.0.12",
     "pg": "^8.17.2",
-    "pino": "^10.2.0",
-    "pino-pretty": "^13.0.0",
-    "zod": "^4.3.5"
+    "pino": "^10.2.0"
+  },
+  "optionalDependencies": {
+    "pino-pretty": "^13.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

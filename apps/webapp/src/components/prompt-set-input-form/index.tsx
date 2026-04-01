@@ -11,7 +11,7 @@ import { SelectVisibilitySection } from "./components/select-visibility-section"
 import { InformationSection } from "./components/information-section";
 import { errorMessage } from "@/utils/error-message";
 import { LucideLoader2, PlusCircle, Save } from "lucide-react";
-import { MaybePromise } from "peerbench";
+import { MaybePromise } from "@peerbench/sdk-legacy";
 
 export interface PromptSetInputFormProps {
   onSubmit?: (data: PromptSetFormData) => MaybePromise<void>;

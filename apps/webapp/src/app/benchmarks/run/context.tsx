@@ -12,7 +12,7 @@ import {
   PromptTypes,
   ScoringMethods,
   PromptResponse,
-} from "peerbench";
+} from "@peerbench/sdk-legacy";
 import React, {
   createContext,
   useContext,

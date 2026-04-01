@@ -1,9 +1,9 @@
 import { Prisma } from "@prisma/client";
 import {
   readString,
-  providerRegistry,
   resolveEnvVariables,
 } from "@peerbench/core";
+import { getRegistries } from "../../../../lib/registry-context";
 import { getClient, normalizeEndpointUrl } from "../../helpers";
 
 export async function resolveAgentIdsFromConfigTargets(
@@ -16,7 +16,7 @@ export async function resolveAgentIdsFromConfigTargets(
     const provider = readString(target.provider);
     if (!provider) continue;
 
-    const providerEntry = providerRegistry.find(provider, false);
+    const providerEntry = getRegistries().providers.find(provider, false);
     if (!providerEntry) continue;
 
     try {

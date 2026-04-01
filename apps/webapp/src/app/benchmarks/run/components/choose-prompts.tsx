@@ -4,7 +4,7 @@ import { useMemo, useRef } from "react";
 import PromptSetSelect, {
   PromptSetSelectOption,
 } from "@/components/prompt-set-select";
-import { PBParser, DataParser, RateLimiter, PromptSchema } from "peerbench";
+import { PBParser, DataParser, RateLimiter, PromptSchema } from "@peerbench/sdk-legacy";
 import { toast } from "react-toastify";
 import { FileInput } from "@/components/ui/file-input";
 import { errorMessage } from "@/utils/error-message";

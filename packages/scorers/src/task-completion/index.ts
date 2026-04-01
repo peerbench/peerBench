@@ -1,7 +1,11 @@
-import { AbstractScorer, type BaseScorerResult } from "peerbench/scorers";
-import type { CallableLLM } from "peerbench/providers";
-import { PEERBENCH_NAMESPACE } from "peerbench";
-import { defineScorerEntry, type ProviderEntry } from "@peerbench/core";
+import {
+  AbstractScorer,
+  type BaseScorerResult,
+  type CallableLLM,
+  PEERBENCH_NAMESPACE,
+  defineScorerEntry,
+  type ProviderEntry,
+} from "@peerbench/core";
 import meta from "./meta";
 
 function buildTaskCompletionPrompt(

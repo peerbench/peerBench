@@ -1,11 +1,11 @@
 import {
   AbstractProvider,
+  PEERBENCH_NAMESPACE,
   type CallableLLM,
   type CallableLLMForwardArgs,
   type LLMResponse,
-} from "peerbench/providers";
+} from "@peerbench/core";
 import { randomUUID } from "node:crypto";
-import { PEERBENCH_NAMESPACE } from "peerbench";
 import type { AgentMemoryOption } from "@mastra/core/agent";
 import {
   defineProviderEntry,

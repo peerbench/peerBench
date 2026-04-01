@@ -7,9 +7,9 @@ import {
 } from "../../helpers";
 import {
   readString,
-  providerRegistry,
   resolveEnvVariables,
 } from "@peerbench/core";
+import { getRegistries } from "../../../../lib/registry-context";
 import { findOrCreateAgent } from "./find-or-create-agent";
 import { performHealthCheckForAgents } from "../health-checks/perform-health-check-for-agents";
 import { resolveAgentIdsFromConfigTargets } from "../health-checks/resolve-agent-ids-from-config-targets";
@@ -68,7 +68,7 @@ export async function ensureAgentsFromConfig(
     const provider = readString(target.provider);
     if (!provider) continue;
 
-    const providerEntry = providerRegistry.find(provider, false);
+    const providerEntry = getRegistries().providers.find(provider, false);
     if (!providerEntry) continue;
 
     const resolvedTarget = resolveEnvVariables(

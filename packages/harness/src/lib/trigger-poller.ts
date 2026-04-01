@@ -16,6 +16,7 @@ import {
   getRecentRunForConfig,
 } from "./db";
 import { executeRun, parseConfig } from "./run-executor";
+import { getRegistries } from "./registry-context";
 
 const POLL_INTERVAL_MS = 30_000; // 30 seconds
 
@@ -176,7 +177,7 @@ async function executeTrigger(triggerId: string): Promise<void> {
     await incrementRunCount(dbConfig.id);
 
     // Execute run (don't await to avoid blocking)
-    executeRun({ runId: run.id, config })
+    executeRun({ runId: run.id, config, registries: getRegistries() })
       .then(async (result) => {
         logger.info(
           {
@@ -257,7 +258,7 @@ export async function fireTrigger(triggerId: string): Promise<{
     await incrementRunCount(dbConfig.id);
 
     // Fire and forget
-    executeRun({ runId: run.id, config })
+    executeRun({ runId: run.id, config, registries: getRegistries() })
       .then(async (result) => {
         await updateTriggerAfterRun(triggerId, {
           runId: run.id,

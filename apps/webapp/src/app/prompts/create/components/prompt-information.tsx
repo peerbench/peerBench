@@ -3,7 +3,7 @@
 import React from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { usePageContext } from "../context";
-import { preparePrompt, PromptTypes } from "peerbench";
+import { preparePrompt, PromptTypes } from "@peerbench/sdk-legacy";
 import { Button } from "@/components/ui/button";
 import Alert from "@/components/ui/alert";
 import OptionInput from "./option-input";

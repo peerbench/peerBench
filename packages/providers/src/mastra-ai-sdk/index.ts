@@ -1,11 +1,11 @@
 import {
   AbstractProvider,
+  PEERBENCH_NAMESPACE,
   type CallableLLM,
   type CallableLLMForwardArgs,
   type LLMResponse,
-} from "peerbench/providers";
+} from "@peerbench/core";
 import { MastraClient } from "@mastra/client-js";
-import { PEERBENCH_NAMESPACE } from "peerbench";
 import type { AgentMemoryOption } from "@mastra/core/agent";
 import type { CoreMessage } from "@mastra/core/llm";
 import type { ChunkType } from "@mastra/core/stream";
@@ -51,12 +51,12 @@ export class MastraAiSdkProvider extends AbstractProvider.withKind(
         const mastraAgent = this.client.getAgent(config.agentId);
         const messages = args.messages
           .filter((m) => m.role === "user" || m.role === "assistant")
-          .map<CoreMessage>((m) => ({
-            role: m.role,
+          .map((m) => ({
+            role: m.role as "user" | "assistant",
             content: typeof m.content === "string" ? m.content : JSON.stringify(m.content),
           }));
         const requestContext = config.modelId ? buildModelRequestContext(config.modelId) : undefined;
-        const response = await mastraAgent.stream(messages, { requestContext });
+        const response = await mastraAgent.stream(messages as any, { requestContext });
         if (!response.body) throw new Error("Mastra stream response has no body");
         const headerPromptMeta = parsePromptMetadataHeader(response.headers.get(PROMPT_METADATA_HEADER));
         let text = "";

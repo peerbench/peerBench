@@ -11,7 +11,7 @@ import {
 } from "react";
 import { PromptSetSelectOption } from "@/components/prompt-set-select";
 import { useProviders } from "@/lib/hooks/use-providers";
-import { PromptResponse, PromptScore, Prompt } from "peerbench";
+import { PromptResponse, PromptScore, Prompt } from "@peerbench/sdk-legacy";
 
 export type CompareModel = {
   provider: string;

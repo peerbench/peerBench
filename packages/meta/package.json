@@ -1,6 +1,6 @@
 {
-  "name": "peerbench",
-  "version": "1.0.0",
+  "name": "@peerbench/meta",
+  "version": "0.1.0",
   "description": "PeerBench - AI evaluation platform. One-line install for the full experience.",
   "keywords": ["ai", "evaluation", "benchmark", "llm", "testing", "peerbench"],
   "publishConfig": {
@@ -36,12 +36,11 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@peerbench/core": "^0.1.0",
-    "@peerbench/providers": "^0.1.0",
-    "@peerbench/scorers": "^0.1.0",
-    "@peerbench/harness": "^0.1.0",
-    "@peerbench/studio": "^0.1.0",
-    "@peerbench/cli": "^0.1.0"
+    "@peerbench/core": "*",
+    "@peerbench/providers": "*",
+    "@peerbench/scorers": "*",
+    "@peerbench/harness": "*",
+    "@peerbench/cli": "*"
   },
   "devDependencies": {
     "tsup": "^8.5.1",

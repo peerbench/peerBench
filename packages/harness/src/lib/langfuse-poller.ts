@@ -23,6 +23,7 @@ import {
   type LangfuseTrigger,
 } from "./db";
 import { executeRun, parseConfig } from "./run-executor";
+import { getRegistries } from "./registry-context";
 
 // Polling configuration
 const DEFAULT_POLL_INTERVAL_MS = 30_000; // 30 seconds
@@ -357,7 +358,7 @@ async function executeLangfuseTrigger(
     await incrementRunCount(dbConfig.id);
 
     // Execute the run (fire-and-forget)
-    executeRun({ runId: run.id, config })
+    executeRun({ runId: run.id, config, registries: getRegistries() })
       .then(async () => {
         // Update trigger status only (don't increment counter again)
         await updateLangfuseTriggerRunStatus(trigger.id, {

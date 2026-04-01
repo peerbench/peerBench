@@ -45,8 +45,11 @@
   },
   "dependencies": {
     "@mastra/client-js": "^1.0.1",
-    "@peerbench/core": "^0.1.0",
-    "peerbench": "^0.0.12",
+    "@mastra/core": "^1.0.0",
+    "@peerbench/core": "*",
+    "axios": "1.14.0",
+    "decimal.js": "^10.6.0",
+    "openai": "^4.92.1",
     "zod": "^4.3.5"
   },
   "devDependencies": {

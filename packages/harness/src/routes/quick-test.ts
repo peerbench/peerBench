@@ -13,6 +13,7 @@ import {
   type ExecutionOptions,
 } from "../lib/run-executor";
 import { createRunLogger } from "../lib/logger";
+import { getRegistries } from "../lib/registry-context";
 
 export const quickTestRouter = new Hono();
 
@@ -262,7 +263,7 @@ async function executeRunWithOptions(
     executionOptions.maxTestCases = options.maxTestCasesPerConfig;
   }
 
-  await executeRun({ runId, config, options: executionOptions });
+  await executeRun({ runId, config, registries: getRegistries(), options: executionOptions });
 
   const updatedRun = await getRun(runId);
   log.info("Quick test run completed", {

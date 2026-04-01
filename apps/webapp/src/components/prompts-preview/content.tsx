@@ -2,7 +2,7 @@ import { LucideLoader2, LucideHash } from "lucide-react";
 import { NavigationControls } from "../navigation-controls";
 import { InfoSection } from "../entity-preview/info-section";
 import { InfoField } from "../entity-preview/info-field";
-import { Prompt, PromptTypes } from "peerbench";
+import { Prompt, PromptTypes } from "@peerbench/sdk-legacy";
 import MultipleChoice from "./multiple-choice";
 import OpenEnded from "./open-ended";
 import OrderSentences from "./order-sentences";

@@ -13,7 +13,7 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table";
-import { formatMs } from "peerbench";
+import { formatMs } from "@peerbench/sdk-legacy";
 import { formatUsd } from "@/utils/format-usd";
 import { LucideLoader2, LucideXCircle, LucideCheckCircle } from "lucide-react";
 import Decimal from "decimal.js";

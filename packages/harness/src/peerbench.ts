@@ -4,6 +4,7 @@ import { serve } from "@hono/node-server";
 import type { ServerType } from "@hono/node-server";
 import type { ProviderEntry, RunnerEntry, ScorerEntry, StorageEntry } from "@peerbench/core";
 import { createRegistry } from "@peerbench/core";
+import { setRegistries } from "./lib/registry-context";
 
 type PeerBenchConfig = {
   database: string;
@@ -35,6 +36,13 @@ class PeerBench {
     this.runnerRegistry = createRegistry(config.runners ?? {});
     this.scorerRegistry = createRegistry(config.scorers ?? {});
     this.storageRegistry = createRegistry(config.storages ?? {});
+
+    setRegistries({
+      runners: this.runnerRegistry as any,
+      storages: this.storageRegistry as any,
+      providers: this.providerRegistry as any,
+      scorers: this.scorerRegistry as any,
+    });
 
     this.setupMiddleware();
 

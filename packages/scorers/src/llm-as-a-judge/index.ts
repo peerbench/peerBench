@@ -1,4 +1,4 @@
-import { LLMAsAJudgeScorer } from "peerbench/scorers";
+import { LLMAsAJudgeScorer } from "./scorer";
 import { defineScorerEntry, type ProviderEntry } from "@peerbench/core";
 import meta from "./meta";
 

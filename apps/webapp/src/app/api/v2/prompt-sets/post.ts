@@ -6,7 +6,7 @@ import {
 } from "@/services/promptset.service";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { EnumSchema } from "peerbench";
+import { EnumSchema } from "@peerbench/sdk-legacy";
 import { PromptSetLicenses } from "@/database/types";
 import { DatabaseError } from "pg";
 import { parseBody } from "@/lib/route-kit/middlewares/parse-body";

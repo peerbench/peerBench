@@ -1,10 +1,9 @@
 import {
   type RunConfig,
   type TargetConfig,
-  runnerRegistry,
-  providerRegistry,
   extractPromptFields,
 } from "@peerbench/core";
+import { getRegistries } from "./registry-context";
 import {
   updateRunStatus,
   createResult,
@@ -34,8 +33,8 @@ export async function executeRerun(params: {
     totalTestCases: 1,
   });
 
-  const runnerEntry = runnerRegistry.find(config.runner);
-  const providerEntry = providerRegistry.find(target.provider);
+  const runnerEntry = getRegistries().runners.find(config.runner);
+  const providerEntry = getRegistries().providers.find(target.provider);
   const callableLLM = providerEntry.instantiateFromConfig(target);
   const endpointUrl = providerEntry.getEndpoint(target);
   const targetName = target.name || callableLLM.slug;

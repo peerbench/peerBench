@@ -5,17 +5,15 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint"
   },
+  "overrides": {
+    "axios": "1.14.0"
+  },
   "devDependencies": {
     "tsup": "^8.5.1",
     "tsc-alias": "^1.8.13",
     "typescript": "^5.8.3",
     "vitest": "^4.0.16",
     "turbo": "^2.7.3"
-  },
-  "overrides": {
-    "@peerbench/core": {
-      "zod": "^4.3.5"
-    }
   },
   "packageManager": "npm@11.3.0",
   "workspaces": [

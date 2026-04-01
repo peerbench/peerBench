@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import {
-  providerRegistry,
   resolveEnvVariables,
   RunConfigSchema,
 } from "@peerbench/core";
+import { getRegistries } from "../lib/registry-context";
 import {
   listAllResults,
   getResultById,
@@ -99,7 +99,7 @@ resultsRouter.post("/:id/rerun", async (c) => {
 
   const matchingTarget = config.targets.find((t) => {
     try {
-      const providerEntry = providerRegistry.find(t.provider);
+      const providerEntry = getRegistries().providers.find(t.provider);
       const callableLLM = providerEntry.instantiateFromConfig(t);
       const targetName = t.name || callableLLM.slug;
       log.debug("Rerun target matching", {

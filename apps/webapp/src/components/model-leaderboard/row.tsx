@@ -5,7 +5,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { LucideAlertCircle } from "lucide-react";
-import { formatMs } from "peerbench";
+import { formatMs } from "@peerbench/sdk-legacy";
 import type { ModelLeaderboardItem } from "@/services/leaderboard.service";
 
 export type ModelLeaderboardRowProps = ModelLeaderboardItem & {

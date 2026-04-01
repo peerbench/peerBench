@@ -1,13 +1,17 @@
 import { z } from "zod";
 import {
   BaseTestCaseSchemaV1,
-  BaseScoreSchemaV1,
-  defineResponseSchema,
-  defineScoreSchema,
   defineTestCaseSchema,
+} from "../schemas/base-test-case";
+import {
   BaseResponseSchemaV1,
-} from "peerbench/schemas";
-import { PEERBENCH_NAMESPACE } from "peerbench";
+  defineResponseSchema,
+} from "../schemas/base-response";
+import {
+  BaseScoreSchemaV1,
+  defineScoreSchema,
+} from "../schemas/base-score";
+import { PEERBENCH_NAMESPACE } from "../types/common";
 
 const NoOpDummyKind = "noop/dummy" as const;
 

@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { AbstractScorer, type BaseScorerResult } from "peerbench/scorers";
-import { PEERBENCH_NAMESPACE } from "peerbench";
+import { AbstractScorer, type BaseScorerResult } from "../types/scorer";
+import { PEERBENCH_NAMESPACE } from "../types/common";
 import { defineScorerEntry } from "@/registry/scorer";
 
 const DUMMY_SCORE_REASONING = "THIS IS A DUMMY SCORER THE SCORE IS RANDOM";

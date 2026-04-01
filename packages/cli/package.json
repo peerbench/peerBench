@@ -30,8 +30,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@peerbench/core": "^0.1.0",
-    "@peerbench/harness": "^0.1.0"
+    "@peerbench/core": "*"
   },
   "devDependencies": {
     "tsup": "^8.5.1",

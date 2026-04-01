@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { AbstractScorer } from "peerbench/scorers";
+import type { AbstractScorer } from "../types/scorer";
 
 function defineScorerEntry<
   TScorer extends AbstractScorer,

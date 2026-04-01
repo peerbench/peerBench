@@ -18,7 +18,7 @@ import {
   PromptScore,
   PromptScoreSchema,
   RateLimiter,
-} from "peerbench";
+} from "@peerbench/sdk-legacy";
 import { useQueryClient } from "@tanstack/react-query";
 import { usePromptAPI } from "@/lib/hooks/use-prompt-api";
 import {

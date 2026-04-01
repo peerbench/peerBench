@@ -1,6 +1,6 @@
 import type { z } from "zod";
-import type { RunnerResult } from "peerbench";
-import type { BaseTestCaseV1 } from "peerbench/schemas";
+import type { RunnerResult } from "../types/runner";
+import type { BaseTestCaseV1 } from "../schemas/base-test-case";
 import type { TargetConfig, ScorerConfig } from "@/config/unified-run-config";
 
 function defineRunnerEntry<TConfigSchema extends z.ZodType>(entry: {

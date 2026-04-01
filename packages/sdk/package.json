@@ -1,6 +1,7 @@
 {
-  "name": "peerbench",
-  "version": "0.0.1",
+  "name": "@peerbench/sdk-legacy",
+  "private": true,
+  "version": "0.0.12",
   "description": "Tooling help work with AI benchmarking data and create trustworthy AI",
   "keywords": [
     "ai",
@@ -46,7 +47,7 @@
     "@types/sbd": "^1.0.5",
     "abort-controller": "^3.0.0",
     "ansis": "^3.17.0",
-    "axios": "^1.11.0",
+    "axios": "1.14.0",
     "cheerio": "^1.1.2",
     "commander": "^13.1.0",
     "csv": "^6.3.11",

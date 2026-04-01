@@ -6,7 +6,7 @@ import { parseBody } from "@/lib/route-kit/middlewares/parse-body";
 import {
   NonRevealedPromptResponseSchema,
   PromptResponseSchema,
-} from "peerbench";
+} from "@peerbench/sdk-legacy";
 import { SignatureKeyTypes, SignatureTypes } from "@/database/types";
 import { PromptResponseService } from "@/services/prompt-response.service";
 

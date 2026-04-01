@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import {
   SimpleSystemPromptSchemaV1,
   type SimpleSystemPromptV1,
-} from "peerbench/schemas/llm";
+} from "../schemas/base-system-prompt";
 import { sha256 } from "./sha256";
 import type { SystemPromptConfig } from "@/schemas/system-prompt-config";
 

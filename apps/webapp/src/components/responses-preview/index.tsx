@@ -1,6 +1,6 @@
 "use client";
 
-import { PromptResponse } from "peerbench";
+import { PromptResponse } from "@peerbench/sdk-legacy";
 import { EntityPreview } from "../entity-preview";
 import { Content } from "./content";
 

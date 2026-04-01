@@ -1,4 +1,4 @@
-import { OpenAIProvider } from "peerbench/providers";
+import { OpenAIProvider } from "./provider";
 import { defineProviderEntry } from "@peerbench/core";
 import meta from "./meta";
 
