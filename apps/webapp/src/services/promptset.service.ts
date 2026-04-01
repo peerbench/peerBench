@@ -30,7 +30,7 @@ import {
 } from "@/database/schema";
 import { DbOptions, PaginationOptions } from "@/types/db";
 import { excluded, exists1, withTxOrDb, withTxOrTx } from "@/database/helpers";
-import { PromptType } from "peerbench";
+import { PromptType } from "@peerbench/sdk-legacy";
 import { paginateQuery } from "@/database/query";
 import {
   PromptSetLicense,

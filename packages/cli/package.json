@@ -1,0 +1,39 @@
+{
+  "name": "@peerbench/cli",
+  "version": "0.1.0",
+  "description": "PeerBench CLI tool for scaffolding, development, and database management",
+  "keywords": ["ai", "evaluation", "benchmark", "peerbench", "cli"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://peerbench.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peerbench/peerBench.git",
+    "directory": "packages/cli"
+  },
+  "license": "MIT",
+  "author": "peerBench community",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@peerbench/core": "*"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1",
+    "typescript": "^5.8.3"
+  }
+}

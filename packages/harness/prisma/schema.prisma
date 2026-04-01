@@ -1,0 +1,249 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Agents and Endpoints registry
+model Agent {
+  id          String   @id @default(uuid()) @db.Uuid
+  agentId     String   @map("agent_id")
+  name        String?
+  provider    String
+  endpointUrl String   @map("endpoint_url")
+  description String?
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  results            Result[]
+  healthCheckResults HealthCheckResult[]
+
+  @@unique([provider, endpointUrl, agentId])
+  @@index([name])
+  @@map("tst_agents")
+}
+
+// Benchmark configurations
+model Config {
+  id              String   @id @default(uuid()) @db.Uuid
+  name            String
+  description     String?
+  configJson      Json     @map("config_json")
+  configHash      String   @map("config_hash")
+  version         Int      @default(1)
+  runCount        Int      @default(0) @map("run_count")
+  tags            String[] @default([])
+  isFavorite      Boolean  @default(false) @map("is_favorite")
+  createdBy       String?  @map("created_by")
+  initialConfigId String?  @map("initial_config_id") @db.Uuid
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  initialConfig    Config?           @relation("ConfigVersions", fields: [initialConfigId], references: [id], onDelete: SetNull)
+  versions         Config[]          @relation("ConfigVersions")
+  runs             Run[]
+  triggers         Trigger[]
+  langfuseTriggers LangfuseTrigger[]
+
+  @@index([name])
+  @@index([runCount(sort: Desc)])
+  @@index([configHash])
+  @@index([isFavorite])
+  @@index([initialConfigId])
+  @@map("tst_configs")
+}
+
+// Benchmark runs
+model Run {
+  id                  String    @id @default(uuid()) @db.Uuid
+  configId            String?   @map("config_id") @db.Uuid
+  configVersion       Int?      @map("config_version")
+  configSnapshot      Json      @map("config_snapshot")
+  status              String    @default("pending") // pending | running | completed | failed | partial
+  totalTestCases      Int       @default(0) @map("total_test_cases")
+  completedTestCases  Int       @default(0) @map("completed_test_cases")
+  successfulTestCases Int       @default(0) @map("successful_test_cases")
+  failedTestCases     Int       @default(0) @map("failed_test_cases")
+  avgScore            Float?    @map("avg_score")
+  minScore            Float?    @map("min_score")
+  maxScore            Float?    @map("max_score")
+  totalDurationMs     Int?      @map("total_duration_ms")
+  startedAt           DateTime? @map("started_at") @db.Timestamptz
+  completedAt         DateTime? @map("completed_at") @db.Timestamptz
+  errorMessage        String?   @map("error_message")
+  metadata            Json      @default("{}")
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  config                  Config?             @relation(fields: [configId], references: [id])
+  results                 Result[]
+  triggersLastRun         Trigger[]           @relation("TriggerLastRun")
+  langfuseTriggersLastRun LangfuseTrigger[]   @relation("LangfuseTriggerLastRun")
+  healthCheckResults      HealthCheckResult[]
+
+  @@index([configId])
+  @@index([configVersion])
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+  @@index([avgScore])
+  @@map("tst_runs")
+}
+
+// Individual test case results
+model Result {
+  id                  String    @id @default(uuid()) @db.Uuid
+  runId               String    @map("run_id") @db.Uuid
+  testCaseId          String    @map("test_case_id") // Composite: testCase.id::targetName for multi-target runs
+  pureTestCaseId      String?   @map("pure_test_case_id") // Pure test case ID without target suffix
+  agentId             String?   @map("agent_id") @db.Uuid
+  systemPromptId      String?   @map("system_prompt_id")
+  systemPromptHash    String?   @map("system_prompt_hash")
+  systemPromptVersion Int?      @map("system_prompt_version")
+  status              String // success | failed | partial
+  errorMessage        String?   @map("error_message")
+  response            Json?
+  score               Json?
+  testCase            Json?     @map("test_case")
+  scoreValue          Float?    @map("score_value")
+  inputTokensUsed     Int?      @map("input_tokens_used")
+  outputTokensUsed    Int?      @map("output_tokens_used")
+  inputCost           String?   @map("input_cost")
+  outputCost          String?   @map("output_cost")
+  durationMs          Int?      @map("duration_ms")
+  ttftMs              Int?      @map("ttft_ms") // Time to first token (streaming only)
+  startedAt           DateTime? @map("started_at") @db.Timestamptz
+  completedAt         DateTime? @map("completed_at") @db.Timestamptz
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  run      Run        @relation(fields: [runId], references: [id], onDelete: Cascade)
+  agent    Agent?     @relation(fields: [agentId], references: [id])
+  feedback Feedback[]
+
+  @@index([runId])
+  @@index([testCaseId])
+  @@index([pureTestCaseId], map: "idx_tst_results_pure_test_case_id")
+  @@index([agentId])
+  @@index([scoreValue])
+  @@index([status])
+  @@index([createdAt])
+  @@map("tst_results")
+}
+
+// Run triggers (scheduled runs)
+model Trigger {
+  id                     String    @id @default(uuid()) @db.Uuid
+  name                   String
+  configId               String    @map("config_id") @db.Uuid
+  enabled                Int       @default(1) // 1 = true, 0 = false
+  intervalSeconds        Int       @map("interval_seconds")
+  skipIfRecentRunSeconds Int?      @map("skip_if_recent_run_seconds")
+  nextRunAt              DateTime? @map("next_run_at") @db.Timestamptz
+  lastRunAt              DateTime? @map("last_run_at") @db.Timestamptz
+  lastRunId              String?   @map("last_run_id") @db.Uuid
+  lastRunStatus          String?   @map("last_run_status") // completed | failed | running
+  runCount               Int       @default(0) @map("run_count")
+  createdAt              DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt              DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  config  Config @relation(fields: [configId], references: [id], onDelete: Cascade)
+  lastRun Run?   @relation("TriggerLastRun", fields: [lastRunId], references: [id])
+
+  @@index([configId])
+  @@index([enabled])
+  @@index([nextRunAt])
+  @@map("tst_triggers")
+}
+
+// Langfuse prompt triggers (event-based runs triggered by prompt changes)
+model LangfuseTrigger {
+  id                   String    @id @default(uuid()) @db.Uuid
+  name                 String
+  promptName           String    @map("prompt_name")
+  configId             String    @map("config_id") @db.Uuid
+  enabled              Int       @default(1)
+  debounceSeconds      Int       @default(30) @map("debounce_seconds")
+  lastSeenVersion      Int?      @map("last_seen_version")
+  lastTriggeredAt      DateTime? @map("last_triggered_at") @db.Timestamptz
+  lastTriggeredVersion Int?      @map("last_triggered_version")
+  lastRunId            String?   @map("last_run_id") @db.Uuid
+  lastRunStatus        String?   @map("last_run_status")
+  triggerCount         Int       @default(0) @map("trigger_count")
+  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  config  Config @relation(fields: [configId], references: [id], onDelete: Cascade)
+  lastRun Run?   @relation("LangfuseTriggerLastRun", fields: [lastRunId], references: [id])
+
+  @@index([promptName])
+  @@index([configId])
+  @@index([enabled])
+  @@map("tst_langfuse_triggers")
+}
+
+// Langfuse prompt version tracking (to detect changes)
+model LangfusePromptVersion {
+  id           String   @id @default(uuid()) @db.Uuid
+  promptName   String   @map("prompt_name")
+  version      Int
+  labels       String[] @default([])
+  contentHash  String?  @map("content_hash")
+  discoveredAt DateTime @default(now()) @map("discovered_at") @db.Timestamptz
+
+  @@index([promptName])
+  @@index([promptName, version])
+  @@map("tst_langfuse_prompt_versions")
+}
+
+// Health check results (historical health check data, linked to agents)
+model HealthCheckResult {
+  id             String   @id @default(uuid()) @db.Uuid
+  agentId        String   @map("agent_id") @db.Uuid
+  runId          String?  @map("run_id") @db.Uuid
+  status         String // "healthy" | "unhealthy"
+  statusCode     Int?     @map("status_code")
+  responseTimeMs Int?     @map("response_time_ms")
+  checkedPath    String?  @map("checked_path")
+  errorMessage   String?  @map("error_message")
+  checkedAt      DateTime @default(now()) @map("checked_at") @db.Timestamptz
+
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  run   Run?  @relation(fields: [runId], references: [id])
+
+  @@index([agentId])
+  @@index([checkedAt])
+  @@index([status])
+  @@map("tst_health_check_results")
+}
+
+// User feedback on result scores
+model Feedback {
+  id        String   @id @default(uuid()) @db.Uuid
+  resultId  String   @map("result_id") @db.Uuid
+  sentiment String // "positive" | "negative"
+  comment   String?
+  name      String   @default("Anonymous")
+  userId    String?  @map("user_id") // For future auth integration
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  result Result @relation(fields: [resultId], references: [id], onDelete: Cascade)
+
+  @@index([resultId])
+  @@index([sentiment])
+  @@index([createdAt(sort: Desc)])
+  @@map("tst_feedback")
+}
+
+// Cache for auto-discovered Supabase configs (anon key + URL per hostname)
+model SupabaseDiscoveryCache {
+  id             String   @id @default(uuid()) @db.Uuid
+  hostname       String   @unique
+  supabaseUrl    String   @map("supabase_url")
+  supabaseApiKey String   @map("supabase_api_key")
+  strategyUsed   String   @map("strategy_used")
+  discoveredAt   DateTime @default(now()) @map("discovered_at") @db.Timestamptz
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("tst_supabase_discovery_cache")
+}

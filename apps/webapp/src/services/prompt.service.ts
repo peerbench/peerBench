@@ -27,7 +27,7 @@ import {
   PromptSchema,
   removeDIDPrefix,
   stableStringify,
-} from "peerbench";
+} from "@peerbench/sdk-legacy";
 import {
   and,
   count,

@@ -3,7 +3,7 @@ import { auth } from "@/lib/route-kit/middlewares/auth";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { parseBody } from "@/lib/route-kit/middlewares/parse-body";
-import { NonRevealedPromptSchema, PromptSchema } from "peerbench";
+import { NonRevealedPromptSchema, PromptSchema } from "@peerbench/sdk-legacy";
 import { SignatureKeyTypes, SignatureTypes } from "@/database/types";
 import { PromptService } from "@/services/prompt.service";
 

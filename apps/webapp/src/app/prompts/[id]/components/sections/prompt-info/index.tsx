@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/tooltip";
 import { PromptStatuses } from "@/database/types";
 import IncludedByPromptSetLink from "@/components/included-by-prompt-set-link";
-import { PromptTypes } from "peerbench";
+import { PromptTypes } from "@peerbench/sdk-legacy";
 import { MetadataAccordion } from "@/components/metadata-accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { capitalize } from "@/utils/capitalize";

@@ -1,7 +1,7 @@
 import { TruncatedText } from "@/components/truncated-text";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { APIScoreItem } from "@/lib/hooks/use-score-api";
-import { ScoringMethods } from "peerbench";
+import { ScoringMethods } from "@peerbench/sdk-legacy";
 import { LucideBot, LucideHash, LucideUser, LucideZap } from "lucide-react";
 import { ScoreComments } from "./score-comments";
 import {

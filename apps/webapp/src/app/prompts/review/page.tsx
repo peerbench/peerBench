@@ -4,7 +4,7 @@ import { getUser } from "@/lib/actions/auth";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { Suspense } from "react";
-import { PromptTypes } from "peerbench";
+import { PromptTypes } from "@peerbench/sdk-legacy";
 import { StringBool } from "@/validation/string-bool";
 import Sections from "./components/sections";
 import SectionsSkeleton from "./components/sections/skeleton";

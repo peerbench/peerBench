@@ -35,7 +35,7 @@ import {
   removeDIDPrefix,
   ScoringMethods,
   stableStringify,
-} from "peerbench";
+} from "@peerbench/sdk-legacy";
 import { and, asc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { NextResponse } from "next/server";

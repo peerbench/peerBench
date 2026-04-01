@@ -15,7 +15,7 @@ import { ReviewOpinion } from "@/types/review";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { errorMessage } from "@/utils/error-message";
-import { MaybePromise } from "peerbench";
+import { MaybePromise } from "@peerbench/sdk-legacy";
 
 export type ReviewModalValue = {
   comment: string;

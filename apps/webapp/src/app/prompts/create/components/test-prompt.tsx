@@ -23,7 +23,7 @@ import {
   PromptScore,
   buildResponse,
   RateLimiter,
-} from "peerbench";
+} from "@peerbench/sdk-legacy";
 import { Textarea } from "@/components/ui/textarea";
 import { LoaderCircleIcon, TestTube, Eye, PlusCircle } from "lucide-react";
 import { v7 as uuidv7 } from "uuid";

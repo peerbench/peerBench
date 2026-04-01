@@ -10,7 +10,7 @@ import {
   NonRevealedPromptSchema,
   NonRevealedPromptResponseSchema,
   RateLimiter,
-} from "peerbench";
+} from "@peerbench/sdk-legacy";
 import { errorMessage } from "@/utils/error-message";
 import {
   LucideLoader2,

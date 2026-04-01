@@ -8,7 +8,7 @@ import {
   OpenRouterProvider,
   GoogleLLMProvider,
   OpenAILLMProvider,
-} from "peerbench";
+} from "@peerbench/sdk-legacy";
 import { toast } from "react-toastify";
 import { useSettingOpenRouterKey } from "@/lib/hooks/settings/use-setting-openrouter-key";
 import { useSettingGoogleKey } from "@/lib/hooks/settings/use-setting-google-key";

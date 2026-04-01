@@ -14,7 +14,7 @@ import { useDebouncedCallback } from "@/lib/hooks/use-debounce";
 import { useRouter, useSearchParams } from "next/navigation";
 import { promptFiltersSchema } from "@/validation/api/prompt-filters";
 import { z } from "zod";
-import { PromptType } from "peerbench";
+import { PromptType } from "@peerbench/sdk-legacy";
 
 export interface ComponentContextType {
   isFilterFixed: (

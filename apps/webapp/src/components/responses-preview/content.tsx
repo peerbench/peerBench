@@ -5,7 +5,7 @@ import { InfoField } from "../entity-preview/info-field";
 import { DateTime } from "luxon";
 import { JSONView } from "../json-view";
 import { formatUsd } from "@/utils/format-usd";
-import { formatMs, PromptResponse } from "peerbench";
+import { formatMs, PromptResponse } from "@peerbench/sdk-legacy";
 import Decimal from "decimal.js";
 
 export function Content({

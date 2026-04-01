@@ -1,5 +1,5 @@
 import { PromptStatuses } from "@/database/types";
-import { EnumSchema, PromptTypes } from "peerbench";
+import { EnumSchema, PromptTypes } from "@peerbench/sdk-legacy";
 import { PromptAccessReasons } from "@/types/prompt";
 import { z } from "zod";
 import { StringBool } from "../string-bool";

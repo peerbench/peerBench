@@ -16,7 +16,7 @@ import {
   useQueryStates,
   Values,
 } from "nuqs";
-import { EnumSchema } from "peerbench";
+import { EnumSchema } from "@peerbench/sdk-legacy";
 import { PromptSetOrderings, PromptSetVisibilities } from "@/types/prompt-set";
 import { capitalize } from "@/utils/capitalize";
 import { orderBySchema } from "@/validation/api/orderby";

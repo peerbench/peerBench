@@ -1,0 +1,116 @@
+{
+  "name": "peerbench",
+  "version": "0.0.12",
+  "description": "Tooling help work with AI benchmarking data and create trustworthy AI",
+  "keywords": [
+    "ai",
+    "evaluation",
+    "validation",
+    "benchmark"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://peerbench.ai",
+  "bugs": {
+    "url": "https://github.com/peerbench/peerBench/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peerbench/peerBench.git"
+  },
+  "license": "MIT",
+  "author": "peerBench community",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./benchmarks": {
+      "types": "./dist/benchmarks/index.d.ts",
+      "import": "./dist/benchmarks/index.js"
+    },
+    "./providers": {
+      "types": "./dist/providers/index.d.ts",
+      "import": "./dist/providers/index.js"
+    },
+    "./schemas": {
+      "types": "./dist/schemas/index.d.ts",
+      "import": "./dist/schemas/index.js"
+    },
+    "./scorers": {
+      "types": "./dist/scorers/index.d.ts",
+      "import": "./dist/scorers/index.js"
+    },
+    "./storages": {
+      "types": "./dist/storages/index.d.ts",
+      "import": "./dist/storages/index.js"
+    },
+    "./aggregators": {
+      "types": "./dist/aggregators/index.d.ts",
+      "import": "./dist/aggregators/index.js"
+    },
+    "./schemas/*": {
+      "types": "./dist/schemas/*/index.d.ts",
+      "import": "./dist/schemas/*/index.js"
+    },
+    "./schemas/llm": {
+      "types": "./dist/schemas/llm/index.d.ts",
+      "import": "./dist/schemas/llm/index.js"
+    },
+    "./schemas/extensions": {
+      "types": "./dist/schemas/extensions/index.d.ts",
+      "import": "./dist/schemas/extensions/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "typesVersions": {
+    "*": {
+      "schemas/*": [
+        "./dist/schemas/*"
+      ]
+    }
+  },
+  "scripts": {
+    "lint": "tsc && eslint",
+    "dev": "tsup --silent --watch --onSuccess 'tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json -f'",
+    "build": "tsup && tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json -f",
+    "test": "vitest run",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@mastra/client-js": "^1.0.1",
+    "axios": "^1.11.0",
+    "better-sqlite3": "^12.6.0",
+    "decimal.js": "^10.6.0",
+    "handlebars": "^4.7.8",
+    "jsonrepair": "^3.13.0",
+    "openai": "^6.15.0",
+    "safe-stable-stringify": "^2.5.0",
+    "uuid": "^11.1.0"
+  },
+  "peerDependencies": {
+    "zod": "^4.2.1",
+    "ai": ">=6.0.0 <7.0.0",
+    "@ai-sdk/provider": ">=3.0.0"
+  },
+  "devDependencies": {
+    "@dotenvx/dotenvx": "^1.49.0",
+    "@eslint/js": "^9.24.0",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^22.14.0",
+    "eslint": "^9.24.0",
+    "prettier": "^3.7.1",
+    "tsc-alias": "^1.8.13",
+    "tsup": "^8.5.1",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.29.0",
+    "vitest": "^4.0.16"
+  }
+}

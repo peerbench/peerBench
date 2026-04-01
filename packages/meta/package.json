@@ -1,0 +1,49 @@
+{
+  "name": "@peerbench/meta",
+  "version": "0.1.0",
+  "description": "PeerBench - AI evaluation platform. One-line install for the full experience.",
+  "keywords": ["ai", "evaluation", "benchmark", "llm", "testing", "peerbench"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://peerbench.ai",
+  "bugs": {
+    "url": "https://github.com/peerbench/peerBench/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peerbench/peerBench.git",
+    "directory": "packages/meta"
+  },
+  "license": "MIT",
+  "author": "peerBench community",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "peerbench": "./bin/peerbench.js"
+  },
+  "files": ["dist", "bin"],
+  "scripts": {
+    "build": "tsup",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@peerbench/core": "*",
+    "@peerbench/providers": "*",
+    "@peerbench/scorers": "*",
+    "@peerbench/harness": "*",
+    "@peerbench/cli": "*"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1",
+    "typescript": "^5.8.3"
+  }
+}

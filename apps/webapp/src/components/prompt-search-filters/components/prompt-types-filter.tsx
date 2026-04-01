@@ -3,7 +3,7 @@
 import { useDocumentBody } from "@/lib/hooks/use-document-body";
 import { reactSelectStyles } from "@/lib/styles/react-select-styles";
 import { usePromptSearchFiltersContext, SelectOption } from "../context";
-import { PromptTypes } from "peerbench";
+import { PromptTypes } from "@peerbench/sdk-legacy";
 import { cn } from "@/utils/cn";
 import { LucideLayers } from "lucide-react";
 import Select from "react-select";

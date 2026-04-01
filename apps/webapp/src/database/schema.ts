@@ -1,5 +1,5 @@
 import { ReviewOpinion } from "@/types/review";
-import { PromptOptions, PromptType, ScoringMethod } from "peerbench";
+import { PromptOptions, PromptType, ScoringMethod } from "@peerbench/sdk-legacy";
 import {
   pgTable,
   text,

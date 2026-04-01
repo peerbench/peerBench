@@ -1,5 +1,5 @@
 import { ApiError } from "@/errors/api-error";
-import { MaybePromise } from "peerbench";
+import { MaybePromise } from "@peerbench/sdk-legacy";
 import { NextRequest, NextResponse } from "next/server";
 import { NextResponseType } from "@/lib/utilities";
 

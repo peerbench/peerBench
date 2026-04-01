@@ -1,4 +1,4 @@
-import { GoogleLLMProvider } from "peerbench";
+import { GoogleLLMProvider } from "@peerbench/sdk-legacy";
 import {
   LLMProviderInstantiateFunction,
   useLLMProvider,

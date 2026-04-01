@@ -18,7 +18,7 @@ import {
   SimilarityScorer,
   TEXT_REPLACEMENT_SYSTEM_PROMPT,
   TYPO_SYSTEM_PROMPT,
-} from "peerbench";
+} from "@peerbench/sdk-legacy";
 import { v7 as uuidv7 } from "uuid";
 import { errorMessage } from "@/utils/error-message";
 import { Button } from "@/components/ui/button";

@@ -36,7 +36,7 @@ import {
   PromptResponseSchema,
   removeDIDPrefix,
   stableStringify,
-} from "peerbench";
+} from "@peerbench/sdk-legacy";
 import {
   and,
   countDistinct,

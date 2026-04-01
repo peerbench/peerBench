@@ -13,7 +13,7 @@ import {
   reactSelectStyles,
   reactSelectDisabledStyles,
 } from "@/lib/styles/react-select-styles";
-import { PromptType } from "peerbench";
+import { PromptType } from "@peerbench/sdk-legacy";
 import { PromptSetAccessReason } from "@/types/prompt-set";
 import { usePromptSetAPI } from "@/lib/hooks/use-prompt-set-api";
 import { useSearchParams } from "next/navigation";

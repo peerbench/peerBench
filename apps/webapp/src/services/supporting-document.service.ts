@@ -1,4 +1,4 @@
-import { calculateCID, calculateSHA256 } from "peerbench";
+import { calculateCID, calculateSHA256 } from "@peerbench/sdk-legacy";
 import { and, eq, inArray, or, sql } from "drizzle-orm";
 import {
   promptSetsTable,

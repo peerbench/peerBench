@@ -1,4 +1,4 @@
-import { OpenAILLMProvider } from "peerbench";
+import { OpenAILLMProvider } from "@peerbench/sdk-legacy";
 import {
   LLMProviderInstantiateFunction,
   useLLMProvider,

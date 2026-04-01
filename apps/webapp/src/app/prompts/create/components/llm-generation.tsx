@@ -11,7 +11,7 @@ import {
   OpenEndedGenerator,
   type Prompt,
   PromptTypes,
-} from "peerbench";
+} from "@peerbench/sdk-legacy";
 import { toast } from "react-toastify";
 import { isAnyProviderLoading } from "@/lib/helpers/is-any-provider-loading";
 import { Sparkles } from "lucide-react";

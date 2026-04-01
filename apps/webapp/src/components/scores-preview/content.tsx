@@ -4,7 +4,7 @@ import { InfoSection } from "../entity-preview/info-section";
 import { InfoField } from "../entity-preview/info-field";
 import { JSONView } from "../json-view";
 import { formatUsd } from "@/utils/format-usd";
-import { PromptScore } from "peerbench";
+import { PromptScore } from "@peerbench/sdk-legacy";
 import Decimal from "decimal.js";
 
 export function Content({

@@ -13,7 +13,7 @@ import {
   PromptScore,
   PromptType,
   PromptTypes,
-} from "peerbench";
+} from "@peerbench/sdk-legacy";
 import React, {
   createContext,
   useContext,

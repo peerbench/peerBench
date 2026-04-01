@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { EnumSchema } from "peerbench";
+import { EnumSchema } from "@peerbench/sdk-legacy";
 import {
   PromptSetAccessReasons,
   PromptSetVisibilities,

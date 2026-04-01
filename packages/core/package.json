@@ -1,0 +1,60 @@
+{
+  "name": "@peerbench/core",
+  "version": "0.1.0",
+  "description": "Core registry infrastructure, types, utils, and schema factories for peerbench",
+  "keywords": [
+    "ai",
+    "evaluation",
+    "benchmark",
+    "peerbench"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://peerbench.ai",
+  "bugs": {
+    "url": "https://github.com/peerbench/peerBench/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peerbench/peerBench.git",
+    "directory": "packages/core"
+  },
+  "license": "MIT",
+  "author": "peerBench community",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "lint": "tsc && eslint",
+    "dev": "tsup --silent --watch --onSuccess 'tsc-alias -p tsconfig.json -f'",
+    "build": "tsup --onSuccess 'tsc-alias -p tsconfig.json -f'",
+    "test": "vitest run",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "zod": "^4.3.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.24.0",
+    "@types/node": "^22.14.0",
+    "eslint": "^9.24.0",
+    "prettier": "^3.7.1",
+    "tsc-alias": "^1.8.13",
+    "tsup": "^8.5.1",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.29.0",
+    "vitest": "^4.0.16"
+  }
+}

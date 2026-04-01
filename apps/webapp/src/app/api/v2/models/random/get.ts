@@ -3,7 +3,7 @@ import { auth } from "@/lib/route-kit/middlewares/auth";
 import { safeParseQueryParams } from "@/lib/route-helpers/parse-query-params";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { OpenRouterProvider } from "peerbench";
+import { OpenRouterProvider } from "@peerbench/sdk-legacy";
 import { ClientSideResponseType, NextResponseType } from "@/lib/utilities";
 import { ApiError } from "@/errors/api-error";
 
