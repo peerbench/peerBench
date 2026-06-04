@@ -1,4 +1,8 @@
-FROM node:22-alpine AS base
+# glibc (Debian) base, not alpine/musl: the package-lock.json is resolved for
+# glibc Linux (Vercel), so it carries lightningcss' linux-x64-gnu native binary
+# but not the musl one — `npm ci` on alpine then fails to find
+# lightningcss.linux-x64-musl.node during `next build`.
+FROM node:22-slim AS base
 
 FROM base AS deps
 WORKDIR /repo
@@ -11,17 +15,21 @@ COPY package.json package-lock.json ./
 COPY apps/webapp/package.json ./apps/webapp/package.json
 COPY packages/sdk/package.json ./packages/sdk/package.json
 
-RUN npm ci
+# Install locked deps (npm ci), then add the linux native binaries the macOS-
+# generated package-lock.json omits: Tailwind v4's lightningcss + @tailwindcss/
+# oxide ship per-platform optional binaries, and npm ci can't install what the
+# lockfile lacks. Targeting just these two (vs a full re-resolve) avoids version
+# drift — a fresh `npm install` pulled a newer TypeScript that broke the SDK.
+RUN npm ci && npm install --no-save lightningcss @tailwindcss/oxide
 
 # Build the webapp
 FROM base AS builder
 WORKDIR /repo
 
-RUN mkdir -p apps/webapp
-RUN mkdir -p packages/sdk
-COPY --from=deps /repo/node_modules               ./node_modules
-COPY --from=deps /repo/apps/webapp/node_modules   ./apps/webapp/node_modules
-COPY --from=deps /repo/packages/sdk/node_modules  ./packages/sdk/node_modules
+# Copy everything the deps stage produced (root + any per-workspace
+# node_modules — the layout depends on npm's hoisting). Copying the whole /repo
+# in one shot avoids failing when npm hoists a workspace's node_modules away.
+COPY --from=deps /repo ./
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -44,7 +52,11 @@ FROM base AS runner
 WORKDIR /app
 
 # Install dotenvx
-RUN apk add curl
+# ca-certificates is required for the dotenvx install curl below: node:22-slim
+# ships without it, so HTTPS curl fails (curl: (77)) — and because it's piped
+# to `sh`, that failure is silent and would only surface as a crash at runtime
+# (the CMD runs `dotenvx`).
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates && rm -rf /var/lib/apt/lists/*
 RUN curl -sfS https://dotenvx.sh/install.sh | sh
 
 # Copy the built webapp
