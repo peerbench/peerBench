@@ -1,161 +1,228 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { ExternalLink } from "lucide-react";
+import { Geist, Martian_Mono } from "next/font/google";
+import Image from "next/image";
+import type { Metadata } from "next";
 
-// Hardcoded prompt sets for fast loading
-const featuredPromptSets = [
+const geist = Geist({ subsets: ["latin"] });
+const martianMono = Martian_Mono({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+  title: "peerBench: cheat-proof AI benchmarking",
+  description:
+    "peerBench is a protocol for AI benchmarking on secret test sets, with rankings computed across many independent institutions and auditable by anyone.",
+};
+
+const linkClassName =
+  "break-words text-[#0f766e] underline decoration-[#0f766e]/60 underline-offset-[3px] hover:text-[#0b5f59] hover:decoration-current";
+
+const labelClassName = `${martianMono.className} text-[12px] uppercase tracking-[0.08em]`;
+
+const sections: LandingSection[] = [
   {
-    id: 0,
-    title: "General Review",
-    description:
-      "Review general prompts and help improve AI benchmarking quality",
+    label: "Papers",
+    items: [
+      {
+        title: "Benchmarking is Broken: Don’t Let AI Be Its Own Judge",
+        italic: true,
+        note: "NeurIPS 2025, Position Paper Track. The original peerBench paper.",
+        links: [
+          { label: "arXiv", href: "https://arxiv.org/abs/2510.07575" },
+          {
+            label: "OpenReview",
+            href: "https://openreview.net/forum?id=vFae5rRman",
+          },
+        ],
+      },
+      {
+        title: "Video benchmark paper",
+        note: "Preprint coming soon.",
+        links: [],
+      },
+    ],
   },
   {
-    id: 95,
-    title: "Logical Puzzles - English",
-    description:
-      "Review puzzles and contribute to logical reasoning AI evaluation",
+    label: "Platforms",
+    items: [
+      {
+        title: "PeerBench Video Benchmark",
+        tag: "(new platform)",
+        note: "An open, federated benchmark for image-to-video models, rated by people at independent institutions.",
+        links: [{ href: "https://video-benchmark.peerbench.ai/" }],
+      },
+      {
+        title: "Original peerBench platform",
+        tag: "(2025)",
+        note: "The first prototype, for LLM prompts, reviews and leaderboards. It stays online.",
+        links: [{ href: "https://peerbench.ai/prompts/explore" }],
+      },
+    ],
   },
   {
-    id: 100,
-    title: "AIME25 Mathematical Reasoning Benchmark - English",
-    description: "Review AIME25 mathematical reasoning prompts",
+    label: "Code",
+    items: [
+      {
+        title: "peerbench/peerBench",
+        note: "Source of the original platform.",
+        links: [{ href: "https://github.com/peerbench/peerBench" }],
+      },
+    ],
   },
   {
-    id: 94,
-    title: "Enhanced History Questions",
-    description:
-      "Review history prompts: knowledge in combination with reasoning and math skills",
-  },
-  {
-    id: 88,
-    title: "Polish Language Mix of Tasks",
-    description:
-      "Review Polish language prompts: culture, language, history, geography, and more",
-  },
-  {
-    id: 92,
-    title: "Ukrainian Grammar",
-    description:
-      "Review Ukrainian grammar prompts: updated rules of Ukrainian grammar",
+    label: "Community",
+    items: [
+      {
+        title: "Discord",
+        note: "Questions and discussion with the team.",
+        links: [{ href: "https://discord.gg/kMa6vqHXZH" }],
+      },
+    ],
   },
 ];
 
 export default function Home() {
   return (
-    <main className="max-w-7xl mx-auto px-4 py-8 mb-[200px]">
-      {/* Hero Section */}
-      <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-          Join us to solve the problem of cheating on AI Benchmarking
-        </h1>
-      </div>
+    <div
+      className={`${geist.className} min-h-screen bg-white text-[#111418] antialiased`}
+    >
+      <div className="mx-auto max-w-[66ch] px-4 sm:px-6 pt-8 pb-10 sm:pt-10 sm:pb-12 text-[17px] leading-[1.65]">
+        <header className="flex items-center gap-2.5">
+          <Image
+            src="/logo-black.svg"
+            alt=""
+            width={21}
+            height={24}
+            className="h-6 w-auto"
+          />
+          <span className="text-[17px] font-semibold tracking-[-0.01em]">
+            peerBench
+          </span>
+        </header>
 
-      {/* NeurIPS Announcement */}
-      <div className="mb-4 flex justify-center">
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-2xl p-6 shadow-lg max-w-3xl">
-          <div className="flex items-start gap-3">
-            <span className="text-3xl">🎉</span>
-            <div className="flex-1">
-              <p className="text-lg text-gray-800 mb-3">
-                Our paper{" "}
-                <span className="font-semibold">
-                  &quot;Benchmarking is Broken - Don&apos;t Let AI be its Own
-                  Judge&quot;
-                </span>{" "}
-                just got accepted to{" "}
-                <span className="font-bold text-blue-600">NeurIPS 2025</span>{" "}
-                <a
-                  href="https://arxiv.org/abs/2510.07575"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium transition-colors"
-                >
-                  <span>(Read on arXiv</span>
-                  <ExternalLink className="w-4 h-4" />
-                  <span>)</span>
-                </a>
-              </p>
-              <p className="text-lg text-gray-600">
-                <span>
-                  We will be publishing a series of subsequent papers on
-                  PeerBench and want to reward those who make it possible.{" "}
-                </span>
-                <span className="font-bold">
-                  Get your name in the paper by contributing to the community
-                  (create prompts, comment, review).
-                </span>
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* PeerBench Info Box */}
-      <div className="mb-4 flex justify-center">
-        <div className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-200 rounded-2xl p-6 shadow-lg max-w-3xl">
-          <p className="text-lg text-gray-600 text-center">
-            <span className="font-bold">PeerBench.ai</span> is an open-source,
-            non-profit community implementation of the NeurIPS paper, bringing
-            the research to life.
+        <section className="pt-10 sm:pt-14 pb-8">
+          <h1 className="text-[2rem] sm:text-[2.5rem] leading-[1.12] font-semibold tracking-[-0.025em] text-balance">
+            Cheat-proof AI benchmarking.
+          </h1>
+          <p className="mt-5 text-pretty">
+            peerBench is a protocol for evaluating AI models on secret test
+            sets. Rankings come from many independent institutions instead of a
+            single curator, and anyone can audit them.
           </p>
-        </div>
-      </div>
+        </section>
 
-      {/* Start Reviewing Section */}
-      <div className="mb-12">
-        <Card className="w-full">
-          <CardContent className="pt-6">
-            <div className="space-y-3">
-              {featuredPromptSets.map((promptSet) => (
-                <div
-                  key={promptSet.id}
-                  className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex-1">
-                    <div className="font-medium text-gray-900 mb-1">
-                      {promptSet.title}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      {promptSet.description}
-                    </div>
-                  </div>
-                  <Link
-                    href={`/prompts/review?excludeReviewed=true&promptSetId=${promptSet.id}`}
-                  >
-                    <Button
-                      size="sm"
-                      className="bg-green-600 hover:bg-green-700 text-white ml-4"
-                    >
-                      Start Reviewing
-                    </Button>
-                  </Link>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        <section
+          className="border-t border-[#dfe2e7] py-8"
+          aria-labelledby="how"
+        >
+          <h2 id="how" className={`${labelClassName} text-[#0f766e]`}>
+            Why and how
+          </h2>
+          <p className="mt-3 text-pretty">
+            Public benchmarks leak into training data, so scores can reflect
+            memorization instead of capability, and whoever builds the test set
+            can cherry-pick it. Private benchmarks only move all the trust to
+            one curator.
+          </p>
+          <p className="mt-3 text-pretty">
+            In peerBench, independent institutions each run a node with their
+            own secret test data and human raters. Nodes commit hashes of their
+            data as they create it, and later the network picks a sample of
+            about 10% to reveal, so a node that leaks or games its data shows up
+            as a statistical outlier. Records are public on the AT Protocol, so
+            anyone can recompute the rankings.
+          </p>
+        </section>
 
-      {/* New Benchmark Section */}
-      <div className="mb-12">
-        <Card className="w-full">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <Link href="/benchmarks/create">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="text-blue-600 hover:text-blue-700 border-blue-600 hover:border-blue-700"
+        <section className="pb-10" aria-labelledby="links">
+          <h2 id="links" className="sr-only">
+            Papers, platforms and code
+          </h2>
+
+          <dl className="divide-y divide-[#dfe2e7] border-y border-[#dfe2e7]">
+            {sections.map((section) => (
+              <div
+                key={section.label}
+                className="grid gap-x-6 gap-y-2 py-5 sm:grid-cols-[7.5rem_minmax(0,1fr)]"
+              >
+                <dt
+                  className={`${labelClassName} text-[#4b525c] sm:pt-[0.45em]`}
                 >
-                  Start collaborating on a new Benchmark
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
+                  {section.label}
+                </dt>
+                <dd>
+                  <ul className="space-y-4">
+                    {section.items.map((item) => (
+                      <LandingItemView key={item.title} item={item} />
+                    ))}
+                  </ul>
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        <footer className="pt-4 text-[14px] text-[#3f454e]">
+          <p>peerBench is an open-source, non-profit project by Forest AI.</p>
+        </footer>
       </div>
-    </main>
+    </div>
   );
 }
+
+function LandingItemView({ item }: { item: LandingItem }) {
+  const labelledLinks = item.links.filter((link) => link.label);
+  const plainLinks = item.links.filter((link) => !link.label);
+
+  return (
+    <li>
+      <p className={`font-medium text-pretty ${item.italic ? "italic" : ""}`}>
+        {item.title}
+        {item.tag && (
+          <span className="font-normal text-[#3f454e]"> {item.tag}</span>
+        )}
+      </p>
+      <p className="mt-0.5 text-[16px] text-[#3f454e] text-pretty">
+        {item.note}
+      </p>
+
+      {labelledLinks.length > 0 && (
+        <dl className="mt-2 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-[16px]">
+          {labelledLinks.map((link) => (
+            <div key={link.href} className="contents">
+              <dt className="text-[#4b525c]">{link.label}</dt>
+              <dd>
+                <a href={link.href} className={linkClassName}>
+                  {link.href}
+                </a>
+              </dd>
+            </div>
+          ))}
+        </dl>
+      )}
+
+      {plainLinks.map((link) => (
+        <p key={link.href} className="mt-1 text-[16px]">
+          <a href={link.href} className={linkClassName}>
+            {link.href}
+          </a>
+        </p>
+      ))}
+    </li>
+  );
+}
+
+type LandingLink = {
+  href: string;
+  label?: string;
+};
+
+type LandingItem = {
+  title: string;
+  note: string;
+  links: LandingLink[];
+  tag?: string;
+  italic?: boolean;
+};
+
+type LandingSection = {
+  label: string;
+  items: LandingItem[];
+};

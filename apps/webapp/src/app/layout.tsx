@@ -1,4 +1,5 @@
 import Navbar from "@/components/navbar";
+import { HideOnLanding } from "@/components/navbar/hide-on-landing";
 import { Inter } from "next/font/google";
 import { ToastContainer } from "react-toastify";
 import { twMerge } from "tailwind-merge";
@@ -52,7 +53,9 @@ export default async function RootLayout({
           <ReactQueryClientProvider>
             <PreloaderContextProvider>
               <NuqsAdapter>
-                <Navbar />
+                <HideOnLanding>
+                  <Navbar />
+                </HideOnLanding>
                 <div className="min-h-[calc(100vh-64px)] flex overflow-y-auto">
                   <main
                     className={twMerge(
