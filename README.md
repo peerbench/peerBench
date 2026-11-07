@@ -45,6 +45,7 @@ Get involved with PeerBench — whether you're a researcher, developer, or AI en
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
 | 🌐 **Web App**          | [peerbench.ai](https://peerbench.ai)                                                                                | Submit prompts, review tests, and explore leaderboards |
 | 💻 **GitHub**           | [github.com/peerbench/peerBench](https://github.com/peerbench/peerBench)                                            | Source code, issues, and discussions                   |
+| 🇩🇪 **German LLM Index** | [dach.peerbench.ai](https://dach.peerbench.ai) | Which LLM speaks German best: independent leaderboard on six German benchmarks |
 | 💬 **Discord**          | [Join our Discord](https://discord.gg/kMa6vqHXZH)                                                                   | Chat with the community, ask questions, get support    |
 | 📖 **Onboarding Guide** | [Getting Started](https://docs.google.com/document/d/1Wj7o3pAjqMSYy9pHeRXzvm24H3ByYgz7HRxjV67nnQM/edit?usp=sharing) | Step-by-step instructions for new contributors         |
 
