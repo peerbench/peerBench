@@ -1,0 +1,26 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useProfileApi } from "../hooks/use-profile-api";
+import { QK_PROFILE } from "./query-keys";
+import type { RequestBodyParams as PatchProfileRequestBodyParams } from "@/app/api/v2/profile/patch";
+
+export function useProfile() {
+  const profileAPI = useProfileApi();
+
+  return useQuery({
+    queryKey: [QK_PROFILE],
+    queryFn: () => profileAPI.getProfile(),
+  });
+}
+
+export function useUpdateProfile() {
+  const profileAPI = useProfileApi();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: PatchProfileRequestBodyParams) =>
+      profileAPI.updateProfile(data),
+    onSuccess: (data) => {
+      queryClient.setQueryData([QK_PROFILE], data);
+    },
+  });
+}
