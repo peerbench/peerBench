@@ -8,6 +8,7 @@ node_modules
 # Local env files
 .env*
 !.env.*example
+env*
 
 # Testing
 coverage
@@ -34,5 +35,10 @@ yarn-error.log*
 .DS_Store
 *.pem
 prompt_history.txt
+
+notes/
+apps/cli/data
+apps/cli/peerbench-data
+apps/cli/test-output
 
 .vscode
